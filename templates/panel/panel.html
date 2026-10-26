@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Panel · Quedamos{% endblock %}
+{% block content %}
+{% if me.is_executive %}
+  <div class="card">
+    <h1>Tu código de vinculación</h1>
+    <p class="muted">Compártelo con tu asistente para que pueda coordinar tus reuniones.</p>
+    <span class="code" id="mycode">{{ me.link_code }}</span>
+  </div>
+  <h2>Mis asistentes</h2>
+  {% for l in links %}
+    <span class="pill">{{ l.assistant.full_name }}
+      <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo">×</button></form>
+    </span>
+  {% empty %}<p class="muted">Aún nadie se vinculó. Comparte tu código.</p>{% endfor %}
+{% else %}
+  <div class="card">
+    <h1>Vincularme con un ejecutivo</h1>
+    <p class="muted">Pide a tu ejecutivo el código de 6 caracteres que aparece en su panel.</p>
+    <form method="post" action="{% url 'link_executive' %}">
+      {% csrf_token %}
+      <input type="text" name="code" maxlength="12" placeholder="ABC123" required style="text-transform:uppercase;max-width:14rem">
+      <button type="submit">Vincular</button>
+    </form>
+  </div>
+  <h2>Mis ejecutivos</h2>
+  {% for l in links %}
+    <span class="pill">{{ l.executive.full_name }}
+      <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo">×</button></form>
+    </span>
+  {% empty %}<p class="muted">Todavía no estás vinculada con nadie.</p>{% endfor %}
+
+  <h2>Nueva solicitud de reunión</h2>
+  {% if links %}
+    <form method="post" action="{% url 'create_request' %}" class="card">
+      {% csrf_token %}
+      {{ request_form.non_field_errors }}
+      {{ request_form.executive.label_tag }}{{ request_form.executive }}{{ request_form.executive.errors }}
+      {{ request_form.title.label_tag }}{{ request_form.title }}{{ request_form.title.errors }}
+      <div class="grid2">
+        <div>{{ request_form.counterpart_name.label_tag }}{{ request_form.counterpart_name }}{{ request_form.counterpart_name.errors }}</div>
+        <div>{{ request_form.counterpart_email.label_tag }}{{ request_form.counterpart_email }}{{ request_form.counterpart_email.errors }}</div>
+      </div>
+      {{ request_form.duration_min.label_tag }}{{ request_form.duration_min }}{{ request_form.duration_min.errors }}
+      {{ request_form.notes.label_tag }}{{ request_form.notes }}{{ request_form.notes.errors }}
+      <p><button type="submit">Crear solicitud</button></p>
+    </form>
+  {% else %}
+    <p class="card muted">Vincúlate con un ejecutivo para poder crear solicitudes.</p>
+  {% endif %}
+{% endif %}
+
+<h2>Solicitudes de reunión</h2>
+<div id="requests" hx-get="{% url 'request_list' %}" hx-trigger="every 5s" hx-swap="innerHTML">
+  {% include "panel/_request_list.html" %}
+</div>
+<p class="muted">Se actualiza sola cada pocos segundos.</p>
+{% endblock %}

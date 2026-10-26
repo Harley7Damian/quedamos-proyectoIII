@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Tarjeta de aprobación (maqueta){% endblock %}
+{% block content %}
+{# ROSSY: construye aquí la tarjeta de aprobación. Contrato en scheduling/contracts.py. #}
+{# Debe mostrar título, contraparte, duración y tres opciones con su motivo, un botón "Aprobar" por opción y "Ninguna me sirve". #}
+{# Sin base de datos: el botón puede mostrar un aviso en pantalla. #}
+<h1>{{ proposal.title }}</h1>
+<p>Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+{% for slot in proposal.slots %}
+  <div class="card">
+    <strong>Opción {{ slot.rank }}:</strong> {{ slot.start|date:"l d/m, H:i" }} a {{ slot.end|date:"H:i" }}
+    <div class="muted">{{ slot.reason }}</div>
+  </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% for r in requests %}
+  <div class="card">
+    <span class="status {{ r.status }}">{{ r.get_status_display }}</span>
+    <strong>{{ r.title }}</strong>
+    <div>Con {{ r.counterpart_name }}{% if r.counterpart_email %} ({{ r.counterpart_email }}){% endif %} · {{ r.duration_min }} min</div>
+    <div class="muted">Ejecutivo: {{ r.executive.full_name }} · creada por {{ r.created_by.full_name }} · {{ r.created_at|date:"d/m/Y H:i" }}</div>
+    {% if r.notes %}<div>{{ r.notes }}</div>{% endif %}
+  </div>
+{% empty %}
+  <div class="card muted">Aún no hay solicitudes de reunión.</div>
+{% endfor %}

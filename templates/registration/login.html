@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Ingresar · Quedamos{% endblock %}
+{% block mainclass %}narrow{% endblock %}
+{% block content %}
+<h1>Ingresar</h1>
+<p class="muted">Coordina las reuniones de tu ejecutivo sin intercambiar correos.</p>
+<form method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="msg error" role="alert">Correo o contraseña incorrectos.</div>{% endif %}
+  {{ form.username.label_tag }}{{ form.username }}
+  {{ form.password.label_tag }}{{ form.password }}
+  <p><button type="submit">Ingresar</button></p>
+</form>
+<p><a href="{% url 'signup' %}">No tengo cuenta, crear una</a></p>
+{% endblock %}

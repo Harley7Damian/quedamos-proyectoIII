@@ -1,0 +1,29 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Quedamos{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="top">
+    <div class="in">
+      <a class="brand" href="{% url 'panel' %}">Quedamos</a>
+      <nav>
+        {% if user.is_authenticated %}
+          <span class="muted">{{ user.full_name }} · {{ user.get_role_display }}</span>
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link" type="submit">Salir</button></form>
+        {% else %}
+          <a href="{% url 'login' %}">Ingresar</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="{% block mainclass %}{% endblock %}">
+    {% for message in messages %}<div class="msg {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
