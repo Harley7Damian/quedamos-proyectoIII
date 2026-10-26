@@ -1,15 +1,40 @@
 {% extends "base.html" %}
 {% block title %}Tarjeta de aprobación (maqueta){% endblock %}
+{% block mainclass %}narrow{% endblock %}
 {% block content %}
 {# ROSSY: construye aquí la tarjeta de aprobación. Contrato en scheduling/contracts.py. #}
 {# Debe mostrar título, contraparte, duración y tres opciones con su motivo, un botón "Aprobar" por opción y "Ninguna me sirve". #}
 {# Sin base de datos: el botón puede mostrar un aviso en pantalla. #}
+
+<div id="aviso" class="msg" style="display:none"></div>
+
 <h1>{{ proposal.title }}</h1>
-<p>Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+<p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+
 {% for slot in proposal.slots %}
   <div class="card">
-    <strong>Opción {{ slot.rank }}:</strong> {{ slot.start|date:"l d/m, H:i" }} a {{ slot.end|date:"H:i" }}
-    <div class="muted">{{ slot.reason }}</div>
+    <span class="pill">Opción {{ slot.rank }}</span>
+    <p><strong>{{ slot.start|date:"l d/m, H:i" }}</strong> a {{ slot.end|date:"H:i" }}</p>
+    <p class="muted">{{ slot.reason }}</p>
+    <button type="button" class="btn" onclick="aprobar({{ slot.rank }})">Aprobar esta opción</button>
   </div>
 {% endfor %}
+
+<button type="button" class="small" onclick="ninguna()">Ninguna me sirve</button>
+
+<script>
+  function mostrarAviso(texto, tipo) {
+    var aviso = document.getElementById('aviso');
+    aviso.textContent = texto;
+    aviso.className = 'msg ' + tipo;
+    aviso.style.display = 'block';
+    aviso.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function aprobar(rank) {
+    mostrarAviso('Opción ' + rank + ' aprobada. (Maqueta: todavía no se guarda en la base de datos.)', 'success');
+  }
+  function ninguna() {
+    mostrarAviso('Marcaste que ninguna opción te sirve. (Maqueta: todavía no se guarda en la base de datos.)', 'error');
+  }
+</script>
 {% endblock %}
