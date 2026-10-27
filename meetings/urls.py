@@ -10,5 +10,7 @@ urlpatterns = [
     path("panel/solicitudes/nueva/", views.create_request, name="create_request"),
     path("panel/solicitudes/<int:pk>/", views.request_detail, name="request_detail"),
     path("panel/solicitudes/<int:pk>/enlace/", views.create_counterpart_link, name="create_counterpart_link"),
+    path("panel/solicitudes/<int:pk>/disponibilidad/", views.save_executive_availability, name="save_executive_availability"),
+    path("panel/solicitudes/<int:pk>/propuesta/", views.generate_proposal, name="generate_proposal"),
     path("c/<str:token>/", views.public_availability, name="public_availability"),
 ]

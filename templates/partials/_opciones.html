@@ -1,0 +1,9 @@
+{% load scheduling_extras %}
+{# Opciones de una propuesta (contrato scheduling.contracts.Proposal): rango, fecha y motivo de cada una. #}
+{% for slot in proposal.slots %}
+  <div class="card option">
+    <span class="pill">Opción {{ slot.rank }}</span>
+    <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+    <p class="muted">{{ slot.reason }}</p>
+  </div>
+{% endfor %}

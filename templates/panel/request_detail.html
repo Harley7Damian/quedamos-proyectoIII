@@ -10,7 +10,21 @@
   {% if r.notes %}<p>{{ r.notes }}</p>{% endif %}
 </div>
 
-<h2>Disponibilidad de la contraparte</h2>
+<h2>1. Disponibilidad del ejecutivo</h2>
+{% if r.accepts_availability %}
+  <form method="post" action="{% url 'save_executive_availability' r.pk %}">
+    {% csrf_token %}
+    <p class="muted">
+      {% if executive_av %}Guardada el {{ executive_av.updated_at|date:"d/m/Y H:i" }}. Puedes ajustarla y guardar de nuevo.{% else %}Marca cuándo puede reunirse {{ r.executive.full_name }} esta semana.{% endif %}
+    </p>
+    {% include "partials/_grid.html" %}
+    <p><button type="submit">Guardar disponibilidad del ejecutivo</button></p>
+  </form>
+{% else %}
+  <p class="card muted">Esta solicitud ya no recibe disponibilidad.</p>
+{% endif %}
+
+<h2>2. Disponibilidad de la contraparte</h2>
 <div class="card">
   {% if counterpart %}
     <p>Respondió el {{ counterpart.updated_at|date:"d/m/Y H:i" }} ({{ counterpart_count }} horarios marcados).</p>
@@ -26,8 +40,29 @@
       <p class="muted">Compártelo con la asistente de la otra parte. Vence el {{ link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
       <input type="text" readonly value="{{ link.url }}" onclick="this.select()" id="enlace">
     {% endif %}
+  {% endif %}
+</div>
+
+<h2>3. Propuesta de horarios</h2>
+{% if proposal %}
+  {% if proposal.slots %}
+    <p class="muted">Ordenadas de la mejor a la menos buena, según lo que marcó cada parte.</p>
+    {% include "partials/_opciones.html" %}
   {% else %}
-    <p class="muted">Esta solicitud ya no recibe disponibilidad.</p>
+    <div class="msg error">{{ no_match }}</div>
+  {% endif %}
+{% endif %}
+<div class="card">
+  {% if can_generate %}
+    <form method="post" action="{% url 'generate_proposal' r.pk %}">
+      {% csrf_token %}
+      <button type="submit">{% if proposal %}Volver a generar la propuesta{% else %}Generar propuesta de tres horarios{% endif %}</button>
+    </form>
+  {% elif r.accepts_availability %}
+    <p class="muted">
+      Se habilita cuando están registradas las dos disponibilidades:
+      {% if not executive_av %}falta la del ejecutivo{% endif %}{% if not executive_av and not counterpart %} y {% endif %}{% if not counterpart %}falta la de la contraparte{% endif %}.
+    </p>
   {% endif %}
 </div>
 {% endblock %}
