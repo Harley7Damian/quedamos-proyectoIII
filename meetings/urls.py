@@ -12,5 +12,9 @@ urlpatterns = [
     path("panel/solicitudes/<int:pk>/enlace/", views.create_counterpart_link, name="create_counterpart_link"),
     path("panel/solicitudes/<int:pk>/disponibilidad/", views.save_executive_availability, name="save_executive_availability"),
     path("panel/solicitudes/<int:pk>/propuesta/", views.generate_proposal, name="generate_proposal"),
+    path("panel/reglas/", views.rules, name="rules"),
+    path("panel/reglas/nueva/", views.create_rule, name="create_rule"),
+    path("panel/reglas/<int:pk>/editar/", views.edit_rule, name="edit_rule"),
+    path("panel/reglas/<int:pk>/alternar/", views.toggle_rule, name="toggle_rule"),
     path("c/<str:token>/", views.public_availability, name="public_availability"),
 ]

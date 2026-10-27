@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Editar regla · Quedamos{% endblock %}
+{% block mainclass %}narrow{% endblock %}
+{% block content %}
+<p><a href="{% url 'rules' %}">← Volver a las reglas</a></p>
+<h1>Editar regla</h1>
+<p class="muted">Ejecutivo: {{ rule.executive.full_name }}</p>
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {{ form.weekday.label_tag }}{{ form.weekday }}{{ form.weekday.errors }}
+  <div class="grid2">
+    <div>{{ form.start_hour.label_tag }}{{ form.start_hour }}{{ form.start_hour.errors }}</div>
+    <div>{{ form.end_hour.label_tag }}{{ form.end_hour }}{{ form.end_hour.errors }}</div>
+  </div>
+  <p><button type="submit">Guardar cambios</button></p>
+</form>
+{% endblock %}

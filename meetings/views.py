@@ -14,10 +14,10 @@ from django.views.decorators.http import require_POST
 from accounts.models import User
 from scheduling.proposal import build_proposal
 
-from .forms import LinkForm, MeetingRequestForm
+from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
 from .links import ExpiredLink, InvalidLink, make_token, read_token
-from .models import AssistantLink, Availability, MeetingRequest
+from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
 
 
 def _executives_of(user):
@@ -112,14 +112,24 @@ def _availability_of(meeting_request, party):
     return meeting_request.availabilities.filter(party=party).first()
 
 
+RULES_BLOCK = (
+    "Hay horarios en que coinciden las dos partes, pero las reglas protegidas del ejecutivo los descartan. "
+    "Revisa las reglas o amplía el rango marcando más horarios."
+)
 NO_MATCH = (
     "No hay un horario en que coincidan las dos partes para esta duración. "
     "Amplía el rango: marca más horarios, o crea la solicitud para otra semana."
 )
 
 
-def _proposal_for(meeting_request, executive, counterpart):
-    """Propuesta calculada con la disponibilidad guardada de ambas partes."""
+def _active_rules(meeting_request):
+    return SchedulingRule.objects.filter(executive=meeting_request.executive_id, active=True)
+
+
+def _proposal_for(meeting_request, executive, counterpart, rules=None):
+    """Propuesta calculada con la disponibilidad guardada de ambas partes y las reglas activas del ejecutivo."""
+    if rules is None:
+        rules = [rule.spec() for rule in _active_rules(meeting_request)]
     return build_proposal(
         request_id=meeting_request.pk,
         title=meeting_request.title,
@@ -131,7 +141,15 @@ def _proposal_for(meeting_request, executive, counterpart):
         counterpart_blocks=counterpart.blocks,
         now=timezone.now(),
         tz=timezone.get_current_timezone(),
+        rules=rules,
     )
+
+
+def _no_match_message(meeting_request, executive, counterpart):
+    """Si sin reglas habría opciones, el problema son las reglas y no la falta de coincidencia."""
+    if _active_rules(meeting_request).exists() and _proposal_for(meeting_request, executive, counterpart, rules=[]).slots:
+        return RULES_BLOCK
+    return NO_MATCH
 
 
 def _detail_context(user, meeting_request, link=None):
@@ -150,7 +168,8 @@ def _detail_context(user, meeting_request, link=None):
         "rows": grid_rows(executive.blocks if executive else {}),
         "can_generate": bool(executive and counterpart) and meeting_request.accepts_availability,
         "proposal": proposal,
-        "no_match": NO_MATCH if proposal is not None and not proposal.slots else None,
+        "no_match": _no_match_message(meeting_request, executive, counterpart) if proposal is not None and not proposal.slots else None,
+        "active_rules": [rule.label for rule in _active_rules(meeting_request)],
         "link": link,
         "link_days": settings.COUNTERPART_LINK_MAX_AGE // 86400,
     }
@@ -211,7 +230,7 @@ def generate_proposal(request, pk):
         messages.success(request, "Propuesta generada.")
     else:
         meeting_request.status = MeetingRequest.Status.PENDIENTE
-        messages.error(request, NO_MATCH)
+        messages.error(request, _no_match_message(meeting_request, executive, counterpart))
     meeting_request.save(update_fields=["status"])
     return redirect("request_detail", pk=pk)
 
@@ -261,3 +280,56 @@ def public_availability(request, token):
         "error": error,
     }
     return _public_response(request, "public/disponibilidad.html", ctx, status=400 if error else 200)
+
+
+# ---------------------------------------------------------------- HU-07: reglas del ejecutivo (horarios protegidos)
+
+
+def _rules_of(user):
+    return SchedulingRule.objects.filter(executive__in=_executives_of(user)).select_related("executive")
+
+
+def _rules_context(user, form=None):
+    return {"me": user, "rules": _rules_of(user), "form": form or SchedulingRuleForm(user=user, executives=_executives_of(user))}
+
+
+@login_required
+def rules(request):
+    return render(request, "panel/rules.html", _rules_context(request.user))
+
+
+@login_required
+@require_POST
+def create_rule(request):
+    user = request.user
+    form = SchedulingRuleForm(request.POST, user=user, executives=_executives_of(user))
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Regla guardada.")
+        return redirect("rules")
+    return render(request, "panel/rules.html", _rules_context(user, form), status=400)
+
+
+@login_required
+def edit_rule(request, pk):
+    user = request.user
+    rule = get_object_or_404(_rules_of(user), pk=pk)
+    if request.method == "POST":
+        form = SchedulingRuleForm(request.POST, instance=rule, user=user, executives=_executives_of(user))
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Regla actualizada.")
+            return redirect("rules")
+        return render(request, "panel/rule_edit.html", {"rule": rule, "form": form}, status=400)
+    form = SchedulingRuleForm(instance=rule, user=user, executives=_executives_of(user))
+    return render(request, "panel/rule_edit.html", {"rule": rule, "form": form})
+
+
+@login_required
+@require_POST
+def toggle_rule(request, pk):
+    rule = get_object_or_404(_rules_of(request.user), pk=pk)
+    rule.active = not rule.active
+    rule.save(update_fields=["active"])
+    messages.success(request, "Regla activada." if rule.active else "Regla desactivada.")
+    return redirect("rules")

@@ -44,6 +44,10 @@
 </div>
 
 <h2>3. Propuesta de horarios</h2>
+<p class="muted">
+  {% if active_rules %}Reglas activas del ejecutivo: {{ active_rules|join:"; " }}.{% else %}El ejecutivo no tiene reglas de horarios protegidos.{% endif %}
+  <a href="{% url 'rules' %}">Ver o editar reglas</a>
+</p>
 {% if proposal %}
   {% if proposal.slots %}
     <p class="muted">Ordenadas de la mejor a la menos buena, según lo que marcó cada parte.</p>

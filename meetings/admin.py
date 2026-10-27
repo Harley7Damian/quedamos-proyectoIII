@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AssistantLink, Availability, MeetingRequest
+from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
 
 admin.site.register(AssistantLink)
 
@@ -14,3 +14,9 @@ class MeetingRequestAdmin(admin.ModelAdmin):
 @admin.register(Availability)
 class AvailabilityAdmin(admin.ModelAdmin):
     list_display = ("request", "party", "updated_at")
+
+
+@admin.register(SchedulingRule)
+class SchedulingRuleAdmin(admin.ModelAdmin):
+    list_display = ("executive", "weekday", "start_hour", "end_hour", "active")
+    list_filter = ("active",)

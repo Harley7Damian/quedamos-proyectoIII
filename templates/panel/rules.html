@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Reglas del ejecutivo · Quedamos{% endblock %}
+{% block content %}
+<p><a href="{% url 'panel' %}">← Volver al panel</a></p>
+<h1>Horarios protegidos</h1>
+<p class="muted">Las propuestas de horarios nunca caen dentro de una regla activa. Ejemplos: nada antes de las 10:00, el viernes protegido, sin reuniones de 13:00 a 14:00.</p>
+
+<h2>Reglas registradas</h2>
+{% for rule in rules %}
+  <div class="card rule {% if not rule.active %}off{% endif %}">
+    <span class="status {% if rule.active %}aprobada{% else %}cancelada{% endif %}">{% if rule.active %}Activa{% else %}Desactivada{% endif %}</span>
+    <strong>{{ rule.label|capfirst }}</strong>
+    <div class="muted">Ejecutivo: {{ rule.executive.full_name }}</div>
+    <div class="actions">
+      <a href="{% url 'edit_rule' rule.pk %}">Editar</a>
+      <form method="post" action="{% url 'toggle_rule' rule.pk %}">{% csrf_token %}<button class="small" type="submit">{% if rule.active %}Desactivar{% else %}Activar{% endif %}</button></form>
+    </div>
+  </div>
+{% empty %}
+  <p class="card muted">Aún no hay reglas. Sin reglas, las propuestas solo consideran la disponibilidad de ambas partes.</p>
+{% endfor %}
+
+<h2>Nueva regla</h2>
+<form method="post" action="{% url 'create_rule' %}" class="card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% if form.executive %}{{ form.executive.label_tag }}{{ form.executive }}{{ form.executive.errors }}{% endif %}
+  {{ form.weekday.label_tag }}{{ form.weekday }}{{ form.weekday.errors }}
+  <div class="grid2">
+    <div>{{ form.start_hour.label_tag }}{{ form.start_hour }}{{ form.start_hour.errors }}</div>
+    <div>{{ form.end_hour.label_tag }}{{ form.end_hour }}{{ form.end_hour.errors }}</div>
+  </div>
+  <p class="muted">Para bloquear un día completo elige el día y el rango de 00:00 a 24:00.</p>
+  <p><button type="submit">Guardar regla</button></p>
+</form>
+{% endblock %}
