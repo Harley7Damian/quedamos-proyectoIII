@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from scheduling.rules import DAY_NAMES, RuleSpec
+
 from .weeks import monday_of
 
 
@@ -91,3 +93,36 @@ class Availability(models.Model):
 
     def __str__(self) -> str:
         return f"{self.request} ({self.party})"
+
+
+class SchedulingRule(models.Model):
+    """Franja protegida de un ejecutivo: las propuestas no pueden caer dentro de ella (HU-07)."""
+
+    WEEKDAYS = [(i, name.capitalize()) for i, name in enumerate(DAY_NAMES)]
+
+    executive = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="scheduling_rules")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_rules")
+    weekday = models.PositiveSmallIntegerField("día", choices=WEEKDAYS, null=True, blank=True)
+    start_hour = models.PositiveSmallIntegerField("desde")
+    end_hour = models.PositiveSmallIntegerField("hasta")
+    active = models.BooleanField("activa", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["executive", "weekday", "start_hour"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(start_hour__gte=0, start_hour__lte=23, end_hour__gte=1, end_hour__lte=24, start_hour__lt=models.F("end_hour")),
+                name="rule_hours_valid",
+            ),
+        ]
+
+    def spec(self) -> RuleSpec:
+        return RuleSpec(weekday=self.weekday, start_hour=self.start_hour, end_hour=self.end_hour)
+
+    @property
+    def label(self) -> str:
+        return self.spec().label
+
+    def __str__(self) -> str:
+        return f"{self.executive}: {self.label}"

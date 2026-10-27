@@ -42,3 +42,8 @@ table.avail td.cell[data-state="2"] button { background:#2e9e5e; border-color:#1
 .swatch { display:inline-block; width:.9rem; height:.9rem; border-radius:.25rem; border:1px solid var(--line); vertical-align:middle; margin-right:.25rem; }
 .swatch.s0 { background:#fff; } .swatch.s1 { background:#bfe8cf; border-color:#7bc79a; } .swatch.s2 { background:#2e9e5e; border-color:#1f7a45; }
 input[readonly] { background:var(--bg); font-family: ui-monospace, Consolas, monospace; font-size:.85rem; }
+
+/* Reglas del ejecutivo (HU-07) */
+.rule.off { opacity:.6; }
+.rule .actions { display:flex; gap:.8rem; align-items:center; margin-top:.5rem; }
+.rule .actions form { display:inline; }
