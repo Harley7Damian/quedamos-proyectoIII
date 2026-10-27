@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
+from scheduling.proposal import build_proposal
 
 from .forms import LinkForm, MeetingRequestForm
 from .grid import grid_rows, parse_blocks, week_header
@@ -111,13 +112,45 @@ def _availability_of(meeting_request, party):
     return meeting_request.availabilities.filter(party=party).first()
 
 
+NO_MATCH = (
+    "No hay un horario en que coincidan las dos partes para esta duración. "
+    "Amplía el rango: marca más horarios, o crea la solicitud para otra semana."
+)
+
+
+def _proposal_for(meeting_request, executive, counterpart):
+    """Propuesta calculada con la disponibilidad guardada de ambas partes."""
+    return build_proposal(
+        request_id=meeting_request.pk,
+        title=meeting_request.title,
+        executive_name=meeting_request.executive.full_name,
+        counterpart_name=meeting_request.counterpart_name,
+        duration_min=meeting_request.duration_min,
+        week_start=meeting_request.effective_week_start,
+        executive_blocks=executive.blocks,
+        counterpart_blocks=counterpart.blocks,
+        now=timezone.now(),
+        tz=timezone.get_current_timezone(),
+    )
+
+
 def _detail_context(user, meeting_request, link=None):
+    executive = _availability_of(meeting_request, Availability.Party.EJECUTIVO)
     counterpart = _availability_of(meeting_request, Availability.Party.CONTRAPARTE)
+    proposal = None
+    if executive and counterpart and meeting_request.status == MeetingRequest.Status.PROPUESTA:
+        proposal = _proposal_for(meeting_request, executive, counterpart)
     return {
         "me": user,
         "r": meeting_request,
+        "executive_av": executive,
         "counterpart": counterpart,
         "counterpart_count": len(counterpart.blocks) if counterpart else 0,
+        "days": week_header(meeting_request.effective_week_start),
+        "rows": grid_rows(executive.blocks if executive else {}),
+        "can_generate": bool(executive and counterpart) and meeting_request.accepts_availability,
+        "proposal": proposal,
+        "no_match": NO_MATCH if proposal is not None and not proposal.slots else None,
         "link": link,
         "link_days": settings.COUNTERPART_LINK_MAX_AGE // 86400,
     }
@@ -139,6 +172,48 @@ def create_counterpart_link(request, pk):
     url = request.build_absolute_uri(reverse("public_availability", args=[make_token(meeting_request.pk)]))
     link = {"url": url, "expires": timezone.now() + timedelta(seconds=settings.COUNTERPART_LINK_MAX_AGE)}
     return render(request, "panel/request_detail.html", _detail_context(request.user, meeting_request, link))
+
+
+@login_required
+@require_POST
+def save_executive_availability(request, pk):
+    meeting_request = _visible_request_or_404(request.user, pk)
+    if not meeting_request.accepts_availability:
+        messages.error(request, "Esta solicitud ya no recibe disponibilidad.")
+        return redirect("request_detail", pk=pk)
+    blocks = parse_blocks(request.POST)
+    if not blocks:
+        messages.error(request, "Marca al menos un horario en que el ejecutivo pueda reunirse.")
+        return redirect("request_detail", pk=pk)
+    Availability.objects.update_or_create(
+        request=meeting_request, party=Availability.Party.EJECUTIVO, defaults={"blocks": blocks}
+    )
+    messages.success(request, "Guardamos la disponibilidad del ejecutivo.")
+    return redirect("request_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def generate_proposal(request, pk):
+    meeting_request = _visible_request_or_404(request.user, pk)
+    if not meeting_request.accepts_availability:
+        messages.error(request, "Esta solicitud ya no recibe propuestas.")
+        return redirect("request_detail", pk=pk)
+    executive = _availability_of(meeting_request, Availability.Party.EJECUTIVO)
+    counterpart = _availability_of(meeting_request, Availability.Party.CONTRAPARTE)
+    if not executive or not counterpart:
+        faltan = "la del ejecutivo" if not executive else "la de la contraparte"
+        messages.error(request, f"Falta la disponibilidad de ambas partes: aún no está {faltan}.")
+        return redirect("request_detail", pk=pk)
+    proposal = _proposal_for(meeting_request, executive, counterpart)
+    if proposal.slots:
+        meeting_request.status = MeetingRequest.Status.PROPUESTA
+        messages.success(request, "Propuesta generada.")
+    else:
+        meeting_request.status = MeetingRequest.Status.PENDIENTE
+        messages.error(request, NO_MATCH)
+    meeting_request.save(update_fields=["status"])
+    return redirect("request_detail", pk=pk)
 
 
 def _public_response(request, template, ctx, status=200):
