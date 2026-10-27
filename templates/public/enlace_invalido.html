@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Enlace no disponible · Quedamos{% endblock %}
+{% block mainclass %}narrow{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Enlace no disponible</h1>
+  {% if expired %}
+    <p>Este enlace venció. Pide a la asistente que te comparta uno nuevo.</p>
+  {% elif closed %}
+    <p>Esta coordinación ya no recibe disponibilidad.</p>
+  {% else %}
+    <p>El enlace no es válido. Revisa que lo hayas copiado completo o pide uno nuevo.</p>
+  {% endif %}
+</div>
+{% endblock %}

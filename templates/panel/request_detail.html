@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ r.title }} · Quedamos{% endblock %}
+{% block content %}
+<p><a href="{% url 'panel' %}">← Volver al panel</a></p>
+<div class="card">
+  <span class="status {{ r.status }}">{{ r.get_status_display }}</span>
+  <h1>{{ r.title }}</h1>
+  <div>Con {{ r.counterpart_name }}{% if r.counterpart_email %} ({{ r.counterpart_email }}){% endif %} · {{ r.duration_min }} min</div>
+  <div class="muted">Ejecutivo: {{ r.executive.full_name }} · semana del {{ r.effective_week_start|date:"d/m/Y" }}</div>
+  {% if r.notes %}<p>{{ r.notes }}</p>{% endif %}
+</div>
+
+<h2>Disponibilidad de la contraparte</h2>
+<div class="card">
+  {% if counterpart %}
+    <p>Respondió el {{ counterpart.updated_at|date:"d/m/Y H:i" }} ({{ counterpart_count }} horarios marcados).</p>
+  {% else %}
+    <p class="muted">Aún no responde.</p>
+  {% endif %}
+  {% if r.accepts_availability %}
+    <form method="post" action="{% url 'create_counterpart_link' r.pk %}">
+      {% csrf_token %}
+      <button type="submit">Generar enlace para la contraparte</button>
+    </form>
+    {% if link %}
+      <p class="muted">Compártelo con la asistente de la otra parte. Vence el {{ link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
+      <input type="text" readonly value="{{ link.url }}" onclick="this.select()" id="enlace">
+    {% endif %}
+  {% else %}
+    <p class="muted">Esta solicitud ya no recibe disponibilidad.</p>
+  {% endif %}
+</div>
+{% endblock %}

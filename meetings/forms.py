@@ -1,8 +1,12 @@
+from datetime import date
+
 from django import forms
+from django.utils import timezone
 
 from accounts.models import User, normalize_code
 
 from .models import MeetingRequest
+from .weeks import default_week_start, week_choices
 
 
 class LinkForm(forms.Form):
@@ -18,6 +22,8 @@ class MeetingRequestForm(forms.ModelForm):
         fields = ["executive", "title", "counterpart_name", "counterpart_email", "duration_min", "notes"]
         widgets = {"notes": forms.Textarea(attrs={"rows": 2})}
 
+    week = forms.ChoiceField(label="Semana a coordinar", required=False)
+
     def __init__(self, *args, user: User, executives, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
@@ -27,6 +33,9 @@ class MeetingRequestForm(forms.ModelForm):
         self.fields["executive"].empty_label = None
         self.fields["title"].min_length = 3
         self.fields["counterpart_name"].min_length = 2
+        today = timezone.localdate()
+        self.fields["week"].choices = week_choices(today)
+        self.fields["week"].initial = default_week_start(today).isoformat()
 
     def clean_title(self):
         value = self.cleaned_data["title"].strip()
@@ -43,6 +52,8 @@ class MeetingRequestForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super().save(commit=False)
         obj.created_by = self.user  # lo define el servidor, nunca el formulario
+        chosen = self.cleaned_data.get("week") or default_week_start(timezone.localdate()).isoformat()
+        obj.week_start = date.fromisoformat(chosen)
         if commit:
             obj.save()
         return obj

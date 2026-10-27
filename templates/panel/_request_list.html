@@ -5,6 +5,7 @@
     <div>Con {{ r.counterpart_name }}{% if r.counterpart_email %} ({{ r.counterpart_email }}){% endif %} · {{ r.duration_min }} min</div>
     <div class="muted">Ejecutivo: {{ r.executive.full_name }} · creada por {{ r.created_by.full_name }} · {{ r.created_at|date:"d/m/Y H:i" }}</div>
     {% if r.notes %}<div>{{ r.notes }}</div>{% endif %}
+    <div style="margin-top:.4rem"><a href="{% url 'request_detail' r.pk %}">Ver detalle y coordinar</a></div>
   </div>
 {% empty %}
   <div class="card muted">Aún no hay solicitudes de reunión.</div>
