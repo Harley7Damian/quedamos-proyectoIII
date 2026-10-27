@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Tu disponibilidad · Quedamos{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<p class="muted">Duración prevista: {{ duration }} min. Marca los horarios en que puedes reunirte. No necesitas crear una cuenta.</p>
+{% if answered %}<div class="msg">Ya registraste tu disponibilidad. Puedes ajustarla y volver a enviarla.</div>{% endif %}
+{% if error %}<div class="msg error">{{ error }}</div>{% endif %}
+<form method="post">
+  {% csrf_token %}
+  {% include "partials/_grid.html" %}
+  <p><button type="submit">Enviar mi disponibilidad</button></p>
+</form>
+{% endblock %}

@@ -1,0 +1,27 @@
+{# Cuadricula semanal. Cada celda alterna: no disponible, disponible, preferido. Se envia como b-<dia>-<hora>. #}
+<p class="muted legend">
+  <span class="swatch s0"></span> No disponible
+  <span class="swatch s1"></span> Disponible
+  <span class="swatch s2"></span> Preferido
+  &nbsp;·&nbsp; Toca una celda para cambiarla.
+</p>
+<div class="gridwrap">
+  <table class="avail">
+    <thead>
+      <tr>
+        <th></th>
+        {% for d in days %}<th>{{ d.short }}<br><span class="muted">{{ d.date|date:"d/m" }}</span></th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <th>{{ row.label }}</th>
+          {% for c in row.cells %}
+            <td class="cell" data-state="{{ c.state }}"><input type="hidden" name="{{ c.name }}" value="{{ c.state }}"><button type="button" aria-label="Cambiar este horario"></button></td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

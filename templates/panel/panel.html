@@ -41,7 +41,10 @@
         <div>{{ request_form.counterpart_name.label_tag }}{{ request_form.counterpart_name }}{{ request_form.counterpart_name.errors }}</div>
         <div>{{ request_form.counterpart_email.label_tag }}{{ request_form.counterpart_email }}{{ request_form.counterpart_email.errors }}</div>
       </div>
-      {{ request_form.duration_min.label_tag }}{{ request_form.duration_min }}{{ request_form.duration_min.errors }}
+      <div class="grid2">
+        <div>{{ request_form.duration_min.label_tag }}{{ request_form.duration_min }}{{ request_form.duration_min.errors }}</div>
+        <div>{{ request_form.week.label_tag }}{{ request_form.week }}{{ request_form.week.errors }}</div>
+      </div>
       {{ request_form.notes.label_tag }}{{ request_form.notes }}{{ request_form.notes.errors }}
       <p><button type="submit">Crear solicitud</button></p>
     </form>

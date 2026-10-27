@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
+
+from .weeks import monday_of
 
 
 class AssistantLink(models.Model):
@@ -44,6 +47,7 @@ class MeetingRequest(models.Model):
     counterpart_email = models.EmailField("correo de la contraparte", max_length=120, blank=True)
     notes = models.TextField("notas", max_length=500, blank=True)
     status = models.CharField("estado", max_length=10, choices=Status.choices, default=Status.PENDIENTE)
+    week_start = models.DateField("semana a coordinar (lunes)", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = MeetingRequestQuerySet.as_manager()
@@ -54,3 +58,36 @@ class MeetingRequest(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    @property
+    def effective_week_start(self):
+        """Lunes de la semana a coordinar. Si no se eligio, la semana en que se creo la solicitud."""
+        if self.week_start:
+            return self.week_start
+        return monday_of(timezone.localtime(self.created_at).date())
+
+    @property
+    def accepts_availability(self) -> bool:
+        return self.status in (self.Status.PENDIENTE, self.Status.PROPUESTA)
+
+
+class Availability(models.Model):
+    """Bloques de una hora en que una de las dos partes puede reunirse, dentro de la semana de la solicitud.
+
+    blocks guarda {"<dia>-<hora>": 1 o 2}: dia 0 es lunes; 1 es disponible y 2 es preferido.
+    """
+
+    class Party(models.TextChoices):
+        EJECUTIVO = "ejecutivo", "Ejecutivo"
+        CONTRAPARTE = "contraparte", "Contraparte"
+
+    request = models.ForeignKey(MeetingRequest, on_delete=models.CASCADE, related_name="availabilities")
+    party = models.CharField(max_length=12, choices=Party.choices)
+    blocks = models.JSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["request", "party"], name="unique_availability_per_party")]
+
+    def __str__(self) -> str:
+        return f"{self.request} ({self.party})"
