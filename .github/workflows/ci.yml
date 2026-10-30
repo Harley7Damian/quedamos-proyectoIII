@@ -34,3 +34,25 @@ jobs:
 
       - name: Ejecutar pruebas automaticas
         run: python manage.py test
+
+  seguridad:
+    name: Seguridad (dependencias y codigo)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar las herramientas de seguridad
+        run: pip install pip-audit bandit
+
+      - name: Revisar vulnerabilidades conocidas en las dependencias
+        run: pip-audit -r requirements.txt
+
+      - name: Revisar el codigo en busca de patrones inseguros
+        run: bandit -r accounts meetings scheduling config -ll
