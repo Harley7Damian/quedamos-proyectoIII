@@ -56,3 +56,42 @@ jobs:
 
       - name: Revisar el codigo en busca de patrones inseguros
         run: bandit -r accounts meetings scheduling config -ll
+
+  pruebas-postgres:
+    name: Pruebas contra PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: quedamos
+          POSTGRES_PASSWORD: quedamos
+          POSTGRES_DB: quedamos_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://quedamos:quedamos@localhost:5432/quedamos_test
+      SECRET_KEY: "clave-temporal-solo-para-ci-no-usar-en-produccion"
+      DEBUG: "False"
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias, incluyendo el driver de PostgreSQL
+        run: pip install -r requirements.txt -r requirements-prod.txt
+
+      - name: Ejecutar pruebas automaticas contra PostgreSQL
+        run: python manage.py test
