@@ -1,4 +1,5 @@
 # Quedamos
+[![CI](https://github.com/Harley7Damian/quedamos-proyectoIII/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Harley7Damian/quedamos-proyectoIII/actions/workflows/ci.yml)
 
 Espacio compartido donde la asistente de un ejecutivo y la contraparte coordinan una reunión, el sistema propone tres horarios ordenados con el motivo de cada uno y el ejecutivo aprueba con un solo toque.
 
