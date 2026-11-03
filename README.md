@@ -272,13 +272,16 @@ Regla del equipo: toda regla de permisos nueva se entrega con su prueba en el mi
 
 ## 11. Despliegue
 
-El proyecto está preparado para Render o Railway (aún no se publicó una instancia; está planificado en TR-20, Sprint 5).
+La aplicación está publicada (TR-20) en Render, con la base de datos PostgreSQL en Neon: https://quedamos-proyectoiii.onrender.com
 
-- Comando de construcción: `./build.sh` (instala `requirements-prod.txt`, ejecuta `collectstatic` y `migrate`).
-- Comando de inicio: `gunicorn config.wsgi` (definido en el `Procfile`).
-- Variables: `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y `DATABASE_URL` con la base PostgreSQL del proveedor.
+- Servicio web: Render, plan gratuito, con Python 3.12 fijado mediante la variable `PYTHON_VERSION`.
+- Base de datos: PostgreSQL en Neon, con conexión directa (sin pooler), tomada de la variable `DATABASE_URL`.
+- Comando de construcción: `bash build.sh` (instala `requirements-prod.txt`, ejecuta `collectstatic` y `migrate`).
+- Comando de inicio: `gunicorn config.wsgi --log-file -`. Render no lee el `Procfile`, por lo que el comando se define en el panel del servicio.
+- Variables en Render: `PYTHON_VERSION`, `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y `DATABASE_URL`. Los valores sensibles existen solo en el panel de Render y no están en el repositorio.
+- Publicación: manual desde el panel de Render hasta que el despliegue automático desde GitHub Actions quede resuelto (TR-37).
 
-El plan gratuito de Render duerme la aplicación tras un periodo de inactividad, por lo que la primera visita puede tardar. Conviene abrirla antes de una demostración.
+El plan gratuito de Render duerme la aplicación tras un periodo de inactividad y Neon suspende su cómputo tras 5 minutos sin uso, por lo que la primera visita puede tardar hasta un minuto. Conviene abrirla antes de una demostración.
 
 ## 12. Estructura del repositorio
 
@@ -349,7 +352,7 @@ El precio por asiento tampoco tiene un dato propio: se contrastará con el bench
 - En el registro se elige el rol. Es aceptable para la demostración; en producción el rol de ejecutivo debería verificarse, por ejemplo por dominio corporativo.
 - El Módulo 2 (cálculo de horarios, enlace para la contraparte, aprobación y correo) y la integración con calendarios aún no están implementados.
 - La verificación de permisos de Google Calendar puede exigir usuarios de prueba; por eso existe el plan alterno de importar un archivo `.ics` (TR-14).
-- No hay todavía una instancia desplegada; la ejecución actual es local.
+- La instancia desplegada usa los planes gratuitos de Render y Neon, que se suspenden por inactividad, y su publicación es manual hasta TR-37.
 - Las menciones a herramientas de la competencia provienen de información de sus propios proveedores y se contrastarán con fuentes primarias en el benchmark (TR-22).
 
 ## 16. Equipo y documentación relacionada
