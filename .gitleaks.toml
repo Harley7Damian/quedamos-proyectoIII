@@ -1,0 +1,21 @@
+title = "Quedamos: reglas de gitleaks"
+
+[extend]
+useDefault = true
+
+# Valores ficticios y documentados. No son credenciales reales:
+# 1. SECRET_KEY y DATABASE_URL del pipeline (.github/workflows/ci.yml), solo para pruebas efimeras.
+# 2. Clave de desarrollo local que usa config/settings.py cuando DEBUG=1.
+# 3. Marcador de .env.example y ejemplos del README.
+# 4. Contrasena de las pruebas automaticas.
+# Cada excepcion se agrega solo si se revisa el hallazgo y se confirma que no es real.
+[allowlist]
+description = "Valores ficticios documentados (CI, desarrollo local y pruebas)"
+regexes = [
+  '''clave-temporal-solo-para-ci-no-usar-en-produccion''',
+  '''clave-solo-para-desarrollo-local''',
+  '''cambia-esto-en-produccion''',
+  '''postgres(ql)?://quedamos:quedamos@localhost''',
+  '''postgres(ql)?://usuario:clave@host''',
+  '''Secreto-12345''',
+]

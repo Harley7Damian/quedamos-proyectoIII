@@ -1,0 +1,135 @@
+name: Seguridad
+
+# Analisis de seguridad a lo largo del ciclo de vida (DevSecOps).
+# - En cada pull request y en cada push a main: secretos expuestos, analisis
+#   estatico del codigo (CodeQL) y configuracion de produccion de Django.
+# - De forma manual o cada lunes: analisis dinamico del sistema ya desplegado (OWASP ZAP).
+# Las dependencias (pip-audit) y bandit ya se revisan en ci.yml (TR-30).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * 1" # lunes 08:00 hora de Lima
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seguridad-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  URL_DESPLEGADA: https://quedamos-proyectoiii.onrender.com
+
+jobs:
+  secretos:
+    name: Secretos expuestos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el codigo con todo el historial
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Buscar secretos en el historial completo
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  codeql:
+    name: Analisis estatico del codigo (CodeQL)
+    # Dependabot solo tiene permisos de lectura y no puede publicar resultados.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v7
+
+      - name: Preparar CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: python
+          queries: security-extended
+
+      - name: Analizar el codigo
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:python"
+
+  django-produccion:
+    name: Configuracion de produccion (Django)
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "0"
+      ALLOWED_HOSTS: quedamos-proyectoiii.onrender.com
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v7
+
+      - name: Preparar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Generar una clave temporal aleatoria
+        run: echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(60))')" >> "$GITHUB_ENV"
+
+      # Hoy reporta la falta de HSTS (security.W004). Mientras ese hallazgo siga
+      # abierto el paso no bloquea. Al cerrarlo, quitar continue-on-error.
+      - name: Revisar la configuracion de produccion
+        id: despliegue
+        shell: bash
+        continue-on-error: true
+        run: python manage.py check --deploy --fail-level WARNING 2>&1 | tee check-deploy.txt
+
+      - name: Publicar el resultado en el resumen
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Resultado de manage.py check --deploy"
+            echo
+            echo '```text'
+            cat check-deploy.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar el informe
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: check-deploy
+          path: check-deploy.txt
+
+  sistema-desplegado:
+    name: Analisis del sistema desplegado (OWASP ZAP)
+    # Solo manual o semanal: despierta la instancia gratuita de Render y genera trafico.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Despertar la aplicacion gratuita de Render
+        run: curl -fsS --retry 6 --retry-delay 15 --retry-all-errors --max-time 90 -o /dev/null "$URL_DESPLEGADA/"
+
+      - name: Escaneo base de OWASP ZAP (sin sesion iniciada)
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: ${{ env.URL_DESPLEGADA }}
+          issue_title: "ZAP: alertas de seguridad del sistema desplegado"
+          fail_action: false
+          artifact_name: zap-informe
