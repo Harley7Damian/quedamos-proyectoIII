@@ -5,15 +5,30 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      simular_fallo:
+        description: "Prueba controlada: hace fallar el job de pruebas para comprobar que no se despliega"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+
+env:
+  URL_DESPLEGADA: https://quedamos-proyectoiii.onrender.com
 
 jobs:
   pruebas:
     name: Pruebas (Python 3.12)
     runs-on: ubuntu-latest
     steps:
+      - name: Falla controlada (solo si se pidio en la ejecucion manual)
+        if: ${{ inputs.simular_fallo }}
+        run: |
+          echo "Falla simulada para comprobar que el despliegue no se ejecuta."
+          exit 1
+
       - name: Descargar el codigo
         uses: actions/checkout@v7
 
@@ -81,10 +96,10 @@ jobs:
 
     steps:
       - name: Descargar el codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Preparar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -94,3 +109,48 @@ jobs:
 
       - name: Ejecutar pruebas automaticas contra PostgreSQL
         run: python manage.py test
+
+  despliegue:
+    name: Despliegue a Render
+    needs: [pruebas, seguridad, pruebas-postgres]
+    # Solo en main (push o ejecucion manual). En los pull requests se omite.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: despliegue-render
+      cancel-in-progress: false
+    environment:
+      name: produccion
+      url: ${{ env.URL_DESPLEGADA }}
+    steps:
+      - name: Solicitar a Render el despliegue del commit verificado
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Falta el secreto RENDER_DEPLOY_HOOK_URL en el repositorio."
+            exit 1
+          fi
+          case "$RENDER_DEPLOY_HOOK_URL" in
+            *\?*) separador="&" ;;
+            *) separador="?" ;;
+          esac
+          respuesta=$(curl -fsS -X POST "${RENDER_DEPLOY_HOOK_URL}${separador}ref=${GITHUB_SHA}")
+          id_despliegue=$(echo "$respuesta" | jq -r '.deploy.id // .id // "sin dato"')
+          echo "Despliegue solicitado. Commit: ${GITHUB_SHA}. Id en Render: ${id_despliegue}"
+          {
+            echo "### Despliegue solicitado a Render"
+            echo
+            echo "- Commit verificado: \`${GITHUB_SHA}\`"
+            echo "- Id del despliegue en Render: \`${id_despliegue}\`"
+            echo "- Aplicacion: ${URL_DESPLEGADA}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Solo comprueba que la aplicacion responde. Mientras se construye la version
+      # nueva, la anterior tambien responde. La comprobacion de la version exacta
+      # llegara con la ruta /salud/ (TR-35).
+      - name: Comprobar que la aplicacion responde
+        run: |
+          sleep 60
+          curl -fsSL --retry 10 --retry-delay 15 --retry-all-errors --max-time 60 \
+            -o /dev/null -w "Codigo HTTP final: %{http_code}\n" "$URL_DESPLEGADA/"
