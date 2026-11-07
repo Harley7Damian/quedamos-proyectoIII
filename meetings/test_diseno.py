@@ -13,10 +13,14 @@ TEMA_JS = "js/tema.js"
 class RutasSiguenIgualTests(ApprovalBase):
     """Las rutas existentes responden con el mismo codigo que antes del cambio de diseno."""
 
-    def test_la_raiz_sigue_llevando_al_panel(self):
+    def test_la_raiz_con_sesion_sigue_llevando_al_panel(self):
+        self.login(self.asis)
         r = self.client.get("/")
         self.assertEqual(r.status_code, 302)
         self.assertEqual(r["Location"], reverse("panel"))
+
+    def test_la_raiz_sin_sesion_muestra_la_landing(self):
+        self.assertEqual(self.client.get("/").status_code, 200)
 
     def test_el_panel_sin_sesion_lleva_al_ingreso(self):
         r = self.client.get(reverse("panel"))
