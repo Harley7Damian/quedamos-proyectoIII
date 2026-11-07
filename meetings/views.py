@@ -335,7 +335,7 @@ def public_approval(request, token):
         return _public_response(request, "public/enlace_invalido.html", {"expired": False}, status=404)
 
     if request.method == "POST":
-        return _decide_approval(request, request_id)
+        return _decide_approval(request, request_id, token)
 
     status = meeting_request.status
     if status == MeetingRequest.Status.CANCELADA:
@@ -355,7 +355,7 @@ def public_approval(request, token):
     return _approval_state_response(request, meeting_request, "choose", proposal)
 
 
-def _decide_approval(request, request_id):
+def _decide_approval(request, request_id, token):
     """Un toque: aprueba la opcion elegida o rechaza todas. Repetir el toque no cambia lo ya decidido."""
     with transaction.atomic():
         meeting_request = MeetingRequest.objects.select_for_update().select_related("executive").get(pk=request_id)
@@ -374,7 +374,7 @@ def _decide_approval(request, request_id):
                 else:
                     meeting_request.approve(slot.start, slot.end)
                     messages.success(request, "Listo, reunión aprobada.")
-    return redirect(request.path)
+    return redirect("public_approval", token=token)
 
 
 # ---------------------------------------------------------------- HU-07: reglas del ejecutivo (horarios protegidos)
