@@ -143,7 +143,7 @@ class RecursosYMovimientoTests(TestCase):
         self.assertNotIn("<iframe", self.html)
 
     def test_no_hay_scripts_en_linea(self):
-        for etiqueta in re.findall(r"<script[^>]*>", self.html):
+        for etiqueta in re.findall(r"<script[^>]*>", self.html, flags=re.IGNORECASE):
             self.assertIn("src=", etiqueta)
 
     def test_el_script_y_los_estilos_respetan_reducir_movimiento(self):
