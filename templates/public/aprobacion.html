@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load scheduling_extras %}
+{% block title %}Aprobar reunión · Quedamos{% endblock %}
+{% block mainclass %}narrow{% endblock %}
+{% block content %}
+{% if state == "choose" %}
+  <h1>{{ proposal.title }}</h1>
+  <p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min. Elige una opción con un toque. No necesitas iniciar sesión.</p>
+  <form method="post" class="approve">
+    {% csrf_token %}
+    {% for slot in proposal.slots %}
+      <div class="card option">
+        <span class="pill">Opción {{ slot.rank }}</span>
+        <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+        <p class="muted">{{ slot.reason }}</p>
+        <button type="submit" class="btn" name="slot" value="{{ slot.id }}">Aprobar esta opción</button>
+      </div>
+    {% endfor %}
+    <p><button type="submit" class="small" name="reject" value="1">Ninguna me sirve</button></p>
+  </form>
+{% elif state == "approved" %}
+  <div class="card">
+    <span class="status aprobada">Aprobada</span>
+    <h1>Reunión confirmada</h1>
+    <p><strong>{{ r.title }}</strong> con {{ r.counterpart_name }}</p>
+    <p><strong>{{ approved.start|fecha_larga }}</strong> · {{ approved|rango_horario }}</p>
+    <p class="muted">La asistente ya ve esta decisión. No hace falta que respondas nada más.</p>
+  </div>
+{% else %}
+  <div class="card">
+    <h1>Pedimos otras opciones</h1>
+    <p>Avisamos a la asistente que ninguna opción te sirvió para <strong>{{ r.title }}</strong>. Recibirás un enlace nuevo con otras opciones.</p>
+  </div>
+{% endif %}
+{% endblock %}

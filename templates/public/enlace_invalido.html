@@ -6,6 +6,10 @@
   <h1>Enlace no disponible</h1>
   {% if expired %}
     <p>Este enlace venció. Pide a la asistente que te comparta uno nuevo.</p>
+  {% elif cancelled %}
+    <p>Esta reunión fue cancelada, por lo que ya no hay nada que aprobar.</p>
+  {% elif stale %}
+    <p>Esta propuesta ya no está vigente. Pide a la asistente que te comparta el enlace actualizado.</p>
   {% elif closed %}
     <p>Esta coordinación ya no recibe disponibilidad.</p>
   {% else %}
