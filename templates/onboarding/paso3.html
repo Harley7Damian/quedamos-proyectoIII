@@ -1,0 +1,30 @@
+{% extends "onboarding/base.html" %}
+{% block pregunta %}
+<h1 id="ob-titulo">¿Qué horarios no se tocan?</h1>
+<p class="muted">{% if me.is_executive %}Ninguna propuesta caerá en estos horarios.{% else %}Ninguna propuesta para tu ejecutivo caerá en estos horarios.{% endif %} Puedes cambiarlos después en Reglas.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% if me.is_executive %}
+    {{ form.executive }}
+  {% else %}
+    {{ form.executive.label_tag }}{{ form.executive }}{{ form.executive.errors }}
+  {% endif %}
+  <fieldset>
+    <legend>Horarios a proteger</legend>
+    <div class="opciones">
+      {% for key, title, detail in form.options %}
+        <label class="opcion" for="proteger-{{ key }}">
+          <input type="checkbox" id="proteger-{{ key }}" name="protect" value="{{ key }}"{% if key in form.protect.value %} checked{% endif %}>
+          <span><strong>{{ title }}</strong><span class="muted">{{ detail }}</span></span>
+        </label>
+      {% endfor %}
+    </div>
+    {{ form.protect.errors }}
+  </fieldset>
+  <div class="ob-nav">
+    <a href="{% url 'onboarding_step' 2 %}">← Atrás</a>
+    <button type="submit">Terminar</button>
+  </div>
+</form>
+{% endblock %}

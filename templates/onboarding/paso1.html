@@ -1,0 +1,22 @@
+{% extends "onboarding/base.html" %}
+{% block pregunta %}
+<h1 id="ob-titulo">¿En qué área trabajas?</h1>
+<p class="muted">Hola, {{ me.full_name }}. Te registraste como <strong>{{ me.get_role_display }}</strong>. Con tu área terminamos de preparar tu cuenta.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <fieldset>
+    <legend>Mi área</legend>
+    <div class="opciones">
+      {% for radio in form.area %}
+        <label class="opcion" for="{{ radio.id_for_label }}">{{ radio.tag }} <span><strong>{{ radio.choice_label }}</strong></span></label>
+      {% endfor %}
+    </div>
+    {{ form.area.errors }}
+  </fieldset>
+  <div class="ob-nav">
+    <span></span>
+    <button type="submit">Siguiente</button>
+  </div>
+</form>
+{% endblock %}

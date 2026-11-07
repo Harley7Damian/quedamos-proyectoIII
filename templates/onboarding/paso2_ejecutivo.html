@@ -1,0 +1,23 @@
+{% extends "onboarding/base.html" %}
+{% block pregunta %}
+<h1 id="ob-titulo">¿Cuál es tu jornada laboral?</h1>
+<p class="muted">La usamos para proteger lo que queda fuera de tu horario. Puedes cambiarla después.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="grid2">
+    <div>{{ form.work_start.label_tag }}{{ form.work_start }}{{ form.work_start.errors }}</div>
+    <div>{{ form.work_end.label_tag }}{{ form.work_end }}{{ form.work_end.errors }}</div>
+  </div>
+  <p class="muted">Las horas se muestran en hora de Lima.</p>
+  <div class="ob-nav">
+    <a href="{% url 'onboarding_step' 1 %}">← Atrás</a>
+    <button type="submit">Siguiente</button>
+  </div>
+</form>
+{% endblock %}
+{% block apoyo %}
+  <p class="ob-etiqueta">Consejo</p>
+  <p class="ob-frase">Una jornada clara evita que te propongan reuniones a primera hora o al cierre del día.</p>
+  <p class="muted">En el siguiente paso puedes proteger todo lo que queda fuera de ella con una sola casilla.</p>
+{% endblock %}

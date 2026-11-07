@@ -163,7 +163,7 @@ details.plegable[open] > summary { margin-bottom:.25rem; }
 :root { --acceso-1:#C7D0F6; --acceso-2:#C9E9EE; }
 :root[data-theme="dark"] { --acceso-1:#1C2550; --acceso-2:#10302F; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme]) { --acceso-1:#1C2550; --acceso-2:#10302F; } }
-body.acceso { min-height:100vh; background:
+body.acceso, body.bienvenida { min-height:100vh; background:
   radial-gradient(60rem 40rem at 15% 10%, var(--acceso-1), transparent 70%),
   radial-gradient(50rem 35rem at 90% 95%, var(--acceso-2), transparent 70%),
   var(--bg); background-attachment:fixed; }
@@ -176,5 +176,46 @@ body.acceso main.narrow { max-width:28rem; padding-top:2.5rem; }
 .acceso-pie { margin:1.25rem 0 0; padding-top:1rem; border-top:1px solid var(--line); text-align:center; font-size:.9rem; color:var(--muted); }
 .acceso-pie a { font-weight:600; }
 @media (max-width:480px) { .acceso-card { padding:1.5rem 1.1rem; } body.acceso main.narrow { padding-top:1rem; } }
+
+/* Onboarding de tres pasos (TR-43) */
+main.onboarding { max-width:66rem; padding-top:1.5rem; }
+.ob { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+.ob-pregunta { padding:1.75rem; border-radius:1.25rem; box-shadow:var(--shadow); margin:0; }
+.ob-pregunta h1 { font-size:1.6rem; margin-top:.75rem; }
+.ob-progreso { display:flex; align-items:center; gap:.75rem; }
+.ob-progreso .muted { font-size:.8rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
+.ob-barra { flex:1; height:.4rem; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+.ob-barra span { display:block; height:100%; width:33.4%; border-radius:999px; background:var(--brand); transition:width .2s ease; }
+.ob-barra.paso-2 span { width:66.7%; } .ob-barra.paso-3 span { width:100%; }
+.ob fieldset { border:0; margin:1.25rem 0 0; padding:0; min-width:0; }
+.ob legend { font-weight:600; padding:0; margin-bottom:.5rem; }
+.opciones { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+label.opcion { display:flex; align-items:flex-start; gap:.65rem; margin:0; padding:.85rem .9rem; border:1px solid var(--field-line); border-radius:.75rem; background:var(--surface); font-weight:500; cursor:pointer; }
+label.opcion > span { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+label.opcion input { accent-color:var(--brand); width:1.05rem; height:1.05rem; margin:.15rem 0 0; flex:none; }
+label.opcion:hover { background:var(--surface-2); }
+label.opcion:has(input:checked) { border-color:var(--brand); background:var(--brand-soft); }
+label.opcion:has(input:focus-visible) { outline:3px solid var(--focus); outline-offset:2px; }
+.ob-nav { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:.75rem; margin-top:1.5rem; }
+.ob-nav-acciones { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; }
+.ob-omitir { margin-top:1rem; padding-top:.75rem; border-top:1px solid var(--line); text-align:center; }
+.ob-omitir button.link { opacity:1; color:var(--muted); text-decoration:underline; }
+.ob-apoyo { position:sticky; top:1.5rem; padding:1.75rem; border-radius:1.25rem; border:1px solid var(--line);
+  background:linear-gradient(160deg, var(--acceso-1), var(--surface) 60%); }
+.ob-etiqueta { margin:0; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--link); }
+.ob-frase { font-size:1.2rem; font-weight:600; line-height:1.35; margin:.5rem 0 1rem; }
+.ob-tarjeta { margin:0; padding:1rem; border-radius:1rem; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); }
+.ob-tarjeta p { margin:.2rem 0; }
+.ob-tarjeta-titulo { font-size:1rem; }
+.ob-opcion { margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--line); font-size:.9rem; }
+.ob-tarjeta figcaption { margin-top:.75rem; font-size:.8rem; }
+@media (max-width:820px) {
+  .ob { grid-template-columns:minmax(0,1fr); }
+  .ob-apoyo { display:none; }
+}
+@media (max-width:480px) {
+  .opciones { grid-template-columns:1fr; }
+  .ob-pregunta { padding:1.25rem 1rem; }
+}
 
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; scroll-behavior:auto !important; } }
