@@ -1,0 +1,27 @@
+/* Formularios y etiquetas de rol (TR-46). Usa solo las variables de color de app.css. */
+[hidden] { display:none !important; }
+
+/* Campo de contrasena con boton de ojo */
+.campo-clave { position:relative; }
+.campo-clave input { padding-right:2.9rem; }
+.campo-clave .ojo { position:absolute; right:.25rem; top:50%; transform:translateY(-50%); display:inline-grid; place-items:center; width:2.2rem; height:2.2rem; padding:0; border-radius:.5rem; background:transparent; color:var(--muted); }
+.campo-clave .ojo:hover { background:var(--surface-2); color:var(--ink); filter:none; }
+.campo-clave .ojo .tachado { display:none; }
+.campo-clave .ojo.activo .tachado { display:inline; }
+
+/* Requisitos de la contrasena mientras se escribe */
+.requisitos { list-style:none; margin:.4rem 0 .2rem; padding:0; font-size:.85rem; color:var(--muted); }
+.requisitos li { display:flex; align-items:center; gap:.4rem; margin:.15rem 0; }
+.requisitos li::before { content:""; flex:none; width:.9rem; height:.9rem; border-radius:50%; border:2px solid var(--field-line); box-sizing:border-box; }
+.requisitos li[data-ok="true"] { color:var(--ok-ink); }
+.requisitos li[data-ok="true"]::before { border-color:var(--ok-ink); background:var(--ok-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.2 2.2 4.8-4.8' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/80% no-repeat; }
+
+/* Codigo de vinculacion con boton de copiar */
+.code-fila { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; }
+.copiar { white-space:nowrap; }
+.copiado { min-height:1.2em; }
+
+/* Etiqueta de rol: el texto dice el rol y el color lo refuerza */
+.rol { display:inline-block; padding:.1rem .6rem; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.02em; border:1px solid transparent; }
+.rol-ejecutivo { background:var(--brand-soft); color:var(--link); border-color:var(--link); }
+.rol-asistente { background:var(--ok-bg); color:var(--ok-ink); border-color:var(--ok-ink); }

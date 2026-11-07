@@ -7,8 +7,10 @@
   <title>{% block title %}Quedamos{% endblock %}</title>
   <script src="{% static 'js/tema.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/grid.js' %}" defer></script>
+  <script src="{% static 'js/formularios.js' %}" defer></script>
 </head>
 <body class="{% block bodyclass %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -18,7 +20,7 @@
       <a class="brand" href="{% if user.is_authenticated %}{% url 'panel' %}{% else %}{% url 'landing' %}{% endif %}"><span class="marca" aria-hidden="true">Q</span>Quedamos</a>
       <nav>
         {% if user.is_authenticated %}
-          <span class="muted">{{ user.full_name }} · {{ user.get_role_display }}</span>
+          <span class="muted">{{ user.full_name }}</span> <span class="rol rol-{{ user.role }}">{{ user.get_role_display }}</span>
           <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link" type="submit">Salir</button></form>
         {% else %}
           {% block navanon %}<a href="{% url 'login' %}">Ingresar</a>{% endblock %}

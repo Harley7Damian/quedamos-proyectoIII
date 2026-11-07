@@ -10,7 +10,7 @@
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="msg error" role="alert">Correo o contraseña incorrectos.</div>{% endif %}
     {{ form.username.label_tag }}{{ form.username }}
-    {{ form.password.label_tag }}{{ form.password }}
+    {{ form.password.label_tag }}{% include "partials/_clave.html" with campo=form.password %}
     <p><button type="submit">Ingresar</button></p>
   </form>
   <p class="acceso-pie">¿No tienes cuenta? <a href="{% url 'signup' %}">Crear una cuenta <span aria-hidden="true">→</span></a></p>
