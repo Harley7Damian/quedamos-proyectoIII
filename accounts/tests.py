@@ -11,9 +11,9 @@ def signup(client, email="ana@x.com", name="Ana Asistente", role="asistente", pw
 
 
 class SignupTests(TestCase):
-    def test_registro_crea_usuario_con_rol_y_entra_al_panel(self):
+    def test_registro_crea_usuario_con_rol_y_entra_a_la_bienvenida(self):
         r = signup(self.client)
-        self.assertRedirects(r, reverse("panel"))
+        self.assertRedirects(r, reverse("onboarding"))
         u = User.objects.get(username="ana@x.com")
         self.assertEqual((u.full_name, u.role), ("Ana Asistente", "asistente"))
 

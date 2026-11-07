@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load scheduling_extras %}
+{# Estructura comun del onboarding (TR-43): pregunta a la izquierda y panel de apoyo a la derecha. #}
+{% block title %}Configura tu cuenta · Quedamos{% endblock %}
+{% block bodyclass %}bienvenida{% endblock %}
+{% block mainclass %}onboarding{% endblock %}
+{% block content %}
+<div class="ob">
+  <section class="card ob-pregunta" aria-labelledby="ob-titulo">
+    <div class="ob-progreso">
+      <span class="muted">Paso {{ step }} de {{ steps }}</span>
+      <div class="ob-barra paso-{{ step }}" role="progressbar" aria-label="Progreso de la configuración" aria-valuemin="1" aria-valuemax="{{ steps }}" aria-valuenow="{{ step }}" aria-valuetext="Paso {{ step }} de {{ steps }}"><span></span></div>
+    </div>
+    {% block pregunta %}{% endblock %}
+    <form method="post" action="{% url 'skip_onboarding' %}" class="ob-omitir">
+      {% csrf_token %}
+      <button type="submit" class="link">Omitir por ahora</button>
+    </form>
+  </section>
+
+  <aside class="ob-apoyo" aria-label="Cómo funciona Quedamos">
+    {% block apoyo %}
+      <p class="ob-etiqueta">Así funciona Quedamos</p>
+      <p class="ob-frase">Tu ejecutivo recibe tres horarios con su motivo y aprueba uno con un toque, sin iniciar sesión.</p>
+      <figure class="ob-tarjeta">
+        <p class="ob-tarjeta-titulo"><strong>{{ proposal.title }}</strong></p>
+        <p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+        {% for slot in proposal.slots %}
+          <div class="ob-opcion">
+            <span class="pill">Opción {{ slot.rank }}</span>
+            <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+            <p class="muted">{{ slot.reason }}</p>
+          </div>
+        {% endfor %}
+        <figcaption class="muted">Ejemplo con datos ficticios.</figcaption>
+      </figure>
+    {% endblock %}
+  </aside>
+</div>
+{% endblock %}

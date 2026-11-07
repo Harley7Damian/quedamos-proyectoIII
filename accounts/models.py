@@ -1,7 +1,9 @@
 import secrets
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
 
 # Sin caracteres ambiguos (0/O, 1/I) para que el codigo se pueda dictar por telefono.
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -48,3 +50,42 @@ class User(AbstractUser):
 
     def __str__(self) -> str:
         return self.full_name or self.username
+
+
+class Profile(models.Model):
+    """Respuestas del onboarding (TR-43): área y jornada laboral, y si se completó u omitió."""
+
+    class Area(models.TextChoices):
+        DIRECCION = "direccion", "Dirección general"
+        FINANZAS = "finanzas", "Finanzas"
+        COMERCIAL = "comercial", "Comercial y ventas"
+        OPERACIONES = "operaciones", "Operaciones"
+        PERSONAS = "personas", "Recursos humanos"
+        LEGAL = "legal", "Legal"
+        TECNOLOGIA = "tecnologia", "Tecnología"
+        OTRA = "otra", "Otra área"
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+    area = models.CharField("área", max_length=20, choices=Area.choices, blank=True)
+    work_start = models.PositiveSmallIntegerField("inicio de la jornada", default=9)
+    work_end = models.PositiveSmallIntegerField("fin de la jornada", default=18)
+    onboarding_completed_at = models.DateTimeField("onboarding completado", null=True, blank=True)
+    onboarding_skipped_at = models.DateTimeField("onboarding omitido", null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "perfil"
+        verbose_name_plural = "perfiles"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(work_start__gte=0, work_start__lte=23, work_end__gte=1, work_end__lte=24, work_start__lt=models.F("work_end")),
+                name="profile_work_hours_valid",
+            ),
+        ]
+
+    @property
+    def onboarding_done(self) -> bool:
+        return self.onboarding_completed_at is not None or self.onboarding_skipped_at is not None
+
+    def __str__(self) -> str:
+        return f"Perfil de {self.user}"

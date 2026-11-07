@@ -1,0 +1,26 @@
+{% extends "onboarding/base.html" %}
+{% block pregunta %}
+<h1 id="ob-titulo">Vincúlate con tu ejecutivo</h1>
+<p class="muted">Con el vínculo podrás crear solicitudes y proteger sus horarios en su nombre.</p>
+{% if executives %}
+  <div class="msg success">Ya estás vinculada con {% for e in executives %}{{ e.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Puedes agregar otro ejecutivo o continuar.</div>
+{% endif %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if error %}<div class="msg error" role="alert">{{ error }}</div>{% endif %}
+  <label for="codigo-vinculo">Código del ejecutivo</label>
+  <input type="text" id="codigo-vinculo" name="code" maxlength="12" placeholder="ABC123" autocomplete="off" value="{{ form.code.value|default_if_none:'' }}" style="text-transform:uppercase;max-width:14rem">
+  <div class="ob-nav">
+    <a href="{% url 'onboarding_step' 1 %}">← Atrás</a>
+    <span class="ob-nav-acciones">
+      <a href="{% url 'onboarding_step' 3 %}">{% if executives %}Continuar{% else %}Continuar sin código{% endif %}</a>
+      <button type="submit">Vincular</button>
+    </span>
+  </div>
+</form>
+{% endblock %}
+{% block apoyo %}
+  <p class="ob-etiqueta">¿Dónde está el código?</p>
+  <p class="ob-frase">Tu ejecutivo lo ve en su panel, en la sección Vinculación.</p>
+  <p class="muted">Son 6 caracteres, sin letras ni números que se confundan (no hay 0 ni O). Si aún no lo tienes, continúa y vincúlate después desde el panel.</p>
+{% endblock %}
