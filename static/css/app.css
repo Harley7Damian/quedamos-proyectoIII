@@ -47,3 +47,4 @@ input[readonly] { background:var(--bg); font-family: ui-monospace, Consolas, mon
 .rule.off { opacity:.6; }
 .rule .actions { display:flex; gap:.8rem; align-items:center; margin-top:.5rem; }
 .rule .actions form { display:inline; }
+.approve .option .btn { width:100%; text-align:center; }

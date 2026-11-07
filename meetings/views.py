@@ -1,4 +1,5 @@
 from datetime import timedelta
+from types import SimpleNamespace
 
 from django.conf import settings
 from django.contrib import messages
@@ -16,7 +17,7 @@ from scheduling.proposal import build_proposal
 
 from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
-from .links import ExpiredLink, InvalidLink, make_token, read_token
+from .links import ExpiredLink, InvalidLink, make_approval_token, make_token, read_approval_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
 
 
@@ -152,7 +153,16 @@ def _no_match_message(meeting_request, executive, counterpart):
     return NO_MATCH
 
 
-def _detail_context(user, meeting_request, link=None):
+def _approved_slot(meeting_request):
+    """Opcion aprobada con las horas en la zona horaria local (para mostrarla), o None."""
+    if not meeting_request.is_approved:
+        return None
+    return SimpleNamespace(
+        start=timezone.localtime(meeting_request.approved_start), end=timezone.localtime(meeting_request.approved_end)
+    )
+
+
+def _detail_context(user, meeting_request, link=None, approval_link=None):
     executive = _availability_of(meeting_request, Availability.Party.EJECUTIVO)
     counterpart = _availability_of(meeting_request, Availability.Party.CONTRAPARTE)
     proposal = None
@@ -172,6 +182,8 @@ def _detail_context(user, meeting_request, link=None):
         "active_rules": [rule.label for rule in _active_rules(meeting_request)],
         "link": link,
         "link_days": settings.COUNTERPART_LINK_MAX_AGE // 86400,
+        "approval_link": approval_link,
+        "approved": _approved_slot(meeting_request),
     }
 
 
@@ -227,12 +239,26 @@ def generate_proposal(request, pk):
     proposal = _proposal_for(meeting_request, executive, counterpart)
     if proposal.slots:
         meeting_request.status = MeetingRequest.Status.PROPUESTA
+        meeting_request.new_options_requested_at = None
         messages.success(request, "Propuesta generada.")
     else:
         meeting_request.status = MeetingRequest.Status.PENDIENTE
         messages.error(request, _no_match_message(meeting_request, executive, counterpart))
-    meeting_request.save(update_fields=["status"])
+    meeting_request.save(update_fields=["status", "new_options_requested_at"])
     return redirect("request_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def create_approval_link(request, pk):
+    """La asistente genera el enlace de aprobacion que se envia al ejecutivo (HU-08). Solo con una propuesta vigente."""
+    meeting_request = _visible_request_or_404(request.user, pk)
+    if meeting_request.status != MeetingRequest.Status.PROPUESTA:
+        messages.error(request, "Primero genera una propuesta de horarios: el enlace de aprobación se crea sobre una propuesta vigente.")
+        return redirect("request_detail", pk=pk)
+    url = request.build_absolute_uri(reverse("public_approval", args=[make_approval_token(meeting_request.pk)]))
+    approval_link = {"url": url, "expires": timezone.now() + timedelta(seconds=settings.APPROVAL_LINK_MAX_AGE)}
+    return render(request, "panel/request_detail.html", _detail_context(request.user, meeting_request, approval_link=approval_link))
 
 
 def _public_response(request, template, ctx, status=200):
@@ -280,6 +306,75 @@ def public_availability(request, token):
         "error": error,
     }
     return _public_response(request, "public/disponibilidad.html", ctx, status=400 if error else 200)
+
+
+# ---------------------------------------------------------------- HU-08: aprobacion en un toque (enlace firmado)
+
+
+def _approval_state_response(request, meeting_request, state, proposal=None):
+    ctx = {
+        "state": state,
+        "r": meeting_request,
+        "proposal": proposal,
+        "approved": _approved_slot(meeting_request),
+    }
+    return _public_response(request, "public/aprobacion.html", ctx)
+
+
+def public_approval(request, token):
+    """Pagina publica (sin cuenta) donde el ejecutivo aprueba una de las opciones o pide otras con un toque."""
+    try:
+        request_id = read_approval_token(token)
+    except ExpiredLink:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": True, "approval": True}, status=410)
+    except InvalidLink:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": False}, status=404)
+
+    meeting_request = MeetingRequest.objects.select_related("executive").filter(pk=request_id).first()
+    if meeting_request is None:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": False}, status=404)
+
+    if request.method == "POST":
+        return _decide_approval(request, request_id, token)
+
+    status = meeting_request.status
+    if status == MeetingRequest.Status.CANCELADA:
+        return _public_response(request, "public/enlace_invalido.html", {"cancelled": True}, status=410)
+    if status == MeetingRequest.Status.APROBADA:
+        return _approval_state_response(request, meeting_request, "approved")
+    if status == MeetingRequest.Status.PENDIENTE:
+        if meeting_request.new_options_requested_at:
+            return _approval_state_response(request, meeting_request, "requested")
+        return _public_response(request, "public/enlace_invalido.html", {"stale": True}, status=410)
+
+    executive = _availability_of(meeting_request, Availability.Party.EJECUTIVO)
+    counterpart = _availability_of(meeting_request, Availability.Party.CONTRAPARTE)
+    proposal = _proposal_for(meeting_request, executive, counterpart) if executive and counterpart else None
+    if proposal is None or not proposal.slots:
+        return _public_response(request, "public/enlace_invalido.html", {"stale": True}, status=410)
+    return _approval_state_response(request, meeting_request, "choose", proposal)
+
+
+def _decide_approval(request, request_id, token):
+    """Un toque: aprueba la opcion elegida o rechaza todas. Repetir el toque no cambia lo ya decidido."""
+    with transaction.atomic():
+        meeting_request = MeetingRequest.objects.select_for_update().select_related("executive").get(pk=request_id)
+        if meeting_request.status == MeetingRequest.Status.PROPUESTA:
+            if "reject" in request.POST:
+                meeting_request.request_new_options()
+                messages.success(request, "Listo, avisamos a la asistente que necesitas otras opciones.")
+            else:
+                slot_id = request.POST.get("slot", "")
+                executive = _availability_of(meeting_request, Availability.Party.EJECUTIVO)
+                counterpart = _availability_of(meeting_request, Availability.Party.CONTRAPARTE)
+                proposal = _proposal_for(meeting_request, executive, counterpart) if executive and counterpart else None
+                slot = next((s for s in proposal.slots if s.id == slot_id), None) if proposal else None
+                if slot is None:
+                    messages.error(request, "Esa opción ya no está disponible. Revisa las opciones vigentes.")
+                else:
+                    meeting_request.approve(slot.start, slot.end)
+                    messages.success(request, "Listo, reunión aprobada.")
+    return redirect("public_approval", token=token)
 
 
 # ---------------------------------------------------------------- HU-07: reglas del ejecutivo (horarios protegidos)

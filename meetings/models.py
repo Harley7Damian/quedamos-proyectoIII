@@ -51,6 +51,11 @@ class MeetingRequest(models.Model):
     status = models.CharField("estado", max_length=10, choices=Status.choices, default=Status.PENDIENTE)
     week_start = models.DateField("semana a coordinar (lunes)", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # HU-08: decision del ejecutivo desde el enlace de aprobacion.
+    approved_start = models.DateTimeField("inicio aprobado", null=True, blank=True)
+    approved_end = models.DateTimeField("fin aprobado", null=True, blank=True)
+    decided_at = models.DateTimeField("aprobada el", null=True, blank=True)
+    new_options_requested_at = models.DateTimeField("otras opciones pedidas el", null=True, blank=True)
 
     objects = MeetingRequestQuerySet.as_manager()
 
@@ -71,6 +76,30 @@ class MeetingRequest(models.Model):
     @property
     def accepts_availability(self) -> bool:
         return self.status in (self.Status.PENDIENTE, self.Status.PROPUESTA)
+
+    @property
+    def is_approved(self) -> bool:
+        return self.status == self.Status.APROBADA and self.approved_start is not None
+
+    def approve(self, start, end):
+        """Registra la opcion elegida por el ejecutivo. Una solicitud ya aprobada no se modifica."""
+        if self.status != self.Status.PROPUESTA:
+            return False
+        self.status = self.Status.APROBADA
+        self.approved_start, self.approved_end = start, end
+        self.decided_at = timezone.now()
+        self.new_options_requested_at = None
+        self.save(update_fields=["status", "approved_start", "approved_end", "decided_at", "new_options_requested_at"])
+        return True
+
+    def request_new_options(self):
+        """El ejecutivo rechaza todas las opciones: vuelve a pendiente y queda anotado para la asistente."""
+        if self.status != self.Status.PROPUESTA:
+            return False
+        self.status = self.Status.PENDIENTE
+        self.new_options_requested_at = timezone.now()
+        self.save(update_fields=["status", "new_options_requested_at"])
+        return True
 
 
 class Availability(models.Model):
