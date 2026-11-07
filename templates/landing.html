@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load scheduling_extras %}
+{% block title %}Quedamos · Coordina reuniones de ejecutivos sin intercambiar correos{% endblock %}
+{% block bodyclass %}landing{% endblock %}
+{% block mainclass %}landing{% endblock %}
+{% block navanon %}
+  <a href="#planes">Planes</a>
+  <a href="{% url 'login' %}">Ingresar</a>
+  <a class="btn small-btn" href="{% url 'signup' %}">Crear cuenta</a>
+{% endblock %}
+{% block content %}
+<section class="hero" aria-labelledby="hero-titulo">
+  <div class="hero-texto">
+    <p class="etiqueta-sec">Para asistentes ejecutivas y ejecutivos</p>
+    <h1 id="hero-titulo">Coordina reuniones de ejecutivos sin intercambiar correos</h1>
+    <p class="hero-sub">Quedamos cruza la disponibilidad de ambas partes, propone tres horarios con el motivo de cada uno y el ejecutivo aprueba uno con un solo toque, sin iniciar sesión.</p>
+    <p class="hero-acciones">
+      <a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a>
+      <a class="btn secundario" href="#como-funciona">Ver cómo funciona</a>
+    </p>
+  </div>
+
+  <figure class="hero-demo" aria-labelledby="demo-titulo">
+    <p class="ob-etiqueta" id="demo-titulo">Lo que ve el ejecutivo</p>
+    <p class="demo-asunto"><strong>{{ proposal.title }}</strong></p>
+    <p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+    {% for slot in proposal.slots %}
+      <div class="demo-opcion">
+        <span class="pill">Opción {{ slot.rank }}</span>
+        <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+        <p class="muted">{{ slot.reason }}</p>
+        <span class="btn demo-boton" aria-hidden="true">Aprobar esta opción</span>
+      </div>
+    {% endfor %}
+    <figcaption class="muted">Ejemplo con datos ficticios. <a href="{% url 'demo_card' %}">Probar la demostración</a></figcaption>
+  </figure>
+</section>
+
+<section id="como-funciona" class="seccion" aria-labelledby="pasos-titulo">
+  <h2 id="pasos-titulo">Cómo funciona en tres pasos</h2>
+  <ol class="pasos">
+    <li class="card">
+      <span class="num" aria-hidden="true">1</span>
+      <h3>Se registra la solicitud</h3>
+      <p>La asistente marca cuándo puede reunirse el ejecutivo y comparte un enlace con la contraparte, que marca la suya sin crear una cuenta.</p>
+    </li>
+    <li class="card">
+      <span class="num" aria-hidden="true">2</span>
+      <h3>Quedamos propone tres horarios</h3>
+      <p>Cruza ambas agendas, respeta los horarios protegidos del ejecutivo y explica en una frase por qué propone cada opción.</p>
+    </li>
+    <li class="card">
+      <span class="num" aria-hidden="true">3</span>
+      <h3>El ejecutivo aprueba con un toque</h3>
+      <p>Abre un enlace firmado desde su celular y elige una opción, o pide otras sin escribir un mensaje. La asistente lo ve reflejado de inmediato.</p>
+    </li>
+  </ol>
+</section>
+
+<section id="planes" class="seccion" aria-labelledby="planes-titulo">
+  <h2 id="planes-titulo">Planes</h2>
+  <p class="muted">Los planes son informativos y están en validación con el piloto. No se realiza ningún cobro.</p>
+  <div class="planes">
+    <article class="card plan" aria-labelledby="plan-gratis">
+      <h3 id="plan-gratis">Gratis</h3>
+      <p class="plan-precio">Por definir</p>
+      <p class="muted">Para probar el flujo completo con un ejecutivo.</p>
+      <ul>
+        <li>Un ejecutivo y su asistente</li>
+        <li>Cruce de disponibilidad y propuesta de tres horarios con su motivo</li>
+        <li>Aprobación en un toque desde un enlace firmado</li>
+      </ul>
+      <a class="btn secundario" href="{% url 'signup' %}">Solicitar acceso piloto</a>
+    </article>
+    <article class="card plan destacado" aria-labelledby="plan-profesional">
+      <h3 id="plan-profesional">Profesional</h3>
+      <p class="plan-precio">Por definir <span class="muted">por ejecutivo</span></p>
+      <p class="muted">Para asistentes que atienden más de una agenda.</p>
+      <ul>
+        <li>Todo lo del plan Gratis</li>
+        <li>Varios ejecutivos por asistente</li>
+        <li>Reglas de horarios protegidos</li>
+        <li>Aviso por correo con el enlace de aprobación (próximamente)</li>
+      </ul>
+      <a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a>
+    </article>
+    <article class="card plan" aria-labelledby="plan-empresa">
+      <h3 id="plan-empresa">Empresa</h3>
+      <p class="plan-precio">Por definir <span class="muted">a medida</span></p>
+      <p class="muted">Para equipos y organizaciones con varias asistentes.</p>
+      <ul>
+        <li>Todo lo del plan Profesional</li>
+        <li>Condiciones acordadas con la empresa</li>
+        <li>Acompañamiento en la implementación</li>
+      </ul>
+      <a class="btn secundario" href="{% url 'signup' %}">Solicitar acceso piloto</a>
+    </article>
+  </div>
+</section>
+
+<section class="seccion cta" aria-labelledby="cta-titulo">
+  <h2 id="cta-titulo">Menos mensajes, una reunión confirmada</h2>
+  <p>Prueba Quedamos con tu ejecutivo en el piloto y mide cuánto tarda en confirmarse una reunión.</p>
+  <p><a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a> <a href="{% url 'login' %}">Ya tengo una cuenta</a></p>
+</section>
+{% endblock %}
