@@ -1,106 +1,257 @@
 {% extends "base.html" %}
-{% load scheduling_extras %}
+{% load static scheduling_extras %}
 {% block title %}Quedamos · Coordina reuniones de ejecutivos sin intercambiar correos{% endblock %}
 {% block bodyclass %}landing{% endblock %}
 {% block mainclass %}landing{% endblock %}
 {% block navanon %}
-  <a href="#planes">Planes</a>
+  <a class="enlace-nav" href="#funciones">Funciones</a>
+  <a class="enlace-nav" href="#planes">Planes</a>
   <a href="{% url 'login' %}">Ingresar</a>
   <a class="btn small-btn" href="{% url 'signup' %}">Crear cuenta</a>
 {% endblock %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+<script src="{% static 'js/landing.js' %}" defer></script>
+
 <section class="hero" aria-labelledby="hero-titulo">
-  <div class="hero-texto">
-    <p class="etiqueta-sec">Para asistentes ejecutivas y ejecutivos</p>
-    <h1 id="hero-titulo">Coordina reuniones de ejecutivos sin intercambiar correos</h1>
-    <p class="hero-sub">Quedamos cruza la disponibilidad de ambas partes, propone tres horarios con el motivo de cada uno y el ejecutivo aprueba uno con un solo toque, sin iniciar sesión.</p>
-    <p class="hero-acciones">
-      <a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a>
-      <a class="btn secundario" href="#como-funciona">Ver cómo funciona</a>
-    </p>
-  </div>
+  <div class="contenedor hero-grid">
+    <div class="hero-texto">
+      <p class="etiqueta-sec">Para asistentes ejecutivas y ejecutivos</p>
+      <h1 id="hero-titulo">Coordina reuniones de ejecutivos <span class="resalte">sin intercambiar correos</span></h1>
+      <p class="hero-sub">Quedamos cruza la disponibilidad de ambas partes, propone tres horarios con el motivo de cada uno y el ejecutivo aprueba uno con un solo toque, sin iniciar sesión.</p>
+      <p class="hero-acciones">
+        <a class="btn grande" href="{% url 'signup' %}">Crear cuenta de prueba</a>
+        <a class="btn secundario grande" href="#funciones">Ver cómo funciona</a>
+      </p>
+      <p class="muted hero-nota">Piloto en validación. Sin tarjetas ni cobros.</p>
+    </div>
 
-  <figure class="hero-demo" aria-labelledby="demo-titulo">
-    <p class="ob-etiqueta" id="demo-titulo">Lo que ve el ejecutivo</p>
-    <p class="demo-asunto"><strong>{{ proposal.title }}</strong></p>
-    <p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
-    {% for slot in proposal.slots %}
-      <div class="demo-opcion">
-        <span class="pill">Opción {{ slot.rank }}</span>
-        <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
-        <p class="muted">{{ slot.reason }}</p>
-        <span class="btn demo-boton" aria-hidden="true">Aprobar esta opción</span>
+    <figure class="hero-demo" aria-labelledby="demo-titulo">
+      <span class="chip chip-accent" aria-hidden="true"><span class="punto"></span>Ambas agendas libres</span>
+      <span class="chip chip-amber" aria-hidden="true"><span aria-hidden="true">★</span> Preferido por la contraparte</span>
+      <span class="chip chip-rose" aria-hidden="true">Horario protegido respetado</span>
+      <div class="mock mock-hero">
+        <p class="mock-etiqueta" id="demo-titulo">Lo que ve el ejecutivo</p>
+        <p class="mock-asunto">{{ proposal.title }}</p>
+        <p class="muted">Con {{ proposal.counterpart_name }} · {{ proposal.duration_min }} min</p>
+        {% for slot in proposal.slots %}
+          <div class="mock-opcion" style="--n:{{ forloop.counter0 }}">
+            <span class="pill">Opción {{ slot.rank }}</span>
+            <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+            <p class="muted">{{ slot.reason }}</p>
+            {% if forloop.first %}<span class="btn boton-demo" aria-hidden="true">Aprobar esta opción</span>{% endif %}
+          </div>
+        {% endfor %}
+        <figcaption class="muted">Ejemplo con datos ficticios. <a href="{% url 'demo_card' %}">Probar la demostración</a></figcaption>
       </div>
-    {% endfor %}
-    <figcaption class="muted">Ejemplo con datos ficticios. <a href="{% url 'demo_card' %}">Probar la demostración</a></figcaption>
-  </figure>
-</section>
-
-<section id="como-funciona" class="seccion" aria-labelledby="pasos-titulo">
-  <h2 id="pasos-titulo">Cómo funciona en tres pasos</h2>
-  <ol class="pasos">
-    <li class="card">
-      <span class="num" aria-hidden="true">1</span>
-      <h3>Se registra la solicitud</h3>
-      <p>La asistente marca cuándo puede reunirse el ejecutivo y comparte un enlace con la contraparte, que marca la suya sin crear una cuenta.</p>
-    </li>
-    <li class="card">
-      <span class="num" aria-hidden="true">2</span>
-      <h3>Quedamos propone tres horarios</h3>
-      <p>Cruza ambas agendas, respeta los horarios protegidos del ejecutivo y explica en una frase por qué propone cada opción.</p>
-    </li>
-    <li class="card">
-      <span class="num" aria-hidden="true">3</span>
-      <h3>El ejecutivo aprueba con un toque</h3>
-      <p>Abre un enlace firmado desde su celular y elige una opción, o pide otras sin escribir un mensaje. La asistente lo ve reflejado de inmediato.</p>
-    </li>
-  </ol>
-</section>
-
-<section id="planes" class="seccion" aria-labelledby="planes-titulo">
-  <h2 id="planes-titulo">Planes</h2>
-  <p class="muted">Los planes son informativos y están en validación con el piloto. No se realiza ningún cobro.</p>
-  <div class="planes">
-    <article class="card plan" aria-labelledby="plan-gratis">
-      <h3 id="plan-gratis">Gratis</h3>
-      <p class="plan-precio">Por definir</p>
-      <p class="muted">Para probar el flujo completo con un ejecutivo.</p>
-      <ul>
-        <li>Un ejecutivo y su asistente</li>
-        <li>Cruce de disponibilidad y propuesta de tres horarios con su motivo</li>
-        <li>Aprobación en un toque desde un enlace firmado</li>
-      </ul>
-      <a class="btn secundario" href="{% url 'signup' %}">Solicitar acceso piloto</a>
-    </article>
-    <article class="card plan destacado" aria-labelledby="plan-profesional">
-      <h3 id="plan-profesional">Profesional</h3>
-      <p class="plan-precio">Por definir <span class="muted">por ejecutivo</span></p>
-      <p class="muted">Para asistentes que atienden más de una agenda.</p>
-      <ul>
-        <li>Todo lo del plan Gratis</li>
-        <li>Varios ejecutivos por asistente</li>
-        <li>Reglas de horarios protegidos</li>
-        <li>Aviso por correo con el enlace de aprobación (próximamente)</li>
-      </ul>
-      <a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a>
-    </article>
-    <article class="card plan" aria-labelledby="plan-empresa">
-      <h3 id="plan-empresa">Empresa</h3>
-      <p class="plan-precio">Por definir <span class="muted">a medida</span></p>
-      <p class="muted">Para equipos y organizaciones con varias asistentes.</p>
-      <ul>
-        <li>Todo lo del plan Profesional</li>
-        <li>Condiciones acordadas con la empresa</li>
-        <li>Acompañamiento en la implementación</li>
-      </ul>
-      <a class="btn secundario" href="{% url 'signup' %}">Solicitar acceso piloto</a>
-    </article>
+    </figure>
   </div>
 </section>
 
-<section class="seccion cta" aria-labelledby="cta-titulo">
-  <h2 id="cta-titulo">Menos mensajes, una reunión confirmada</h2>
-  <p>Prueba Quedamos con tu ejecutivo en el piloto y mide cuánto tarda en confirmarse una reunión.</p>
-  <p><a class="btn" href="{% url 'signup' %}">Solicitar acceso piloto</a> <a href="{% url 'login' %}">Ya tengo una cuenta</a></p>
+<section id="funciones" class="seccion" aria-labelledby="funciones-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="funciones-titulo">Todo el flujo, en un solo lugar</h2>
+      <p class="sub">Desde la solicitud hasta la reunión confirmada, sin hilos de correo ni mensajes cruzados.</p>
+    </header>
+
+    <div class="showcase" data-showcase data-reveal>
+      <div class="tabs" role="tablist" aria-label="Funciones de Quedamos">
+        <button type="button" role="tab" id="tab-solicitud" aria-selected="true" aria-controls="panel-solicitud">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Solicitud</span>
+        </button>
+        <button type="button" role="tab" id="tab-disponibilidad" aria-selected="false" aria-controls="panel-disponibilidad">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M9 3v4M15 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span>Disponibilidad</span>
+        </button>
+        <button type="button" role="tab" id="tab-horarios" aria-selected="false" aria-controls="panel-horarios">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Tres horarios</span>
+        </button>
+        <button type="button" role="tab" id="tab-aprobacion" aria-selected="false" aria-controls="panel-aprobacion">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.7 2.7L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Aprobación en un toque</span>
+        </button>
+      </div>
+
+      <div class="paneles">
+        <div class="panel" role="tabpanel" id="panel-solicitud" aria-labelledby="tab-solicitud">
+          <div class="panel-texto">
+            <h3>La asistente registra la solicitud</h3>
+            <p>Asunto, contraparte, duración y semana a coordinar. La contraparte recibe un enlace propio y no necesita crear una cuenta.</p>
+            <ul class="lista-ok"><li>Enlace firmado con vencimiento</li><li>Una sola pantalla para toda la coordinación</li></ul>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <p class="mock-etiqueta">Nueva solicitud de reunión</p>
+            <div class="mock-campo"><span>Asunto</span><div>{{ proposal.title }}</div></div>
+            <div class="mock-fila">
+              <div class="mock-campo"><span>Contraparte</span><div>{{ proposal.counterpart_name }}</div></div>
+              <div class="mock-campo"><span>Duración</span><div>{{ proposal.duration_min }} minutos</div></div>
+            </div>
+            <div class="mock-campo"><span>Semana a coordinar</span><div>Semana del lunes próximo</div></div>
+            <span class="btn boton-demo">Crear solicitud</span>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-disponibilidad" aria-labelledby="tab-disponibilidad">
+          <div class="panel-texto">
+            <h3>Ambas partes marcan cuándo pueden</h3>
+            <p>Cada celda alterna entre no disponible, disponible y preferido. El horario preferido pesa más al ordenar las opciones.</p>
+            <ul class="lista-ok"><li>Cuadrícula semanal que se usa con un toque</li><li>Funciona en el celular</li></ul>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <p class="mock-etiqueta">Disponibilidad del ejecutivo</p>
+            <div class="mini-grid">
+              <span></span><b>Lun</b><b>Mar</b><b>Mié</b><b>Jue</b><b>Vie</b>
+              <i>09:00</i><u class="c1"></u><u></u><u class="c1"></u><u class="c2"></u><u></u>
+              <i>10:00</i><u class="c2"></u><u class="c1"></u><u class="c1"></u><u class="c1"></u><u></u>
+              <i>11:00</i><u class="c1"></u><u class="c2"></u><u></u><u class="c1"></u><u class="c1"></u>
+              <i>14:00</i><u></u><u class="c1"></u><u class="c2"></u><u></u><u class="c1"></u>
+              <i>15:00</i><u class="c1"></u><u></u><u class="c1"></u><u class="c1"></u><u class="c2"></u>
+            </div>
+            <p class="mock-leyenda"><span class="swatch s0"></span> No disponible <span class="swatch s1"></span> Disponible <span class="swatch s2"></span> Preferido</p>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-horarios" aria-labelledby="tab-horarios">
+          <div class="panel-texto">
+            <h3>Quedamos propone tres horarios</h3>
+            <p>Cruza ambas agendas, respeta los horarios protegidos del ejecutivo y explica en una frase por qué propone cada opción.</p>
+            <ul class="lista-ok"><li>Ordenadas de la mejor a la menos buena</li><li>Nunca caen en un horario protegido</li></ul>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <p class="mock-etiqueta">Propuesta de horarios</p>
+            {% for slot in proposal.slots %}
+              <div class="mock-opcion fija">
+                <span class="pill">Opción {{ slot.rank }}</span>
+                <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+                <p class="muted">{{ slot.reason }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-aprobacion" aria-labelledby="tab-aprobacion">
+          <div class="panel-texto">
+            <h3>El ejecutivo aprueba con un toque</h3>
+            <p>Abre un enlace firmado desde su celular y elige una opción, o pide otras sin escribir un mensaje. La asistente lo ve reflejado de inmediato.</p>
+            <ul class="lista-ok"><li>Sin iniciar sesión ni instalar nada</li><li>El enlace vence y no se puede alterar</li></ul>
+          </div>
+          <div class="telefono" aria-hidden="true">
+            <div class="mock">
+              <p class="mock-asunto">{{ proposal.title }}</p>
+              {% with slot=proposal.slots.0 %}
+                <div class="mock-opcion fija">
+                  <span class="pill">Opción {{ slot.rank }}</span>
+                  <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+                </div>
+              {% endwith %}
+              <span class="btn boton-demo">Aprobar esta opción</span>
+              <span class="boton-secundario">Ninguna me sirve</span>
+            </div>
+            <p class="confirmado"><span aria-hidden="true">✓</span> Reunión confirmada</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
+
+<section id="como-funciona" class="seccion alterna" aria-labelledby="pasos-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="pasos-titulo">Cómo funciona en tres pasos</h2>
+    </header>
+    <ol class="pasos">
+      <li class="card" data-reveal style="--n:0">
+        <span class="num" aria-hidden="true">1</span>
+        <h3>Se registra la solicitud</h3>
+        <p>La asistente marca cuándo puede reunirse el ejecutivo y comparte un enlace con la contraparte, que marca la suya sin crear una cuenta.</p>
+      </li>
+      <li class="card" data-reveal style="--n:1">
+        <span class="num" aria-hidden="true">2</span>
+        <h3>Quedamos propone tres horarios</h3>
+        <p>Cruza ambas agendas, respeta los horarios protegidos del ejecutivo y explica en una frase por qué propone cada opción.</p>
+      </li>
+      <li class="card" data-reveal style="--n:2">
+        <span class="num" aria-hidden="true">3</span>
+        <h3>El ejecutivo aprueba con un toque</h3>
+        <p>Abre un enlace firmado desde su celular y elige una opción, o pide otras sin escribir un mensaje. La asistente lo ve reflejado de inmediato.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="confianza-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="confianza-titulo">Pensado para el entorno corporativo</h2>
+    </header>
+    <ul class="confianza">
+      <li class="card" data-reveal style="--n:0"><h3>Enlaces firmados</h3><p>Cada enlace lleva una firma y una fecha de vencimiento. Si se altera o vence, deja de funcionar.</p></li>
+      <li class="card" data-reveal style="--n:1"><h3>Horarios protegidos</h3><p>El ejecutivo define reglas, como no reunirse antes de las 10:00, y ninguna propuesta las incumple.</p></li>
+      <li class="card" data-reveal style="--n:2"><h3>Cada persona ve lo suyo</h3><p>Una asistente solo accede a las solicitudes de los ejecutivos con los que está vinculada.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section id="planes" class="seccion alterna" aria-labelledby="planes-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="planes-titulo">Planes</h2>
+      <p class="sub">Los planes son informativos y están en validación con el piloto. No se realiza ningún cobro.</p>
+    </header>
+    <div class="planes">
+      <article class="card plan" aria-labelledby="plan-gratis" data-reveal style="--n:0">
+        <h3 id="plan-gratis">Gratis</h3>
+        <p class="plan-precio">Por definir</p>
+        <p class="muted">Para probar el flujo completo con un ejecutivo.</p>
+        <ul>
+          <li>Un ejecutivo y su asistente</li>
+          <li>Cruce de disponibilidad y propuesta de tres horarios con su motivo</li>
+          <li>Aprobación en un toque desde un enlace firmado</li>
+        </ul>
+        <a class="btn secundario" href="{% url 'signup' %}">Crear cuenta de prueba</a>
+      </article>
+      <article class="card plan destacado" aria-labelledby="plan-profesional" data-reveal style="--n:1">
+        <h3 id="plan-profesional">Profesional</h3>
+        <p class="plan-precio">Por definir <span class="muted">por ejecutivo</span></p>
+        <p class="muted">Para asistentes que atienden más de una agenda.</p>
+        <ul>
+          <li>Todo lo del plan Gratis</li>
+          <li>Varios ejecutivos por asistente</li>
+          <li>Reglas de horarios protegidos</li>
+          <li>Aviso por correo con el enlace de aprobación (próximamente)</li>
+        </ul>
+        <a class="btn" href="{% url 'signup' %}">Crear cuenta de prueba</a>
+      </article>
+      <article class="card plan" aria-labelledby="plan-empresa" data-reveal style="--n:2">
+        <h3 id="plan-empresa">Empresa</h3>
+        <p class="plan-precio">Por definir <span class="muted">a medida</span></p>
+        <p class="muted">Para equipos y organizaciones con varias asistentes.</p>
+        <ul>
+          <li>Todo lo del plan Profesional</li>
+          <li>Condiciones acordadas con la empresa</li>
+          <li>Acompañamiento en la implementación</li>
+        </ul>
+        <a class="btn secundario" href="{% url 'signup' %}">Crear cuenta de prueba</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="cta-titulo">
+  <div class="contenedor">
+    <div class="cta" data-reveal>
+      <h2 id="cta-titulo">Menos mensajes, una reunión confirmada</h2>
+      <p>Prueba Quedamos con tu ejecutivo y mide cuánto tarda en confirmarse una reunión.</p>
+      <p><a class="btn grande" href="{% url 'signup' %}">Crear cuenta de prueba</a> <a class="enlace-cta" href="{% url 'login' %}">Ya tengo una cuenta</a></p>
+    </div>
+  </div>
+</section>
+
+<footer class="pie-landing">
+  <div class="contenedor"><p class="muted">Quedamos · Proyecto en validación con el piloto.</p></div>
+</footer>
 {% endblock %}

@@ -16,7 +16,8 @@
 
   function eleccion() {
     var valor = leer(TEMA);
-    return valor === 'claro' || valor === 'oscuro' ? valor : 'sistema';
+    // Sin eleccion guardada, la primera visita usa el tema claro. "sistema" solo si la persona lo elige.
+    return valor === 'oscuro' || valor === 'sistema' ? valor : 'claro';
   }
   function aplicarTema() {
     var valor = eleccion();
