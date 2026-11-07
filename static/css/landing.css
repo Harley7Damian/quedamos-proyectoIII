@@ -1,0 +1,141 @@
+/* Landing publica v2 (TR-45). Usa las variables de color de app.css, por lo que respeta el tema claro y el oscuro. */
+[hidden] { display:none !important; }
+body.landing main.landing { max-width:none; padding:0; }
+body.landing header.top { position:sticky; top:0; z-index:20; background:var(--surface); }
+@supports (backdrop-filter: blur(8px)) {
+  body.landing header.top { background:color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter:blur(10px); }
+}
+body.landing header.top .in { max-width:64rem; }
+body.landing header.top nav a:not(.btn) { color:var(--ink); text-decoration:none; font-weight:500; }
+body.landing header.top nav a:not(.btn):hover { text-decoration:underline; }
+.contenedor { max-width:64rem; margin:0 auto; padding:0 1rem; }
+
+/* Tipografia de la landing: titulares firmes y compactos con la pila del sistema */
+body.landing h1, body.landing h2, body.landing h3 { font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; letter-spacing:-.02em; }
+body.landing h1 { font-size:clamp(2rem, 4.6vw, 3.25rem); line-height:1.08; font-weight:800; margin:.5rem 0 1rem; }
+body.landing h2 { font-size:clamp(1.5rem, 3vw, 2.1rem); line-height:1.15; font-weight:800; margin:0 0 .5rem; }
+body.landing h3 { font-size:1.1rem; font-weight:700; }
+.sub { color:var(--muted); font-size:1.1rem; margin:0; }
+.etiqueta-sec { margin:0; font-size:.8rem; font-weight:700; color:var(--accent-ink); text-transform:uppercase; letter-spacing:.08em; }
+
+/* Botones */
+.btn.secundario { background:var(--surface); color:var(--ink); border:1px solid var(--field-line); }
+.btn.small-btn { padding:.35rem .8rem; font-size:.9rem; }
+.btn.grande { padding:.8rem 1.4rem; font-size:1.05rem; }
+.btn { transition:transform .15s ease, box-shadow .15s ease, filter .15s ease; }
+.btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(79,99,210,.28); }
+
+/* Hero */
+.hero { background:linear-gradient(135deg, var(--grad-1) 0%, var(--grad-2) 55%, var(--grad-3) 100%); padding:3.5rem 0 4rem; overflow:hidden; }
+.hero-grid { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:2.5rem; align-items:center; }
+.resalte { background:linear-gradient(90deg, var(--link), var(--accent-ink)); -webkit-background-clip:text; background-clip:text; color:var(--link); -webkit-text-fill-color:transparent; }
+.hero-sub { font-size:1.15rem; color:var(--muted); margin:0 0 1.5rem; max-width:34rem; }
+.hero-acciones { display:flex; flex-wrap:wrap; gap:.7rem; margin:0 0 .75rem; }
+.hero-nota { margin:0; }
+.hero-demo { position:relative; margin:0; padding:1.5rem 0; }
+
+/* Maquetas de pantalla */
+.mock { background:var(--surface); border:1px solid var(--line); border-radius:1.1rem; box-shadow:var(--shadow); padding:1.1rem 1.25rem; text-align:left; }
+.mock p { margin:.25rem 0; }
+.mock-etiqueta { font-size:.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.mock-asunto { font-size:1.1rem; font-weight:700; }
+.mock-opcion { padding:.7rem 0; border-top:1px solid var(--line); }
+.mock-opcion:first-of-type { border-top:0; }
+.mock figcaption { margin-top:.6rem; }
+.boton-demo { margin-top:.4rem; width:100%; text-align:center; cursor:default; }
+.boton-secundario { display:block; margin-top:.5rem; text-align:center; padding:.45rem; border:1px solid var(--field-line); border-radius:.6rem; color:var(--ink); font-size:.9rem; }
+.mock-campo { margin:.5rem 0; }
+.mock-campo span { display:block; font-size:.8rem; font-weight:600; margin-bottom:.2rem; }
+.mock-campo div { border:1px solid var(--field-line); border-radius:.6rem; padding:.5rem .7rem; background:var(--surface); }
+.mock-fila { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+.mini-grid { display:grid; grid-template-columns:3rem repeat(5, minmax(0,1fr)); gap:3px; align-items:center; font-size:.75rem; text-align:center; margin:.5rem 0; }
+.mini-grid i { font-style:normal; color:var(--muted); text-align:right; padding-right:.3rem; }
+.mini-grid u { display:block; height:1.5rem; border-radius:.3rem; border:1px solid var(--field-line); background:var(--surface); text-decoration:none; }
+.mini-grid u.c1 { background:var(--cell-1); border-color:var(--cell-1-line); }
+.mini-grid u.c2 { background:var(--cell-2); border-color:var(--cell-2-line); }
+.mock-leyenda { font-size:.8rem; color:var(--muted); }
+
+/* Chips flotantes del hero: el color indica el motivo de cada opcion */
+.chip { position:absolute; z-index:2; display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .8rem; border-radius:999px; font-size:.8rem; font-weight:700; box-shadow:var(--shadow); animation:flotar 5s ease-in-out infinite; }
+.chip .punto { width:.55rem; height:.55rem; border-radius:50%; background:var(--accent); }
+.chip-accent { top:-.2rem; left:-1rem; background:var(--accent-soft); color:var(--accent-ink); }
+.chip-amber { top:5.9rem; right:-1.1rem; background:var(--amber-soft); color:var(--amber-ink); animation-delay:-1.6s; }
+.chip-rose { bottom:-.2rem; left:1.5rem; background:var(--rose-soft); color:var(--rose-ink); animation-delay:-3.2s; }
+@keyframes flotar { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+.mock-hero .mock-opcion { animation:subir .6s ease both; animation-delay:calc(var(--n, 0) * .18s + .1s); }
+@keyframes subir { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.mock-hero .boton-demo { animation:pulso 2.8s ease-in-out 1.2s infinite; }
+@keyframes pulso { 0%, 100% { box-shadow:0 0 0 0 rgba(79,99,210,.45); } 50% { box-shadow:0 0 0 .55rem rgba(79,99,210,0); } }
+
+/* Secciones */
+.seccion { padding:4rem 0; }
+.seccion.alterna { background:var(--surface-2); }
+.seccion-cabecera { max-width:40rem; margin:0 0 2rem; }
+
+/* Showcase con pestanas */
+.showcase:not(.activo) .tabs { display:none; }
+.showcase:not(.activo) .panel { margin-bottom:2rem; }
+.tabs { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.25rem; }
+.tabs button { position:relative; display:inline-flex; align-items:center; gap:.5rem; background:var(--surface); color:var(--ink); border:1px solid var(--line); padding:.65rem 1rem; border-radius:999px; font-weight:600; overflow:hidden; transition:background .2s ease, border-color .2s ease; }
+.tabs button:hover { filter:none; background:var(--surface-2); }
+.tabs button[aria-selected="true"] { background:var(--brand-soft); border-color:var(--brand); color:var(--link); }
+.tabs button::after { content:""; position:absolute; left:0; bottom:0; height:3px; width:0; background:var(--brand); }
+.showcase.corriendo .tabs button[aria-selected="true"]::after { animation:progreso 6s linear forwards; }
+.showcase.pausado .tabs button[aria-selected="true"]::after { animation-play-state:paused; }
+@keyframes progreso { from { width:0; } to { width:100%; } }
+.paneles { background:var(--surface); border:1px solid var(--line); border-radius:1.25rem; padding:2rem; box-shadow:var(--shadow); }
+.panel { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:2rem; align-items:center; }
+.showcase.activo .panel { animation:aparece .35s ease both; }
+@keyframes aparece { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.panel-texto p { color:var(--muted); }
+.lista-ok { list-style:none; padding:0; margin:1rem 0 0; }
+.lista-ok li { position:relative; padding-left:1.6rem; margin:.4rem 0; }
+.lista-ok li::before { content:"✓"; position:absolute; left:0; color:var(--accent-ink); font-weight:800; }
+.panel .mock { background:var(--surface-2); box-shadow:none; }
+.telefono { display:flex; flex-direction:column; align-items:center; gap:.75rem; }
+.telefono .mock { width:100%; max-width:19rem; border-radius:1.6rem; border:4px solid var(--ink); background:var(--surface); padding:1.1rem; }
+.confirmado { margin:0; padding:.4rem 1rem; border-radius:999px; background:var(--ok-bg); color:var(--ok-ink); font-weight:700; }
+
+/* Pasos, confianza y planes */
+.pasos, .confianza { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem; }
+.pasos .card, .confianza .card { margin:0; }
+.num { display:inline-grid; place-items:center; width:2.2rem; height:2.2rem; border-radius:50%; background:var(--brand-soft); color:var(--link); font-weight:800; margin-bottom:.5rem; }
+.confianza h3 { margin-top:0; }
+.planes { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem; align-items:stretch; }
+.plan { display:flex; flex-direction:column; margin:0; transition:transform .2s ease, box-shadow .2s ease; }
+.plan:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.plan.destacado { border:2px solid var(--brand); }
+.plan-precio { font-size:1.4rem; font-weight:800; margin:.2rem 0; }
+.plan-precio .muted { font-weight:400; }
+.plan ul { padding-left:1.1rem; margin:.75rem 0 1.25rem; flex:1; }
+.plan li { margin:.35rem 0; }
+.plan .btn { text-align:center; }
+
+/* Cierre */
+.cta { text-align:center; background:linear-gradient(135deg, var(--grad-1), var(--grad-2) 60%, var(--grad-3)); border:1px solid var(--line); border-radius:1.5rem; padding:3rem 1rem; }
+.cta p { margin:.5rem 0; }
+.enlace-cta { margin-left:.75rem; font-weight:600; }
+.pie-landing { padding:1.5rem 0 2rem; border-top:1px solid var(--line); text-align:center; }
+
+/* Aparicion progresiva al hacer scroll (la activa landing.js solo si no se pidio reducir el movimiento) */
+.reveal-ready [data-reveal] { opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; transition-delay:calc(var(--n, 0) * .1s); }
+.reveal-ready [data-reveal].visible { opacity:1; transform:none; }
+
+@media (max-width:860px) {
+  .hero { padding:2.25rem 0 2.75rem; }
+  .hero-grid, .panel, .pasos, .confianza, .planes { grid-template-columns:1fr; }
+  .paneles { padding:1.25rem; }
+  .chip { position:static; margin:0 .4rem .5rem 0; animation:none; }
+  .hero-demo { padding:0; }
+  .seccion { padding:2.75rem 0; }
+}
+@media (max-width:520px) {
+  .enlace-nav { display:none; }
+  .tabs { flex-wrap:nowrap; overflow-x:auto; padding-bottom:.25rem; }
+  .tabs button { flex:none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip, .mock-hero .mock-opcion, .mock-hero .boton-demo, .showcase.activo .panel { animation:none !important; }
+  .btn, .plan, .reveal-ready [data-reveal] { transition:none !important; }
+  .btn:hover, .plan:hover { transform:none; }
+}
