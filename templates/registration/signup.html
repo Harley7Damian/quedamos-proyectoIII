@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Crear cuenta · Quedamos{% endblock %}
+{% block bodyclass %}acceso{% endblock %}
 {% block mainclass %}narrow{% endblock %}
 {% block content %}
-<h1>Crear cuenta</h1>
-<form method="post" novalidate>
-  {% csrf_token %}
-  {{ form.full_name.label_tag }}{{ form.full_name }}{{ form.full_name.errors }}
-  {{ form.email.label_tag }}{{ form.email }}{{ form.email.errors }}
-  <label>{{ form.role.label }}</label>
-  <div class="roles">{{ form.role }}</div>{{ form.role.errors }}
-  {{ form.password1.label_tag }}{{ form.password1 }}{{ form.password1.errors }}
-  {{ form.password2.label_tag }}{{ form.password2 }}{{ form.password2.errors }}
-  <p><button type="submit">Crear cuenta</button></p>
-</form>
-<p><a href="{% url 'login' %}">Ya tengo cuenta, ingresar</a></p>
+<div class="card acceso-card">
+  <h1>Crear cuenta</h1>
+  <p class="muted">Empieza a coordinar reuniones entre asistentes y ejecutivos.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.full_name.label_tag }}{{ form.full_name }}{{ form.full_name.errors }}
+    {{ form.email.label_tag }}{{ form.email }}{{ form.email.errors }}
+    <label>{{ form.role.label }}</label>
+    <div class="roles">{{ form.role }}</div>{{ form.role.errors }}
+    {{ form.password1.label_tag }}{{ form.password1 }}{{ form.password1.errors }}
+    {{ form.password2.label_tag }}{{ form.password2 }}{{ form.password2.errors }}
+    <p><button type="submit">Crear cuenta</button></p>
+  </form>
+  <p class="acceso-pie">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresar <span aria-hidden="true">→</span></a></p>
+</div>
 {% endblock %}

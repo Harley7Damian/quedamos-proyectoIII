@@ -3,15 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>{% block title %}Quedamos{% endblock %}</title>
+  <script src="{% static 'js/tema.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/grid.js' %}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="{% block bodyclass %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  {% block body %}
   <header class="top">
     <div class="in">
-      <a class="brand" href="{% url 'panel' %}">Quedamos</a>
+      <a class="brand" href="{% url 'panel' %}"><span class="marca" aria-hidden="true">Q</span>Quedamos</a>
       <nav>
         {% if user.is_authenticated %}
           <span class="muted">{{ user.full_name }} · {{ user.get_role_display }}</span>
@@ -22,9 +26,10 @@
       </nav>
     </div>
   </header>
-  <main class="{% block mainclass %}{% endblock %}">
+  <main id="contenido" class="{% block mainclass %}{% endblock %}">
     {% for message in messages %}<div class="msg {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
     {% block content %}{% endblock %}
   </main>
+  {% endblock %}
 </body>
 </html>
