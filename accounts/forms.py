@@ -19,6 +19,7 @@ class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields.pop("username", None)
+        self.fields["password1"].widget.attrs["aria-describedby"] = "requisitos-clave"
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()

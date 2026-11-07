@@ -6,6 +6,7 @@
     <div>
       <h1 id="titulo-solicitudes">Solicitudes de reunión</h1>
       <p class="muted">Se actualiza sola cada pocos segundos.</p>
+      <p><span class="rol rol-{{ me.role }}">{% if me.is_executive %}Vista de ejecutivo{% else %}Vista de asistente{% endif %}</span></p>
     </div>
   </div>
 
@@ -46,7 +47,11 @@
   <div class="card">
     <h3>Tu código de vinculación</h3>
     <p class="muted">Compártelo con tu asistente para que pueda coordinar tus reuniones.</p>
-    <span class="code" id="mycode">{{ me.link_code }}</span>
+    <div class="code-fila">
+      <span class="code" id="mycode">{{ me.link_code }}</span>
+      <button type="button" class="small copiar" data-copiar="#mycode" hidden>Copiar código</button>
+      <span class="copiado muted" role="status" aria-live="polite"></span>
+    </div>
   </div>
   <h3>Mis asistentes</h3>
   {% for l in links %}

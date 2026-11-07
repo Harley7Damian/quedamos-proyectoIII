@@ -1,0 +1,7 @@
+{# Campo de contraseña con botón para mostrarla u ocultarla (TR-46). El botón queda oculto hasta que carga el JavaScript. #}
+<div class="campo-clave">
+  {{ campo }}
+  <button type="button" class="ojo" data-ver-clave hidden aria-controls="{{ campo.id_for_label }}" aria-pressed="false" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path class="tachado" d="M4 4l16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+</div>

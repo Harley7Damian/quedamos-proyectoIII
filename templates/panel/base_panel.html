@@ -30,7 +30,7 @@
       <details class="usuario" id="menu-usuario">
         <summary title="{{ user.full_name }}">
           <span class="avatar" aria-hidden="true">{{ user.full_name|first|upper }}</span>
-          <span class="etiqueta"><strong>{{ user.full_name }}</strong><span class="muted">{{ user.get_role_display }}</span></span>
+          <span class="etiqueta"><strong>{{ user.full_name }}</strong><span class="rol rol-{{ user.role }}">{{ user.get_role_display }}</span></span>
         </summary>
         <div class="usuario-menu">
           <fieldset class="tema">
