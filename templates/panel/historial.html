@@ -1,0 +1,25 @@
+{% extends "panel/base_panel.html" %}
+{% load scheduling_extras %}
+{% block title %}Historial · Quedamos{% endblock %}
+{% block content %}
+<h1>Historial de reuniones confirmadas</h1>
+<p class="muted">Reuniones cuya opción aprobó el ejecutivo. Descarga la invitación para añadirla al calendario.</p>
+{% for item in items %}
+  <div class="card">
+    <span class="status aprobada">Confirmada</span>
+    <strong>{{ item.r.title }}</strong>
+    <div>Con {{ item.r.counterpart_name }} · {{ item.r.duration_min }} min</div>
+    <div><strong>{{ item.slot.start|fecha_larga }}</strong> · {{ item.slot|rango_horario }}</div>
+    <div class="muted">Ejecutivo: {{ item.r.executive.full_name }} · aprobada el {{ item.r.decided_at|date:"d/m/Y H:i" }}</div>
+    <div class="acciones">
+      <a href="{% url 'request_detail' item.r.pk %}">Ver detalle</a>
+      <a href="{% url 'request_ics' item.r.pk %}">Descargar invitación (.ics)</a>
+    </div>
+  </div>
+{% empty %}
+  <div class="card vacio">
+    <p><strong>Aún no hay reuniones confirmadas.</strong></p>
+    <p class="muted">Cuando el ejecutivo apruebe una opción, la reunión aparecerá aquí.</p>
+  </div>
+{% endfor %}
+{% endblock %}

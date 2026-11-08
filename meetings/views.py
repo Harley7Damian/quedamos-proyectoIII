@@ -6,17 +6,18 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from accounts.models import User
 from scheduling.proposal import build_proposal
 
 from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
+from .ics import build_ics
 from .links import ExpiredLink, InvalidLink, make_approval_token, make_token, read_approval_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
 
@@ -311,12 +312,13 @@ def public_availability(request, token):
 # ---------------------------------------------------------------- HU-08: aprobacion en un toque (enlace firmado)
 
 
-def _approval_state_response(request, meeting_request, state, proposal=None):
+def _approval_state_response(request, meeting_request, state, proposal=None, token=None):
     ctx = {
         "state": state,
         "r": meeting_request,
         "proposal": proposal,
         "approved": _approved_slot(meeting_request),
+        "token": token,
     }
     return _public_response(request, "public/aprobacion.html", ctx)
 
@@ -341,7 +343,7 @@ def public_approval(request, token):
     if status == MeetingRequest.Status.CANCELADA:
         return _public_response(request, "public/enlace_invalido.html", {"cancelled": True}, status=410)
     if status == MeetingRequest.Status.APROBADA:
-        return _approval_state_response(request, meeting_request, "approved")
+        return _approval_state_response(request, meeting_request, "approved", token=token)
     if status == MeetingRequest.Status.PENDIENTE:
         if meeting_request.new_options_requested_at:
             return _approval_state_response(request, meeting_request, "requested")
@@ -375,6 +377,56 @@ def _decide_approval(request, request_id, token):
                     meeting_request.approve(slot.start, slot.end)
                     messages.success(request, "Listo, reunión aprobada.")
     return redirect("public_approval", token=token)
+
+
+# ---------------------------------------------------------------- HU-09: confirmacion, invitacion .ics e historial
+
+
+def _ics_response(meeting_request):
+    response = HttpResponse(build_ics(meeting_request), content_type="text/calendar; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="reunion-{meeting_request.pk}.ics"'
+    return response
+
+
+@login_required
+@require_safe
+def request_ics(request, pk):
+    """La asistente (o el ejecutivo) descarga la invitacion de una reunion ya aprobada."""
+    meeting_request = _visible_request_or_404(request.user, pk)
+    if not meeting_request.is_approved:
+        raise Http404("La reunion aun no esta aprobada.")
+    return _ics_response(meeting_request)
+
+
+@require_safe
+def approval_ics(request, token):
+    """El ejecutivo descarga la invitacion desde su enlace de aprobacion, sin iniciar sesion."""
+    try:
+        request_id = read_approval_token(token)
+    except ExpiredLink:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": True, "approval": True}, status=410)
+    except InvalidLink:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": False}, status=404)
+    meeting_request = MeetingRequest.objects.select_related("executive").filter(pk=request_id).first()
+    if meeting_request is None or not meeting_request.is_approved:
+        return _public_response(request, "public/enlace_invalido.html", {"expired": False}, status=404)
+    response = _ics_response(meeting_request)
+    response["Referrer-Policy"] = "same-origin"
+    response["X-Robots-Tag"] = "noindex"
+    return response
+
+
+@login_required
+def history(request):
+    """Reuniones confirmadas visibles para la persona, las mas proximas o recientes primero."""
+    confirmed = (
+        MeetingRequest.objects.visible_to(request.user)
+        .filter(status=MeetingRequest.Status.APROBADA, approved_start__isnull=False)
+        .select_related("executive")
+        .order_by("-approved_start")
+    )
+    items = [{"r": meeting_request, "slot": _approved_slot(meeting_request)} for meeting_request in confirmed]
+    return render(request, "panel/historial.html", {"me": request.user, "items": items})
 
 
 # ---------------------------------------------------------------- HU-07: reglas del ejecutivo (horarios protegidos)

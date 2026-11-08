@@ -25,6 +25,7 @@
     <p><strong>{{ r.title }}</strong> con {{ r.counterpart_name }}</p>
     <p><strong>{{ approved.start|fecha_larga }}</strong> · {{ approved|rango_horario }}</p>
     <p class="muted">La asistente ya ve esta decisión. No hace falta que respondas nada más.</p>
+    {% if token %}<p><a class="btn" href="{% url 'approval_ics' token %}">Añadir a mi calendario (.ics)</a></p>{% endif %}
   </div>
 {% else %}
   <div class="card">
