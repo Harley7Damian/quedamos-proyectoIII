@@ -79,6 +79,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Vigencia del enlace que se comparte con la contraparte (HU-05), en segundos.
 COUNTERPART_LINK_MAX_AGE = int(os.environ.get("COUNTERPART_LINK_DAYS", "7")) * 24 * 3600
+# Tamano maximo del archivo .ics que se importa para calcular la disponibilidad (TR-14), en bytes.
+ICS_MAX_BYTES = 1024 * 1024
 # Vigencia del enlace de aprobacion que recibe el ejecutivo (HU-08), en segundos. Mas corto porque las opciones caducan.
 APPROVAL_LINK_MAX_AGE = int(os.environ.get("APPROVAL_LINK_DAYS", "3")) * 24 * 3600
 

@@ -16,6 +16,7 @@ from django.views.decorators.http import require_POST, require_safe
 from accounts.models import User
 from scheduling.proposal import build_proposal
 
+from .calendar_import import ICSError, decode_ics, free_blocks, parse_ics, week_window
 from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
 from .ics import build_ics
@@ -224,6 +225,56 @@ def save_executive_availability(request, pk):
         request=meeting_request, party=Availability.Party.EJECUTIVO, defaults={"blocks": blocks}
     )
     messages.success(request, "Guardamos la disponibilidad del ejecutivo.")
+    return redirect("request_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def import_executive_calendar(request, pk):
+    """TR-14: calcula la disponibilidad del ejecutivo desde un archivo .ics. El archivo se lee en memoria y no se guarda."""
+    meeting_request = _visible_request_or_404(request.user, pk)
+    if not meeting_request.accepts_availability:
+        messages.error(request, "Esta solicitud ya no recibe disponibilidad.")
+        return redirect("request_detail", pk=pk)
+    archivo = request.FILES.get("archivo")
+    if archivo is None:
+        messages.error(request, "Elige un archivo de calendario (.ics) para importar.")
+        return redirect("request_detail", pk=pk)
+    try:
+        if not archivo.name.lower().endswith(".ics"):
+            raise ICSError("El archivo debe tener la extensión .ics.")
+        tz = timezone.get_current_timezone()
+        week_start = meeting_request.effective_week_start
+        window_start, window_end = week_window(week_start, tz)
+        result = parse_ics(decode_ics(archivo.read(settings.ICS_MAX_BYTES + 1)), tz, window_start, window_end)
+    except ICSError as error:
+        messages.error(request, str(error))
+        return redirect("request_detail", pk=pk)
+    blocks = free_blocks(result.busy, week_start, tz)
+    if not blocks:
+        messages.error(
+            request,
+            "Con ese calendario no queda ningún horario libre de lunes a viernes entre las 08:00 y las 22:00. "
+            "No cambiamos la disponibilidad guardada.",
+        )
+        return redirect("request_detail", pk=pk)
+    Availability.objects.update_or_create(
+        request=meeting_request, party=Availability.Party.EJECUTIVO, defaults={"blocks": blocks}
+    )
+    messages.success(
+        request,
+        f"Importamos el calendario: {len(blocks)} horarios libres de lunes a viernes. "
+        "Reemplazan la disponibilidad anterior. Puedes ajustarlos abajo y guardar de nuevo.",
+    )
+    notices = []
+    if result.unsupported:
+        notices.append(f"{result.unsupported} evento(s) con una repetición que no sabemos interpretar se contaron solo en su primera fecha")
+    if result.skipped:
+        notices.append(f"{result.skipped} evento(s) con datos ilegibles se omitieron")
+    if result.unknown_zones:
+        notices.append("se usó la hora de Lima para estas zonas horarias desconocidas: " + ", ".join(sorted(result.unknown_zones)))
+    if notices:
+        messages.warning(request, "Revisa la cuadrícula: " + "; ".join(notices) + ".")
     return redirect("request_detail", pk=pk)
 
 
