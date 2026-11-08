@@ -11,6 +11,7 @@ urlpatterns = [
     path("panel/solicitudes/<int:pk>/", views.request_detail, name="request_detail"),
     path("panel/solicitudes/<int:pk>/enlace/", views.create_counterpart_link, name="create_counterpart_link"),
     path("panel/solicitudes/<int:pk>/disponibilidad/", views.save_executive_availability, name="save_executive_availability"),
+    path("panel/solicitudes/<int:pk>/importar-calendario/", views.import_executive_calendar, name="import_executive_calendar"),
     path("panel/solicitudes/<int:pk>/propuesta/", views.generate_proposal, name="generate_proposal"),
     path("panel/solicitudes/<int:pk>/enlace-aprobacion/", views.create_approval_link, name="create_approval_link"),
     path("panel/historial/", views.history, name="history"),
