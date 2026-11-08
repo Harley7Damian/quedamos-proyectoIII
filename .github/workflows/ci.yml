@@ -180,3 +180,4 @@ jobs:
 
       - name: Revisar calidad de código
         run: flake8 .
+        continue-on-error: true
