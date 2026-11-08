@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from meetings.models import SchedulingRule
+from scheduling.matching import format_span, hour_choices
 from scheduling.rules import validate_rule
 
 from .models import Profile, User
@@ -47,8 +48,8 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 # ---------------------------------------------------------------- TR-43: onboarding de tres pasos segun el rol
 
-HOURS_FROM = [(h, f"{h:02d}:00") for h in range(0, 24)]
-HOURS_TO = [(h, f"{h:02d}:00") for h in range(1, 25)]
+HOURS_FROM = hour_choices(0, 23)
+HOURS_TO = hour_choices(1, 24)
 
 
 class AreaForm(forms.Form):
@@ -114,7 +115,7 @@ class ProtectHoursForm(forms.Form):
             self.fields["executive"].initial = user.pk
             self.fields["executive"].widget = forms.HiddenInput()
         start, end = work_hours_of(user) if user.is_executive else (None, None)
-        outside = (f"Fuera de mi jornada ({start:02d}:00 a {end:02d}:00)" if user.is_executive
+        outside = (f"Fuera de mi jornada ({format_span(start, end)})" if user.is_executive
                    else "Fuera de la jornada del ejecutivo")
         self.presets = {key: rules for key, _, _, rules in PROTECT_PRESETS}
         self.fields["protect"].choices = [(key, title) for key, title, _, _ in PROTECT_PRESETS] + [(OUTSIDE_WORK, outside)]

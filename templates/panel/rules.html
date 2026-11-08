@@ -9,6 +9,7 @@
   <div class="card rule {% if not rule.active %}off{% endif %}">
     <span class="status {% if rule.active %}aprobada{% else %}cancelada{% endif %}">{% if rule.active %}Activa{% else %}Desactivada{% endif %}</span>
     <strong>{{ rule.label|capfirst }}</strong>
+    <div>{{ rule.range_text }}</div>
     <div class="muted">Ejecutivo: {{ rule.executive.full_name }}</div>
     <div class="actions">
       <a href="{% url 'edit_rule' rule.pk %}">Editar</a>
@@ -29,7 +30,7 @@
     <div>{{ form.start_hour.label_tag }}{{ form.start_hour }}{{ form.start_hour.errors }}</div>
     <div>{{ form.end_hour.label_tag }}{{ form.end_hour }}{{ form.end_hour.errors }}</div>
   </div>
-  <p class="muted">Para bloquear un día completo elige el día y el rango de 00:00 a 24:00.</p>
+  <p class="muted">Para bloquear un día completo elige el día y el rango desde 00:00 hasta Fin del día.</p>
   <p><button type="submit">Guardar regla</button></p>
 </form>
 {% endblock %}

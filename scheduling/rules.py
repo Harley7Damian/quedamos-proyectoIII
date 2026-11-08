@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from .matching import format_end_hour, format_hour
+
 DAY_NAMES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 DAY_PLURALS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábados", "domingos"]
 
@@ -38,20 +40,25 @@ class RuleSpec:
         if self.start_hour == 0 and self.end_hour == 24:
             return f"{DAY_NAMES[self.weekday]} protegido"
         if self.start_hour == 0:
-            text = f"nada antes de las {self.end_hour:02d}:00"
+            text = f"nada antes de las {format_hour(self.end_hour)}"
         elif self.end_hour == 24:
-            text = f"nada desde las {self.start_hour:02d}:00"
+            text = f"nada desde las {format_hour(self.start_hour)}"
         else:
-            text = f"sin reuniones de {self.start_hour:02d}:00 a {self.end_hour:02d}:00"
+            text = f"sin reuniones de {format_hour(self.start_hour)} a {format_hour(self.end_hour)}"
         if self.weekday is not None:
             text += f" los {DAY_PLURALS[self.weekday]}"
         return text
+
+    @property
+    def range_text(self) -> str:
+        """Franja con las dos horas explicitas, por ejemplo 'Desde 18:00 hasta el fin del día'."""
+        return f"Desde {format_hour(self.start_hour)} hasta {format_end_hour(self.end_hour)}"
 
 
 def validate_rule(weekday, start_hour: int, end_hour: int) -> str | None:
     """Mensaje de error, o None si la regla es válida."""
     if not (0 <= start_hour <= 23 and 1 <= end_hour <= 24):
-        return "Las horas deben estar entre 00:00 y 24:00."
+        return "Las horas deben estar entre 00:00 y el fin del día."
     if start_hour >= end_hour:
         return "La hora de inicio debe ser menor que la de fin."
     if weekday is not None and not (0 <= weekday <= 6):

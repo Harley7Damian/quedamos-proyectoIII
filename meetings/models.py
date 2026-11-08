@@ -156,5 +156,9 @@ class SchedulingRule(models.Model):
     def label(self) -> str:
         return self.spec().label
 
+    @property
+    def range_text(self) -> str:
+        return self.spec().range_text
+
     def __str__(self) -> str:
         return f"{self.executive}: {self.label}"
