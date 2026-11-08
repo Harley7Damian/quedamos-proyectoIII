@@ -14,6 +14,7 @@ urlpatterns = [
     path("panel/solicitudes/<int:pk>/propuesta/", views.generate_proposal, name="generate_proposal"),
     path("panel/solicitudes/<int:pk>/enlace-aprobacion/", views.create_approval_link, name="create_approval_link"),
     path("panel/historial/", views.history, name="history"),
+    path("panel/metricas/", views.metrics, name="metrics"),
     path("panel/solicitudes/<int:pk>/invitacion.ics", views.request_ics, name="request_ics"),
     path("panel/reglas/", views.rules, name="rules"),
     path("panel/reglas/nueva/", views.create_rule, name="create_rule"),

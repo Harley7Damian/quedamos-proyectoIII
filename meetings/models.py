@@ -56,6 +56,9 @@ class MeetingRequest(models.Model):
     approved_end = models.DateTimeField("fin aprobado", null=True, blank=True)
     decided_at = models.DateTimeField("aprobada el", null=True, blank=True)
     new_options_requested_at = models.DateTimeField("otras opciones pedidas el", null=True, blank=True)
+    # HU-10: contadores minimos para medir, sin guardar nada del calendario de nadie.
+    links_shared = models.PositiveSmallIntegerField("enlaces generados", default=0)
+    proposal_rounds = models.PositiveSmallIntegerField("rondas de propuesta", default=0)
 
     objects = MeetingRequestQuerySet.as_manager()
 
