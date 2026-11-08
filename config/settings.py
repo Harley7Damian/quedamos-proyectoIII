@@ -126,6 +126,10 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_REDIRECT_EXEMPT = [r"^salud/$"]  # la verificacion de salud de Render llega por HTTP interno
+    # HSTS (TR-49): el navegador exigira HTTPS en este sitio durante HSTS_SECONDS. Se empieza con 1 hora
+    # porque un valor largo es dificil de revertir. Se sube por variable de entorno (ver docs/CABECERA_HSTS.md).
+    SECURE_HSTS_SECONDS = int(os.environ.get("HSTS_SECONDS", "3600"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # solo alcanza a subdominios de este mismo sitio, no a onrender.com
 
 os.makedirs(STATIC_ROOT, exist_ok=True)  # evita el aviso de WhiteNoise en desarrollo
 
