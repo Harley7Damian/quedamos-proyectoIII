@@ -47,6 +47,28 @@ def format_hour(hour: int) -> str:
     return f"{hour:02d}:00"
 
 
+END_OF_DAY = "Fin del día"
+
+
+def hour_choices(first: int, last: int) -> list[tuple[int, str]]:
+    """Opciones (hora, texto) de un selector, de first a last incluidas.
+
+    Internamente el cierre del dia es la hora 24 (asi no se confunde con 00:00 ni deja un minuto fuera como 23:59),
+    pero la persona lee "Fin del día".
+    """
+    return [(hour, END_OF_DAY if hour == 24 else format_hour(hour)) for hour in range(first, last + 1)]
+
+
+def format_end_hour(hour: int) -> str:
+    """Hora de cierre escrita para una frase: 'el fin del día' si es la 24, y 'HH:00' en los demas casos."""
+    return "el fin del día" if hour == 24 else format_hour(hour)
+
+
+def format_span(start: int, end: int) -> str:
+    """'09:00 a 18:00', o '09:00 hasta el fin del día' si termina al cierre del dia."""
+    return f"{format_hour(start)} hasta el fin del día" if end == 24 else f"{format_hour(start)} a {format_hour(end)}"
+
+
 def format_block_label(day: int, hour: int) -> str:
     return f"{DAYS[day]} · {format_hour(hour)} - {format_hour(hour + 1)}"
 

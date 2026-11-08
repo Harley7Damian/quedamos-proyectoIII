@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import wraps
 from types import SimpleNamespace
 
 from django.conf import settings
@@ -23,6 +24,16 @@ from .ics import build_ics
 from .metrics import BASELINE_MESSAGES, meeting_metric, summarize
 from .links import ExpiredLink, InvalidLink, make_approval_token, make_token, read_approval_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
+
+
+def assistant_required(view):
+    """TR-48: la coordinacion la opera la asistente. El ejecutivo ve el estado y aprueba con su enlace."""
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_assistant:
+            raise PermissionDenied("Esta acción corresponde a la asistente.")
+        return view(request, *args, **kwargs)
+    return wrapper
 
 
 def _executives_of(user):
@@ -92,6 +103,7 @@ def unlink(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def create_request(request):
     user = request.user
     form = MeetingRequestForm(request.POST, user=user, executives=_executives_of(user))
@@ -199,6 +211,7 @@ def request_detail(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def create_counterpart_link(request, pk):
     meeting_request = _visible_request_or_404(request.user, pk)
     if not meeting_request.accepts_availability:
@@ -212,6 +225,7 @@ def create_counterpart_link(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def save_executive_availability(request, pk):
     meeting_request = _visible_request_or_404(request.user, pk)
     if not meeting_request.accepts_availability:
@@ -230,6 +244,7 @@ def save_executive_availability(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def import_executive_calendar(request, pk):
     """TR-14: calcula la disponibilidad del ejecutivo desde un archivo .ics. El archivo se lee en memoria y no se guarda."""
     meeting_request = _visible_request_or_404(request.user, pk)
@@ -280,6 +295,7 @@ def import_executive_calendar(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def generate_proposal(request, pk):
     meeting_request = _visible_request_or_404(request.user, pk)
     if not meeting_request.accepts_availability:
@@ -306,6 +322,7 @@ def generate_proposal(request, pk):
 
 @login_required
 @require_POST
+@assistant_required
 def create_approval_link(request, pk):
     """La asistente genera el enlace de aprobacion que se envia al ejecutivo (HU-08). Solo con una propuesta vigente."""
     meeting_request = _visible_request_or_404(request.user, pk)

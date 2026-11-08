@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from accounts.models import User, normalize_code
 
+from scheduling.matching import hour_choices
 from scheduling.rules import validate_rule
 
 from .models import MeetingRequest, SchedulingRule
@@ -68,8 +69,8 @@ class SchedulingRuleForm(forms.ModelForm):
         label="Día", required=False, coerce=int, empty_value=None,
         choices=[("", "Todos los días")] + SchedulingRule.WEEKDAYS,
     )
-    start_hour = forms.TypedChoiceField(label="Desde", coerce=int, choices=[(h, f"{h:02d}:00") for h in range(0, 24)])
-    end_hour = forms.TypedChoiceField(label="Hasta", coerce=int, choices=[(h, f"{h:02d}:00") for h in range(1, 25)])
+    start_hour = forms.TypedChoiceField(label="Desde", coerce=int, choices=hour_choices(0, 23))
+    end_hour = forms.TypedChoiceField(label="Hasta", coerce=int, choices=hour_choices(1, 24))
 
     class Meta:
         model = SchedulingRule

@@ -334,9 +334,10 @@ class VistaDeImportacionTests(ProposalViewBase):
         r = self.importar(calendario(evento("UID:a", "DTSTART;TZID=America/Lima:20261027T090000", "DTEND;TZID=America/Lima:20261027T100000", "RRULE:FREQ=HOURLY")))
         self.assertTrue(any("no sabemos interpretar" in m for m in self.mensajes(r)))
 
-    def test_el_ejecutivo_tambien_puede_importar(self):
-        self.importar(calendario(evento("UID:a", "DTSTART:20261027T150000Z", "DTEND:20261027T160000Z")), usuario=self.ejec)
-        self.assertIsNotNone(self.disponibilidad())
+    def test_el_ejecutivo_no_puede_importar_porque_la_coordinacion_es_de_la_asistente(self):
+        r = self.importar(calendario(evento("UID:a", "DTSTART:20261027T150000Z", "DTEND:20261027T160000Z")), usuario=self.ejec)
+        self.assertEqual(r.status_code, 403)
+        self.assertIsNone(self.disponibilidad())
 
     def test_una_asistente_no_vinculada_recibe_404(self):
         r = self.importar(calendario(evento("UID:a", "DTSTART:20261027T150000Z", "DTEND:20261027T160000Z")), usuario=self.otra)
