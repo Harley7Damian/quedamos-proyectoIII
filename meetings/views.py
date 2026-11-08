@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import F
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,6 +19,7 @@ from scheduling.proposal import build_proposal
 from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
 from .ics import build_ics
+from .metrics import BASELINE_MESSAGES, meeting_metric, summarize
 from .links import ExpiredLink, InvalidLink, make_approval_token, make_token, read_approval_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
 
@@ -202,6 +204,7 @@ def create_counterpart_link(request, pk):
         messages.error(request, "Esta solicitud ya no recibe disponibilidad.")
         return redirect("request_detail", pk=pk)
     url = request.build_absolute_uri(reverse("public_availability", args=[make_token(meeting_request.pk)]))
+    MeetingRequest.objects.filter(pk=meeting_request.pk).update(links_shared=F("links_shared") + 1)
     link = {"url": url, "expires": timezone.now() + timedelta(seconds=settings.COUNTERPART_LINK_MAX_AGE)}
     return render(request, "panel/request_detail.html", _detail_context(request.user, meeting_request, link))
 
@@ -241,11 +244,12 @@ def generate_proposal(request, pk):
     if proposal.slots:
         meeting_request.status = MeetingRequest.Status.PROPUESTA
         meeting_request.new_options_requested_at = None
+        meeting_request.proposal_rounds = F("proposal_rounds") + 1
         messages.success(request, "Propuesta generada.")
     else:
         meeting_request.status = MeetingRequest.Status.PENDIENTE
         messages.error(request, _no_match_message(meeting_request, executive, counterpart))
-    meeting_request.save(update_fields=["status", "new_options_requested_at"])
+    meeting_request.save(update_fields=["status", "new_options_requested_at", "proposal_rounds"])
     return redirect("request_detail", pk=pk)
 
 
@@ -258,6 +262,7 @@ def create_approval_link(request, pk):
         messages.error(request, "Primero genera una propuesta de horarios: el enlace de aprobación se crea sobre una propuesta vigente.")
         return redirect("request_detail", pk=pk)
     url = request.build_absolute_uri(reverse("public_approval", args=[make_approval_token(meeting_request.pk)]))
+    MeetingRequest.objects.filter(pk=meeting_request.pk).update(links_shared=F("links_shared") + 1)
     approval_link = {"url": url, "expires": timezone.now() + timedelta(seconds=settings.APPROVAL_LINK_MAX_AGE)}
     return render(request, "panel/request_detail.html", _detail_context(request.user, meeting_request, approval_link=approval_link))
 
@@ -427,6 +432,23 @@ def history(request):
     )
     items = [{"r": meeting_request, "slot": _approved_slot(meeting_request)} for meeting_request in confirmed]
     return render(request, "panel/historial.html", {"me": request.user, "items": items})
+
+
+# ---------------------------------------------------------------- HU-10: metricas de uso
+
+
+@login_required
+def metrics(request):
+    """Metricas de las reuniones confirmadas visibles para la persona: lo medido y lo estimado, rotulados como tal."""
+    confirmed = (
+        MeetingRequest.objects.visible_to(request.user)
+        .filter(status=MeetingRequest.Status.APROBADA, approved_start__isnull=False, decided_at__isnull=False)
+        .select_related("executive")
+        .order_by("-decided_at")
+    )
+    items = [meeting_metric(meeting_request) for meeting_request in confirmed]
+    ctx = {"me": request.user, "items": items, "summary": summarize(items), "baseline": BASELINE_MESSAGES}
+    return render(request, "panel/metricas.html", ctx)
 
 
 # ---------------------------------------------------------------- HU-07: reglas del ejecutivo (horarios protegidos)
