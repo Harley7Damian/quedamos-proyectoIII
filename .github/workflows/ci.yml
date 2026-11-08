@@ -154,3 +154,29 @@ jobs:
           sleep 60
           curl -fsSL --retry 10 --retry-delay 15 --retry-all-errors --max-time 60 \
             -o /dev/null -w "Codigo HTTP final: %{http_code}\n" "$URL_DESPLEGADA/"
+
+  calidad:
+    name: Calidad de codigo (coverage y flake8)
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: "clave-temporal-solo-para-ci-no-usar-en-produccion"
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt coverage flake8
+
+      - name: Medir cobertura de pruebas
+        run: |
+          coverage run manage.py test
+          coverage report -m --fail-under=90
+
+      - name: Revisar calidad de código
+        run: flake8 .
