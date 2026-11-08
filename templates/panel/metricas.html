@@ -1,0 +1,52 @@
+{% extends "panel/base_panel.html" %}
+{% load scheduling_extras %}
+{% block title %}Métricas · Quedamos{% endblock %}
+{% block content %}
+<h1>Métricas de uso</h1>
+<p class="muted">Calculadas sobre las reuniones confirmadas que puedes ver. No se guarda ningún detalle del calendario de nadie, solo las fechas de la solicitud y dos contadores.</p>
+
+{% if summary.count %}
+  <div class="resumen">
+    <div class="dato"><strong>{{ summary.count }}</strong><span>reuniones confirmadas</span></div>
+    <div class="dato"><strong>{{ summary.median_time|duracion }}</strong><span>tiempo hasta confirmar, mediana (medido)</span></div>
+    <div class="dato"><strong>{{ summary.mean_time|duracion }}</strong><span>tiempo hasta confirmar, promedio (medido)</span></div>
+    <div class="dato"><strong>{{ summary.mean_rounds }}</strong><span>rondas de propuesta por reunión (medido)</span></div>
+    <div class="dato estimado"><strong>{{ summary.avoided_total }}</strong><span>mensajes evitados en total (estimado)</span></div>
+  </div>
+
+  <div class="card tabla-scroll">
+    <table class="metricas">
+      <thead>
+        <tr>
+          <th>Reunión</th><th>Contraparte</th>
+          <th class="num">Hasta confirmar</th><th class="num">Rondas</th><th class="num">Enlaces</th>
+          <th class="num">Evitados <span class="etiqueta-estimado">estimado</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in items %}
+          <tr>
+            <td><a href="{% url 'request_detail' m.request.pk %}">{{ m.request.title }}</a></td>
+            <td>{{ m.request.counterpart_name }}</td>
+            <td class="num">{{ m.time_to_confirm|duracion }}</td>
+            <td class="num">{{ m.rounds }}</td>
+            <td class="num">{{ m.links_shared }}</td>
+            <td class="num">{{ m.avoided }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card vacio">
+    <p><strong>Aún no hay reuniones confirmadas para medir.</strong></p>
+    <p class="muted">Cuando el ejecutivo apruebe una opción, la reunión aparecerá aquí con su tiempo hasta confirmar.</p>
+  </div>
+{% endif %}
+
+<div class="card">
+  <h3>Cómo leer estas cifras</h3>
+  <p class="muted"><strong>Medido:</strong> el tiempo hasta confirmar (desde que se crea la solicitud hasta que el ejecutivo aprueba), las rondas de propuesta (cuántas veces se generó una propuesta con opciones) y los enlaces generados (cada uno es un mensaje que la asistente envía fuera del sistema).</p>
+  <p class="muted"><strong>Estimado:</strong> los mensajes evitados resultan de restar los enlaces generados a un valor de referencia de {{ baseline }} mensajes para coordinar una reunión por correo. Ese valor es un supuesto del equipo, no un dato medido ni una cifra de una fuente, y se contrasta en las pruebas con el profesor. Mientras no se valide, estas cifras no prueban una mejora, solo muestran cuánto se mide.</p>
+</div>
+{% endblock %}

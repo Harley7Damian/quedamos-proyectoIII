@@ -29,6 +29,10 @@
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="etiqueta">Historial</span>
         </a>
+        <a href="{% url 'metrics' %}" title="Métricas"{% if seccion == 'metrics' %} aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 20V10M12 20V4M19 20v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="etiqueta">Métricas</span>
+        </a>
       </nav>
 
       <details class="usuario" id="menu-usuario">

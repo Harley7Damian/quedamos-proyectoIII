@@ -235,3 +235,15 @@ label.opcion:has(input:focus-visible) { outline:3px solid var(--focus); outline-
 
 /* La navegacion de la cabecera en linea (landing y paginas publicas) */
 header.top nav { display:flex; align-items:center; gap:1rem; }
+
+/* HU-10: resumen y tabla de metricas. */
+.resumen { display:grid; grid-template-columns:repeat(auto-fit,minmax(10rem,1fr)); gap:.75rem; margin:.75rem 0; }
+.resumen .dato { background:var(--surface); border:1px solid var(--line); border-radius:.75rem; padding:.75rem 1rem; }
+.resumen .dato strong { display:block; font-size:1.5rem; }
+.resumen .dato span { color:var(--muted); font-size:.85rem; }
+.resumen .dato.estimado { background:var(--amber-soft); border-color:var(--amber); }
+.tabla-scroll { overflow-x:auto; }
+table.metricas { border-collapse:collapse; width:100%; min-width:32rem; font-size:.9rem; }
+table.metricas th, table.metricas td { text-align:left; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
+table.metricas td.num, table.metricas th.num { text-align:right; }
+.etiqueta-estimado { color:var(--amber-ink); font-size:.8rem; font-weight:600; }
