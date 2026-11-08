@@ -3,6 +3,7 @@
 {% block title %}{{ r.title }} · Quedamos{% endblock %}
 {% block content %}
 <p class="volver"><a href="{% url 'panel' %}">← Volver a las solicitudes</a></p>
+<p><span class="rol rol-{{ me.role }}">{% if me.is_executive %}Vista de ejecutivo{% else %}Vista de asistente{% endif %}</span></p>
 <div class="card">
   <span class="status {{ r.status }}">{{ r.get_status_display }}</span>
   <h1>{{ r.title }}</h1>
@@ -13,11 +14,17 @@
 {% if approved %}
   <div class="msg success"><strong>Aprobada por el ejecutivo:</strong> {{ approved.start|fecha_larga }} · {{ approved|rango_horario }} (decidida el {{ r.decided_at|date:"d/m/Y H:i" }}). <a href="{% url 'request_ics' r.pk %}">Descargar invitación (.ics)</a></div>
 {% elif r.new_options_requested_at %}
-  <div class="msg error"><strong>El ejecutivo pidió otras opciones</strong> el {{ r.new_options_requested_at|date:"d/m/Y H:i" }}. Ajusta la disponibilidad o las reglas y genera una nueva propuesta.</div>
+  {% if me.is_executive %}
+    <div class="msg error"><strong>Pediste otras opciones</strong> el {{ r.new_options_requested_at|date:"d/m/Y H:i" }}. Tu asistente generará una nueva propuesta.</div>
+  {% else %}
+    <div class="msg error"><strong>El ejecutivo pidió otras opciones</strong> el {{ r.new_options_requested_at|date:"d/m/Y H:i" }}. Ajusta la disponibilidad o las reglas y genera una nueva propuesta.</div>
+  {% endif %}
 {% endif %}
 
 <h2>1. Disponibilidad del ejecutivo</h2>
-{% if r.accepts_availability %}
+{% if me.is_executive %}
+  <p class="card muted">{% if executive_av %}Tu asistente registró tu disponibilidad el {{ executive_av.updated_at|date:"d/m/Y H:i" }}.{% else %}Tu asistente aún no registra tu disponibilidad.{% endif %}</p>
+{% elif r.accepts_availability %}
   <form method="post" action="{% url 'save_executive_availability' r.pk %}">
     {% csrf_token %}
     <p class="muted">
@@ -44,7 +51,7 @@
   {% else %}
     <p class="muted">Aún no responde.</p>
   {% endif %}
-  {% if r.accepts_availability %}
+  {% if r.accepts_availability and not me.is_executive %}
     <form method="post" action="{% url 'create_counterpart_link' r.pk %}">
       {% csrf_token %}
       <button type="submit">Generar enlace para la contraparte</button>
@@ -65,20 +72,25 @@
   {% if proposal.slots %}
     <p class="muted">Ordenadas de la mejor a la menos buena, según lo que marcó cada parte.</p>
     {% include "partials/_opciones.html" %}
-    <div class="card">
-      <form method="post" action="{% url 'create_approval_link' r.pk %}">
-        {% csrf_token %}
-        <button type="submit">Generar enlace de aprobación para el ejecutivo</button>
-      </form>
-      {% if approval_link %}
-        <p class="muted">Envíaselo a {{ r.executive.full_name }}. Aprueba con un toque, sin iniciar sesión. Vence el {{ approval_link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
-        <input type="text" readonly value="{{ approval_link.url }}" onclick="this.select()" id="enlace-aprobacion">
-      {% endif %}
-    </div>
+    {% if me.is_executive %}
+      {% if r.status == 'propuesta' %}<p class="card muted">Tu asistente te enviará el enlace para elegir una opción con un toque.</p>{% endif %}
+    {% else %}
+      <div class="card">
+        <form method="post" action="{% url 'create_approval_link' r.pk %}">
+          {% csrf_token %}
+          <button type="submit">Generar enlace de aprobación para el ejecutivo</button>
+        </form>
+        {% if approval_link %}
+          <p class="muted">Envíaselo a {{ r.executive.full_name }}. Aprueba con un toque, sin iniciar sesión. Vence el {{ approval_link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
+          <input type="text" readonly value="{{ approval_link.url }}" onclick="this.select()" id="enlace-aprobacion">
+        {% endif %}
+      </div>
+    {% endif %}
   {% else %}
     <div class="msg error">{{ no_match }}</div>
   {% endif %}
 {% endif %}
+{% if not me.is_executive %}
 <div class="card">
   {% if can_generate %}
     <form method="post" action="{% url 'generate_proposal' r.pk %}">
@@ -92,4 +104,7 @@
     </p>
   {% endif %}
 </div>
+{% elif not proposal and r.accepts_availability %}
+<p class="card muted">Tu asistente coordina esta reunión. Cuando haya una propuesta, la verás aquí.</p>
+{% endif %}
 {% endblock %}
