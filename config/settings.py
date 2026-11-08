@@ -101,14 +101,33 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Registros en consola con fecha, nivel, origen y mensaje (Render los recoge de la salida estandar).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "estandar": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+    },
+    "handlers": {
+        "consola": {
+            "class": "logging.StreamHandler",
+            "formatter": "estandar",
+            "level": os.environ.get("LOG_LEVEL", "INFO"),
+        },
+    },
+    "root": {"handlers": ["consola"], "level": "DEBUG"},
+}
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "1") == "1"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_REDIRECT_EXEMPT = [r"^salud/$"]  # la verificacion de salud de Render llega por HTTP interno
 
 os.makedirs(STATIC_ROOT, exist_ok=True)  # evita el aviso de WhiteNoise en desarrollo
 
 if "test" in sys.argv:
     # Hash rapido solo para las pruebas automaticas (nunca en uso normal).
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    LOGGING["handlers"]["consola"]["level"] = "CRITICAL"  # sin ruido en la salida de las pruebas
