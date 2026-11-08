@@ -13,10 +13,13 @@ urlpatterns = [
     path("panel/solicitudes/<int:pk>/disponibilidad/", views.save_executive_availability, name="save_executive_availability"),
     path("panel/solicitudes/<int:pk>/propuesta/", views.generate_proposal, name="generate_proposal"),
     path("panel/solicitudes/<int:pk>/enlace-aprobacion/", views.create_approval_link, name="create_approval_link"),
+    path("panel/historial/", views.history, name="history"),
+    path("panel/solicitudes/<int:pk>/invitacion.ics", views.request_ics, name="request_ics"),
     path("panel/reglas/", views.rules, name="rules"),
     path("panel/reglas/nueva/", views.create_rule, name="create_rule"),
     path("panel/reglas/<int:pk>/editar/", views.edit_rule, name="edit_rule"),
     path("panel/reglas/<int:pk>/alternar/", views.toggle_rule, name="toggle_rule"),
     path("c/<str:token>/", views.public_availability, name="public_availability"),
     path("a/<str:token>/", views.public_approval, name="public_approval"),
+    path("a/<str:token>/invitacion.ics", views.approval_ics, name="approval_ics"),
 ]

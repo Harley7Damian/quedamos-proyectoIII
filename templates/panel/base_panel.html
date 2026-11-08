@@ -25,6 +25,10 @@
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
           <span class="etiqueta">Reglas</span>
         </a>
+        <a href="{% url 'history' %}" title="Historial"{% if seccion == 'history' %} aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="etiqueta">Historial</span>
+        </a>
       </nav>
 
       <details class="usuario" id="menu-usuario">

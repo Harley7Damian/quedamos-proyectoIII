@@ -11,7 +11,7 @@
   {% if r.notes %}<p>{{ r.notes }}</p>{% endif %}
 </div>
 {% if approved %}
-  <div class="msg success"><strong>Aprobada por el ejecutivo:</strong> {{ approved.start|fecha_larga }} · {{ approved|rango_horario }} (decidida el {{ r.decided_at|date:"d/m/Y H:i" }}).</div>
+  <div class="msg success"><strong>Aprobada por el ejecutivo:</strong> {{ approved.start|fecha_larga }} · {{ approved|rango_horario }} (decidida el {{ r.decided_at|date:"d/m/Y H:i" }}). <a href="{% url 'request_ics' r.pk %}">Descargar invitación (.ics)</a></div>
 {% elif r.new_options_requested_at %}
   <div class="msg error"><strong>El ejecutivo pidió otras opciones</strong> el {{ r.new_options_requested_at|date:"d/m/Y H:i" }}. Ajusta la disponibilidad o las reglas y genera una nueva propuesta.</div>
 {% endif %}
