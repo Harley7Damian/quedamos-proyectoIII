@@ -1,5 +1,5 @@
 """Pruebas de la coordinacion con la contraparte (HU-05): enlace firmado, privacidad y disponibilidad."""
-from datetime import date
+from datetime import date, timedelta
 
 from django.core import signing
 from django.test import TestCase, override_settings
@@ -11,6 +11,7 @@ from accounts.models import User
 from .links import SALT, make_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest
 from .weeks import default_week_start, monday_of
+from .forms import MeetingRequestForm
 
 PW = "Secreto-12345"
 
@@ -212,3 +213,47 @@ class WeekTests(CoordinationBase):
     def test_sin_semana_guardada_se_usa_la_de_creacion(self):
         sin = MeetingRequest.objects.create(executive=self.ejec, created_by=self.ejec, title="Vieja", counterpart_name="Z")
         self.assertEqual(sin.effective_week_start.weekday(), 0)
+
+    def test_el_campo_semana_es_tipo_date_con_minimo_el_lunes_actual(self):
+        form = MeetingRequestForm(user=self.asis, executives=User.objects.filter(pk=self.ejec.pk))
+        self.assertEqual(form.fields["week"].widget.input_type, "date")
+        self.assertEqual(form.fields["week"].widget.attrs["min"], monday_of(timezone.localdate()).isoformat())
+
+    def test_un_dia_de_la_semana_actual_se_guarda_como_su_lunes(self):
+        self.login(self.asis)
+        monday = monday_of(timezone.localdate())
+        miercoles = monday + timedelta(days=2)
+        self.client.post(reverse("create_request"), {
+            "executive": self.ejec.pk, "title": "Semana actual", "counterpart_name": "Pedro", "counterpart_email": "",
+            "duration_min": 30, "notes": "", "week": miercoles.isoformat()})
+        self.assertEqual(MeetingRequest.objects.get(title="Semana actual").week_start, monday)
+
+    def test_un_dia_de_semana_futura_se_guarda_como_su_lunes(self):
+        self.login(self.asis)
+        monday_futura = monday_of(timezone.localdate()) + timedelta(days=14)
+        viernes_futuro = monday_futura + timedelta(days=4)
+        self.client.post(reverse("create_request"), {
+            "executive": self.ejec.pk, "title": "Semana futura", "counterpart_name": "Pedro", "counterpart_email": "",
+            "duration_min": 30, "notes": "", "week": viernes_futuro.isoformat()})
+        self.assertEqual(MeetingRequest.objects.get(title="Semana futura").week_start, monday_futura)
+
+    def test_un_dia_de_semana_pasada_se_rechaza_con_mensaje(self):
+        self.login(self.asis)
+        semana_pasada = monday_of(timezone.localdate()) - timedelta(days=7)
+        response = self.client.post(reverse("create_request"), {
+            "executive": self.ejec.pk, "title": "Semana pasada", "counterpart_name": "Pedro", "counterpart_email": "",
+            "duration_min": 30, "notes": "", "week": semana_pasada.isoformat()})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "Elige un día de esta semana o de una semana futura.", status_code=400)
+        self.assertFalse(MeetingRequest.objects.filter(title="Semana pasada").exists())
+
+    def test_campo_vacio_usa_default_week_start(self):
+        self.login(self.asis)
+        self.client.post(reverse("create_request"), {
+            "executive": self.ejec.pk, "title": "Semana vacia", "counterpart_name": "Pedro", "counterpart_email": "",
+            "duration_min": 30, "notes": ""})
+        self.assertEqual(
+            MeetingRequest.objects.get(title="Semana vacia").week_start,
+            default_week_start(timezone.localdate()),
+        )
+
