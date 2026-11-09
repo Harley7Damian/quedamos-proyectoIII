@@ -1,5 +1,6 @@
 """Pruebas de la aprobación en un toque (HU-08): enlace firmado, decisión del ejecutivo y vista de la asistente."""
 from datetime import timedelta
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 from django.core import signing
@@ -113,6 +114,19 @@ class CreateApprovalLinkTests(ApprovalBase):
         self.assertContains(self.detail(), "Generar enlace de aprobación para el ejecutivo")
         MeetingRequest.objects.filter(pk=self.req.pk).update(status="pendiente")
         self.assertNotContains(self.detail(), "Generar enlace de aprobación para el ejecutivo")
+
+    def test_la_respuesta_incluye_boton_de_copiar_y_mailto(self):
+        self.login(self.asis)
+        r = self.create()
+        self.assertContains(r, "Copiar enlace")
+        self.assertContains(r, f"mailto:{self.req.executive.email}")
+        self.assertContains(r, "Abrir en mi correo")
+
+    def test_el_mailto_lleva_el_enlace_de_aprobacion_en_el_cuerpo(self):
+        self.login(self.asis)
+        html = self.create().content.decode()
+        url = html.split('id="enlace-aprobacion"')[0].rsplit('value="', 1)[1].split('"')[0]
+        self.assertIn(quote(url, safe="/"), html)
 
 
 class PublicApprovalViewTests(ApprovalBase):
