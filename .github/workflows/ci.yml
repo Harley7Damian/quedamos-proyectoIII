@@ -204,7 +204,7 @@ jobs:
       - name: Crear carpeta de capturas
         run: mkdir -p capturas
       - name: Ejecutar el recorrido de extremo a extremo
-        run: python manage.py test meetings.test_e2e_navegador
+        run: python manage.py test meetings.e2e_navegador
       - name: Subir capturas como artefacto
         if: always()
         uses: actions/upload-artifact@v4
