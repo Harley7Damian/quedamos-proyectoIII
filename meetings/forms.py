@@ -9,7 +9,7 @@ from scheduling.matching import hour_choices
 from scheduling.rules import validate_rule
 
 from .models import MeetingRequest, SchedulingRule
-from .weeks import default_week_start, week_choices
+from .weeks import default_week_start, monday_of
 
 
 class LinkForm(forms.Form):
@@ -25,7 +25,11 @@ class MeetingRequestForm(forms.ModelForm):
         fields = ["executive", "title", "counterpart_name", "counterpart_email", "duration_min", "notes"]
         widgets = {"notes": forms.Textarea(attrs={"rows": 2})}
 
-    week = forms.ChoiceField(label="Semana a coordinar", required=False)
+    week = forms.DateField(
+        label="Semana a coordinar (elige cualquier día de esa semana)",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
 
     def __init__(self, *args, user: User, executives, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,8 +41,8 @@ class MeetingRequestForm(forms.ModelForm):
         self.fields["title"].min_length = 3
         self.fields["counterpart_name"].min_length = 2
         today = timezone.localdate()
-        self.fields["week"].choices = week_choices(today)
-        self.fields["week"].initial = default_week_start(today).isoformat()
+        self.fields["week"].initial = default_week_start(today)
+        self.fields["week"].widget.attrs["min"] = monday_of(today).isoformat()
 
     def clean_title(self):
         value = self.cleaned_data["title"].strip()
@@ -52,15 +56,22 @@ class MeetingRequestForm(forms.ModelForm):
             raise forms.ValidationError("Escribe el nombre de la contraparte.")
         return value
 
+    def clean_week(self):
+        value = self.cleaned_data.get("week")
+        if not value:
+            return value
+        monday = monday_of(value)
+        if monday < monday_of(timezone.localdate()):
+            raise forms.ValidationError("Elige un día de esta semana o de una semana futura.")
+        return monday
+
     def save(self, commit=True):
         obj = super().save(commit=False)
         obj.created_by = self.user  # lo define el servidor, nunca el formulario
-        chosen = self.cleaned_data.get("week") or default_week_start(timezone.localdate()).isoformat()
-        obj.week_start = date.fromisoformat(chosen)
+        obj.week_start = self.cleaned_data.get("week") or default_week_start(timezone.localdate())
         if commit:
             obj.save()
         return obj
-
 
 class SchedulingRuleForm(forms.ModelForm):
     """Alta y edición de una franja protegida. El ejecutivo solo se elige al crear, entre los vinculados."""
