@@ -112,14 +112,4 @@
 {% elif not proposal and r.accepts_availability %}
 <p class="card muted">Tu asistente coordina esta reunión. Cuando haya una propuesta, la verás aquí.</p>
 {% endif %}
-<script>
-function copiarEnlaceAprobacion() {
-  const campo = document.getElementById('enlace-aprobacion');
-  navigator.clipboard.writeText(campo.value).then(function () {
-    const aviso = document.getElementById('aviso-copiado');
-    aviso.style.display = 'block';
-    setTimeout(function () { aviso.style.display = 'none'; }, 2000);
-  });
-}
-</script>
 {% endblock %}
