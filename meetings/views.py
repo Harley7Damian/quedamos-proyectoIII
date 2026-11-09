@@ -331,7 +331,12 @@ def create_approval_link(request, pk):
         return redirect("request_detail", pk=pk)
     url = request.build_absolute_uri(reverse("public_approval", args=[make_approval_token(meeting_request.pk)]))
     MeetingRequest.objects.filter(pk=meeting_request.pk).update(links_shared=F("links_shared") + 1)
-    approval_link = {"url": url, "expires": timezone.now() + timedelta(seconds=settings.APPROVAL_LINK_MAX_AGE)}
+    approval_link = {
+        "url": url,
+        "expires": timezone.now() + timedelta(seconds=settings.APPROVAL_LINK_MAX_AGE),
+        "mailto_subject": f"Aprueba tu reunión: {meeting_request.title}",
+        "mailto_body": f"Hola {meeting_request.executive.full_name}, puedes aprobar el horario de la reunión aquí, sin iniciar sesión: {url}",
+    }
     return render(request, "panel/request_detail.html", _detail_context(request.user, meeting_request, approval_link=approval_link))
 
 
