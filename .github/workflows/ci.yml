@@ -181,3 +181,34 @@ jobs:
       - name: Revisar calidad de código
         run: flake8 .
         continue-on-error: true
+
+  navegador:
+    name: Recorrido de extremo a extremo con navegador
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    env:
+      SECRET_KEY: "clave-temporal-solo-para-ci-no-usar-en-produccion"
+      DJANGO_ALLOW_ASYNC_UNSAFE: "true"
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Instalar navegador de Playwright
+        run: playwright install --with-deps chromium
+      - name: Crear carpeta de capturas
+        run: mkdir -p capturas
+      - name: Ejecutar el recorrido de extremo a extremo
+        run: python manage.py test meetings.e2e_navegador
+      - name: Subir capturas como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-navegador
+          path: capturas/
+
