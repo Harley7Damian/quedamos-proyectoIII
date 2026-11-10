@@ -200,38 +200,44 @@
   <div class="contenedor">
     <header class="seccion-cabecera" data-reveal>
       <h2 id="planes-titulo">Planes</h2>
-      <p class="sub">Los planes son informativos y están en validación con el piloto. No se realiza ningún cobro.</p>
+      <p class="sub">Los planes describen la oferta prevista y están en validación con el piloto. Durante el piloto todas las funciones están habilitadas. No se realiza ningún cobro.</p>
     </header>
     <div class="planes">
       <article class="card plan" aria-labelledby="plan-gratis" data-reveal style="--n:0">
         <h3 id="plan-gratis">Gratis</h3>
-        <p class="plan-precio">Por definir</p>
+        <p class="plan-precio">S/ 0 <span class="muted">para siempre</span></p>
         <p class="muted">Para probar el flujo completo con un ejecutivo.</p>
         <ul>
           <li>Un ejecutivo y su asistente</li>
+          <li>Hasta 5 solicitudes de reunión al mes</li>
           <li>Cruce de disponibilidad y propuesta de tres horarios con su motivo</li>
           <li>Aprobación en un toque desde un enlace firmado</li>
+          <li>Horario de trabajo y horarios protegidos</li>
         </ul>
         <a class="btn secundario" href="{% url 'signup' %}">Crear cuenta de prueba</a>
       </article>
       <article class="card plan destacado" aria-labelledby="plan-profesional" data-reveal style="--n:1">
+        <p class="plan-etiqueta">Recomendado</p>
         <h3 id="plan-profesional">Profesional</h3>
-        <p class="plan-precio">Por definir <span class="muted">por ejecutivo</span></p>
+        <p class="plan-precio">S/ 39 <span class="muted">por ejecutivo al mes</span></p>
         <p class="muted">Para asistentes que atienden más de una agenda.</p>
         <ul>
           <li>Todo lo del plan Gratis</li>
+          <li>Solicitudes de reunión sin límite mensual</li>
           <li>Varios ejecutivos por asistente</li>
-          <li>Reglas de horarios protegidos</li>
-          <li>Aviso por correo con el enlace de aprobación (próximamente)</li>
+          <li>Importación del calendario del ejecutivo desde un archivo .ics</li>
+          <li>Historial de reuniones y métricas de uso</li>
+          <li>Envío automático del aviso por correo (próximamente)</li>
         </ul>
         <a class="btn" href="{% url 'signup' %}">Crear cuenta de prueba</a>
       </article>
       <article class="card plan" aria-labelledby="plan-empresa" data-reveal style="--n:2">
         <h3 id="plan-empresa">Empresa</h3>
-        <p class="plan-precio">Por definir <span class="muted">a medida</span></p>
+        <p class="plan-precio">A medida <span class="muted">desde 5 ejecutivos</span></p>
         <p class="muted">Para equipos y organizaciones con varias asistentes.</p>
         <ul>
           <li>Todo lo del plan Profesional</li>
+          <li>Cotización según el número de ejecutivos y asistentes</li>
           <li>Condiciones acordadas con la empresa</li>
           <li>Acompañamiento en la implementación</li>
         </ul>

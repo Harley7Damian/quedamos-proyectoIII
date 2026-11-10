@@ -105,10 +105,12 @@ body.landing h3 { font-size:1.1rem; font-weight:700; }
 .plan { display:flex; flex-direction:column; margin:0; transition:transform .2s ease, box-shadow .2s ease; }
 .plan:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
 .plan.destacado { border:2px solid var(--brand); }
-.plan-precio { font-size:1.4rem; font-weight:800; margin:.2rem 0; }
-.plan-precio .muted { font-weight:400; }
-.plan ul { padding-left:1.1rem; margin:.75rem 0 1.25rem; flex:1; }
-.plan li { margin:.35rem 0; }
+.plan-precio { font-size:2rem; font-weight:800; line-height:1.1; margin:.2rem 0 .5rem; }
+.plan-precio .muted { font-size:.9rem; font-weight:400; }
+.plan-etiqueta { align-self:flex-start; margin:0 0 .5rem; padding:.15rem .7rem; border-radius:999px; background:var(--brand); color:#fff; font-size:.78rem; font-weight:700; }
+.plan ul { list-style:none; padding-left:0; margin:.75rem 0 1.25rem; flex:1; }
+.plan li { position:relative; margin:.35rem 0; padding-left:1.5rem; }
+.plan li::before { content:"\2713"; content:"\2713" / ""; position:absolute; left:0; font-weight:800; color:var(--ok-ink); }
 .plan .btn { text-align:center; }
 
 /* Cierre */
