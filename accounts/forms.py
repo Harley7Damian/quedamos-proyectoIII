@@ -118,10 +118,11 @@ class ProtectHoursForm(forms.Form):
         outside = (f"Fuera de mi jornada ({format_span(start, end)})" if user.is_executive
                    else "Fuera de la jornada del ejecutivo")
         self.presets = {key: rules for key, _, _, rules in PROTECT_PRESETS}
-        self.fields["protect"].choices = [(key, title) for key, title, _, _ in PROTECT_PRESETS] + [(OUTSIDE_WORK, outside)]
+        self.fields["protect"].choices = [(OUTSIDE_WORK, outside)] + [(key, title) for key, title, _, _ in PROTECT_PRESETS]
+        self.fields["protect"].initial = [OUTSIDE_WORK]
         # Para la plantilla: clave, titulo y detalle de cada opcion.
-        self.options = [(key, title, detail) for key, title, detail, _ in PROTECT_PRESETS]
-        self.options.append((OUTSIDE_WORK, outside, "Protege lo que queda antes y después de la jornada registrada."))
+        self.options = [(OUTSIDE_WORK, outside, "Protege lo que queda antes y después de la jornada registrada.")]
+        self.options += [(key, title, detail) for key, title, detail, _ in PROTECT_PRESETS]
 
     def rules_to_create(self):
         executive = self.cleaned_data["executive"]
