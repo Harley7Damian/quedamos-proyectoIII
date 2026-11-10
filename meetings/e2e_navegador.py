@@ -32,10 +32,11 @@ class RecorridoCompletoTests(StaticLiveServerTestCase):
         page.click('text=Omitir por ahora')
         page.wait_for_url("**/panel/")
 
-    def _marcar_un_dia_completo_disponible(self, page):
-        """Marca como 'Disponible' todas las horas de un mismo dia (la segunda columna de la tabla)
-        para asegurar un bloque continuo suficiente para cualquier duracion."""
-        celdas = page.locator("table.avail tbody tr td:nth-child(2) button")
+    def _marcar_toda_la_semana_disponible(self, page):
+        """Marca como 'Disponible' todas las celdas de la semana (los siete dias).
+        La propuesta solo usa horas futuras, asi que marcar un solo dia hacia que la prueba
+        fallara cuando ese dia ya habia pasado (por ejemplo, el lunes desde el martes)."""
+        celdas = page.locator("table.avail tbody tr td.cell button")
         for i in range(celdas.count()):
             celdas.nth(i).click()
 
@@ -104,13 +105,13 @@ class RecorridoCompletoTests(StaticLiveServerTestCase):
 
         # 6. La contraparte marca su disponibilidad desde el enlace, sin cuenta
         contraparte.goto(enlace_contraparte)
-        self._marcar_un_dia_completo_disponible(contraparte)
+        self._marcar_toda_la_semana_disponible(contraparte)
         contraparte.get_by_role("button", name="Enviar mi disponibilidad").click()
         contraparte.wait_for_load_state("load")
         self._captura(contraparte, "06-disponibilidad-contraparte.png")
 
         # 7. La asistente marca la disponibilidad del ejecutivo en la misma solicitud
-        self._marcar_un_dia_completo_disponible(asistente)
+        self._marcar_toda_la_semana_disponible(asistente)
         asistente.get_by_role("button", name="Guardar disponibilidad del ejecutivo").click()
         asistente.wait_for_load_state("load")
         self._captura(asistente, "07-disponibilidad-ejecutivo.png")

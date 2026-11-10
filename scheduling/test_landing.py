@@ -53,11 +53,22 @@ class LandingTests(TestCase):
         for titulo in ("Enlaces firmados", "Horarios protegidos", "Cada persona ve lo suyo"):
             self.assertContains(r, titulo)
 
-    def test_muestra_los_tres_planes_con_precio_por_definir(self):
+    def test_muestra_los_tres_planes_con_su_precio_definido(self):
         r = self.client.get(self.url)
         for plan in ("Gratis", "Profesional", "Empresa"):
             self.assertContains(r, f'<h3 id="plan-{plan.lower()}">{plan}</h3>', html=True)
-        self.assertContains(r, "Por definir", count=3)
+        self.assertNotContains(r, "Por definir")
+        self.assertContains(r, "S/ 0")
+        self.assertContains(r, "S/ 39")
+        self.assertContains(r, "por ejecutivo al mes")
+        self.assertContains(r, "A medida")
+        self.assertContains(r, "desde 5 ejecutivos")
+
+    def test_el_plan_gratis_limita_el_volumen_y_el_profesional_lo_quita(self):
+        r = self.client.get(self.url)
+        self.assertContains(r, "Hasta 5 solicitudes de reunión al mes")
+        self.assertContains(r, "Solicitudes de reunión sin límite mensual")
+        self.assertContains(r, "Durante el piloto todas las funciones están habilitadas")
 
     def test_los_botones_dicen_crear_cuenta_de_prueba_y_no_hay_cobros(self):
         r = self.client.get(self.url)
@@ -65,7 +76,6 @@ class LandingTests(TestCase):
         self.assertNotContains(r, "Solicitar acceso piloto")
         self.assertContains(r, "No se realiza ningún cobro")
         self.assertNotContains(r, "<form")
-        self.assertNotContains(r, "S/")
         self.assertNotContains(r, "$")
 
     def test_los_botones_llevan_al_registro_y_hay_enlace_para_ingresar(self):
