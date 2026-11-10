@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>{% block title %}Quedamos{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'img/LOGO.png' %}">
   <script src="{% static 'js/tema.js' %}"></script>
   <link rel="preload" href="{% static 'fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -19,7 +20,7 @@
   {% block body %}
   <header class="top">
     <div class="in">
-      <a class="brand" href="{% if user.is_authenticated %}{% url 'panel' %}{% else %}{% url 'landing' %}{% endif %}"><span class="marca" aria-hidden="true">Q</span>Quedamos</a>
+      <a class="brand" href="{% if user.is_authenticated %}{% url 'panel' %}{% else %}{% url 'landing' %}{% endif %}"><span class="marca" aria-hidden="true"><img src="{% static 'img/LOGO_MARK.png' %}" alt=""></span>Quedamos</a>
       <nav>
         {% if user.is_authenticated %}
           <span class="muted">{{ user.full_name }}</span> <span class="rol rol-{{ user.role }}">{{ user.get_role_display }}</span>

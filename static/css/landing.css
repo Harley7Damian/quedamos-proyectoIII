@@ -2,6 +2,7 @@
 [hidden] { display:none !important; }
 body.landing main.landing { max-width:none; padding:0; }
 body.landing header.top { position:sticky; top:0; z-index:20; background:var(--surface); }
+body.landing header.top .brand { color:var(--ink); }
 @supports (backdrop-filter: blur(8px)) {
   body.landing header.top { background:color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter:blur(10px); }
 }

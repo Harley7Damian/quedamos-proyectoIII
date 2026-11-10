@@ -55,7 +55,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin:0; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.45; }
+body { margin:0; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:linear-gradient(180deg, var(--bg), var(--surface-2)); color:var(--ink); line-height:1.45; }
 a { color:var(--link); }
 :focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
 .saltar { position:absolute; left:.5rem; top:-4rem; z-index:10; background:var(--surface); color:var(--ink); padding:.5rem .8rem; border-radius:.5rem; }
@@ -64,6 +64,10 @@ a { color:var(--link); }
 header.top { border-bottom:1px solid var(--line); background:var(--surface); }
 header.top .in { max-width:56rem; margin:0 auto; padding:.75rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
 header.top .brand { display:inline-flex; align-items:center; gap:.55rem; font-weight:700; font-size:1.15rem; color:var(--ink); text-decoration:none; }
+header.top { background:linear-gradient(135deg, var(--brand), var(--accent)); padding:.6rem 1rem; }
+header.top .brand { color:#fff; }
+header.top nav .muted { color:rgba(255,255,255,.85); }
+header.top nav button.link { color:#fff; opacity:.9; }
 header.top .marca { width:1.8rem; height:1.8rem; font-size:.95rem; }
 header.top form { display:inline; }
 main { max-width:56rem; margin:0 auto; padding:1.5rem 1rem 3rem; }
@@ -104,10 +108,20 @@ table.avail th { font-weight:600; padding:.25rem .3rem; text-align:center; white
 table.avail td.cell { padding:2px; }
 table.avail td.cell button { display:block; width:100%; height:1.6rem; padding:0; border-radius:.35rem; border:1px solid var(--field-line); background:var(--surface); }
 table.avail td.cell[data-state="1"] button { background:var(--cell-1); border-color:var(--cell-1-line); }
-table.avail td.cell[data-state="2"] button { background:var(--cell-2); border-color:var(--cell-2-line); }
+table.avail td.cell[data-state="2"] button { background:var(--amber); border-color:var(--amber-ink); position:relative; }
+table.avail td.cell[data-state="2"] button::after {
+  content:"";
+  position:absolute; inset:0; margin:auto;
+  width:.8rem; height:.8rem;
+  background-color:#3D2900;
+  mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>");
+  mask-repeat:no-repeat; mask-position:center; mask-size:contain;
+  -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>");
+  -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; -webkit-mask-size:contain;
+}
 .legend { display:flex; flex-wrap:wrap; gap:.4rem .9rem; align-items:center; }
 .swatch { display:inline-block; width:.9rem; height:.9rem; border-radius:.25rem; border:1px solid var(--field-line); vertical-align:middle; margin-right:.25rem; }
-.swatch.s0 { background:var(--surface); } .swatch.s1 { background:var(--cell-1); border-color:var(--cell-1-line); } .swatch.s2 { background:var(--cell-2); border-color:var(--cell-2-line); }
+.swatch.s0 { background:var(--surface); } .swatch.s1 { background:var(--cell-1); border-color:var(--cell-1-line); } .swatch.s2 { background:var(--amber); border-color:var(--amber-ink); }
 input[readonly] { background:var(--surface-2); font-family: ui-monospace, Consolas, monospace; font-size:.85rem; }
 
 /* Reglas del ejecutivo (HU-07) */
@@ -120,9 +134,11 @@ input[readonly] { background:var(--surface-2); font-family: ui-monospace, Consol
 .shell { display:grid; grid-template-columns:15rem minmax(0,1fr); min-height:100vh; }
 :root[data-sidebar="collapsed"] .shell { grid-template-columns:4.5rem minmax(0,1fr); }
 .barra { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:1rem; padding:1rem .75rem; background:var(--surface); border-right:1px solid var(--line); }
-.barra-cabecera { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
-.barra .brand { display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:1.1rem; color:var(--ink); text-decoration:none; padding:.2rem; border-radius:.5rem; }
-.marca { display:inline-grid; place-items:center; width:2rem; height:2rem; flex:none; border-radius:.55rem; background:var(--brand); color:var(--brand-ink); font-size:1rem; }
+.barra-cabecera { display:flex; align-items:center; justify-content:space-between; gap:.5rem; background:linear-gradient(135deg, var(--brand), var(--accent)); padding:.6rem .7rem; border-radius:.75rem; margin:-.25rem -.25rem .25rem; }
+.barra .brand { display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:1.1rem; color:#fff; text-decoration:none; padding:.2rem; border-radius:.5rem; }
+.barra-cabecera button.icono { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.4); color:#fff; }
+.marca { display:inline-grid; place-items:center; width:2rem; height:2rem; flex:none; border-radius:.55rem; overflow:hidden; }
+.marca img { width:100%; height:100%; object-fit:cover; display:block; }
 button.icono { display:inline-grid; place-items:center; width:2rem; height:2rem; padding:0; background:none; color:var(--muted); border:1px solid var(--line); border-radius:.5rem; }
 button.icono svg { transition:transform .15s ease; }
 .barra-menu { display:none; padding:.4rem .8rem; background:var(--surface); color:var(--ink); border:1px solid var(--field-line); font-size:.9rem; }
@@ -196,6 +212,7 @@ body.acceso, body.bienvenida { min-height:100vh; background:
   radial-gradient(50rem 35rem at 90% 95%, var(--acceso-2), transparent 70%),
   var(--bg); background-attachment:fixed; }
 body.acceso header.top { background:transparent; border-bottom-color:transparent; }
+body.acceso header.top .brand { color:var(--ink); }
 body.acceso header.top nav { display:none; }
 body.acceso main.narrow { max-width:28rem; padding-top:2.5rem; }
 .acceso-card { padding:2rem; border-radius:1.25rem; box-shadow:var(--shadow); }
