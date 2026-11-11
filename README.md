@@ -290,6 +290,12 @@ El plan gratuito de Render duerme la aplicación tras un periodo de inactividad 
 - Retroceso: en GitHub, Actions, workflow `Retroceso`, Run workflow, indicando el SHA completo del commit anterior (se obtiene con `git log`). Para volver a la última versión, ejecutar el workflow `CI` manualmente sobre `main`.
 - Limitación: tras el despliegue solo se comprueba que la página principal responda con código 200. Esa prueba no distingue la versión nueva de la anterior; la comprobación de la versión exacta se incorporará con la ruta `/salud/` (TR-35).
 
+### Ciclo de integración y entrega continuas
+
+Quedamos usa integración y despliegue continuos: cada cambio pasa por pruebas automáticas, revisiones de seguridad y una revisión cruzada antes de llegar a producción, y lo que se fusiona en `main` se despliega solo, sin pasos manuales.
+
+El detalle completo de cada etapa (qué hace, por qué existe y cómo reproducirla en tu computadora), el diagrama de flujo desde la tarjeta de Jira hasta el despliegue, la tabla de herramientas por etapa y el registro de hallazgos de seguridad están en [`docs/DEVOPS.md`](docs/DEVOPS.md).
+
 ## 12. Estructura del repositorio
 
 ```text
