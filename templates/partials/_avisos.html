@@ -1,0 +1,11 @@
+{% if messages %}
+<div class="avisos" role="region" aria-label="Avisos">
+  {% for message in messages %}
+  <div class="aviso aviso-{{ message.level_tag|default:'info' }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}" data-aviso>
+    <span class="aviso-icono" aria-hidden="true"></span>
+    <p class="aviso-texto">{{ message }}</p>
+    <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso" data-aviso-cerrar>&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

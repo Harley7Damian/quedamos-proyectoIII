@@ -55,7 +55,7 @@
   </aside>
 
   <main id="contenido" class="contenido {% block mainclass %}{% endblock %}">
-    {% for message in messages %}<div class="msg {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+    {% include "partials/_avisos.html" %}
     {% block content %}{% endblock %}
   </main>
 </div>

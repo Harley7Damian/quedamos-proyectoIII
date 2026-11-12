@@ -13,6 +13,7 @@
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/grid.js' %}" defer></script>
   <script src="{% static 'js/panel.js' %}" defer></script>
+  <script src="{% static 'js/avisos.js' %}" defer></script>
   <script src="{% static 'js/formularios.js' %}" defer></script>
 </head>
 <body class="{% block bodyclass %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
@@ -32,7 +33,7 @@
     </div>
   </header>
   <main id="contenido" class="{% block mainclass %}{% endblock %}">
-    {% for message in messages %}<div class="msg {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+    {% include "partials/_avisos.html" %}
     {% block content %}{% endblock %}
   </main>
   {% endblock %}

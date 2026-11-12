@@ -315,7 +315,7 @@ def generate_proposal(request, pk):
         messages.success(request, "Propuesta generada.")
     else:
         meeting_request.status = MeetingRequest.Status.PENDIENTE
-        messages.error(request, _no_match_message(meeting_request, executive, counterpart))
+        messages.warning(request, _no_match_message(meeting_request, executive, counterpart))
     meeting_request.save(update_fields=["status", "new_options_requested_at", "proposal_rounds"])
     return redirect("request_detail", pk=pk)
 

@@ -92,7 +92,10 @@
       </div>
     {% endif %}
   {% else %}
-    <div class="msg error">{{ no_match }}</div>
+    <div class="msg msg-sin-coincidencia" role="status">
+      <strong>Sin coincidencia de horarios</strong>
+      <p>{{ no_match }}</p>
+    </div>
   {% endif %}
 {% endif %}
 {% if not me.is_executive %}
