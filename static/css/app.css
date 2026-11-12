@@ -92,6 +92,27 @@ button.small { padding:.3rem .7rem; font-size:.85rem; background:var(--surface);
 .status.aprobada { background:var(--ok-bg); color:var(--ok-ink); } .status.propuesta { background:var(--info-bg); color:var(--info-ink); } .status.cancelada { background:var(--off-bg); color:var(--off-ink); }
 .msg { padding:.6rem .8rem; border-radius:.6rem; margin:.5rem 0; font-size:.9rem; background:var(--info-bg); color:var(--info-ink); }
 .msg.error { background:var(--err-bg); color:var(--err-ink); } .msg.success { background:var(--ok-bg); color:var(--ok-ink); }
+.msg.warning { background:var(--amber-soft); color:var(--amber-ink); }
+/* Sin coincidencia (TR-56): resultado informativo en ambar, no un error del sistema. */
+.msg-sin-coincidencia { background:var(--amber-soft); color:var(--amber-ink); border-left:5px solid var(--amber); }
+.msg-sin-coincidencia p { margin:.25rem 0 0; }
+/* Avisos flotantes (TR-56): notificaciones que se cierran solas y con un boton. */
+.avisos { position:fixed; z-index:1000; right:1rem; bottom:1rem; display:flex; flex-direction:column; gap:.5rem; width:min(26rem, calc(100vw - 2rem)); pointer-events:none; }
+.aviso { --a-bg:var(--info-bg); --a-ink:var(--info-ink); pointer-events:auto; display:flex; align-items:flex-start; gap:.6rem; padding:.75rem .8rem; border-radius:.75rem; border:1px solid var(--line); border-left:5px solid var(--a-ink); background:var(--a-bg); color:var(--a-ink); box-shadow:var(--shadow); font-size:.92rem; animation:aviso-entra .2s ease-out; transition:opacity .2s ease; }
+.aviso-success { --a-bg:var(--ok-bg); --a-ink:var(--ok-ink); }
+.aviso-warning { --a-bg:var(--amber-soft); --a-ink:var(--amber-ink); }
+.aviso-error { --a-bg:var(--err-bg); --a-ink:var(--err-ink); }
+.aviso-icono { flex:none; width:1.4rem; height:1.4rem; border-radius:50%; background:var(--a-ink); color:var(--a-bg); display:inline-grid; place-items:center; font-size:.85rem; font-weight:700; line-height:1; }
+.aviso-icono::before { content:"i"; }
+.aviso-success .aviso-icono::before { content:"\2713"; }
+.aviso-warning .aviso-icono::before, .aviso-error .aviso-icono::before { content:"!"; }
+.aviso-texto { flex:1; margin:0; line-height:1.4; }
+.aviso-cerrar { flex:none; background:none; color:inherit; border:0; padding:0 .25rem; font-size:1.25rem; line-height:1; font-weight:500; opacity:.8; cursor:pointer; }
+.aviso-cerrar:hover, .aviso-cerrar:focus-visible { opacity:1; filter:none; }
+.aviso-saliendo { opacity:0; }
+@keyframes aviso-entra { from { opacity:0; transform:translateY(.5rem); } to { opacity:1; transform:none; } }
+@media (max-width:560px) { .avisos { left:1rem; right:1rem; width:auto; } }
+@media (prefers-reduced-motion: reduce) { .aviso { animation:none; } }
 .errorlist { list-style:none; margin:.2rem 0; padding:0; color:var(--err-ink); font-size:.85rem; }
 .roles { display:flex; gap:.5rem; } .roles label { flex:1; display:flex; align-items:center; gap:.4rem; border:1px solid var(--line); border-radius:.6rem; padding:.6rem; background:var(--surface); margin:0; font-weight:500; }
 .roles ul { list-style:none; padding:0; margin:0; display:flex; gap:.5rem; width:100%; } .roles li { flex:1; }
