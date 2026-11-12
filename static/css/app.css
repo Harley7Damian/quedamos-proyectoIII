@@ -330,6 +330,11 @@ header.top nav { display:flex; align-items:center; gap:1rem; }
 .resumen .dato strong { display:block; font-size:1.5rem; }
 .resumen .dato span { color:var(--muted); font-size:.85rem; }
 .resumen .dato.estimado { background:var(--amber-soft); border-color:var(--amber); }
+.resumen .dato-reuniones { border-left:.3rem solid var(--brand); }
+.resumen .dato-mediana { border-left:.3rem solid var(--accent); }
+.resumen .dato-promedio { border-left:.3rem solid var(--ok-ink); }
+.resumen .dato-rondas { border-left:.3rem solid var(--info-ink); }
+.resumen .dato span::first-letter { text-transform:uppercase; }
 .tabla-scroll { overflow-x:auto; }
 table.metricas { border-collapse:collapse; width:100%; min-width:32rem; font-size:.9rem; }
 table.metricas th, table.metricas td { text-align:left; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
