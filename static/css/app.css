@@ -335,3 +335,9 @@ table.metricas { border-collapse:collapse; width:100%; min-width:32rem; font-siz
 table.metricas th, table.metricas td { text-align:left; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
 table.metricas td.num, table.metricas th.num { text-align:right; }
 .etiqueta-estimado { color:var(--amber-ink); font-size:.8rem; font-weight:600; }
+
+.tarjetas-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:.75rem; }
+.ejecutivo-card { display:flex; align-items:center; gap:.75rem; margin:0; }
+.ejecutivo-card .avatar { width:2.5rem; height:2.5rem; font-size:1.1rem; flex:none; }
+.ejecutivo-info { flex:1; min-width:0; }
+.ejecutivo-card form { margin:0; flex:none; }

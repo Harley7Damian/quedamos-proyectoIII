@@ -73,11 +73,18 @@
     </form>
   </div>
   <h3>Mis ejecutivos</h3>
+  <div class="tarjetas-grid">
   {% for l in links %}
-    <span class="pill">{{ l.executive.full_name }}
+    <div class="card ejecutivo-card">
+      <span class="avatar" aria-hidden="true">{{ l.executive.full_name|first|upper }}</span>
+      <div class="ejecutivo-info">
+        <strong>{{ l.executive.full_name }}</strong>
+        {% if l.executive.profile.area %}<div class="muted">{{ l.executive.profile.get_area_display }}</div>{% endif %}
+      </div>
       <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo" aria-label="Quitar vínculo con {{ l.executive.full_name }}">×</button></form>
-    </span>
+    </div>
   {% empty %}<p class="muted">Todavía no estás vinculada con nadie.</p>{% endfor %}
+  </div>
   {% if links %}<p><a href="{% url 'rules' %}">Horarios protegidos de mis ejecutivos</a></p>{% endif %}
 {% endif %}
 </section>
