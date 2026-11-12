@@ -11,6 +11,7 @@
   <div class="muted">Ejecutivo: {{ r.executive.full_name }} · semana del {{ r.effective_week_start|date:"d/m/Y" }}</div>
   {% if r.notes %}<p>{{ r.notes }}</p>{% endif %}
 </div>
+{% include "partials/_pasos.html" %}
 {% if approved %}
   <div class="confirmacion" role="status"><svg class="confirmacion-icono" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7 12.5l3.5 3.5L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Aprobada por el ejecutivo:</strong> {{ approved.start|fecha_larga }} · {{ approved|rango_horario }} (decidida el {{ r.decided_at|date:"d/m/Y H:i" }}). <a class="btn" href="{% url 'request_ics' r.pk %}">Descargar invitación (.ics)</a></div></div>
 {% elif r.new_options_requested_at %}

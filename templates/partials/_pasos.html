@@ -1,0 +1,15 @@
+{% if pasos %}
+<nav class="pasos" aria-label="Avance de la solicitud">
+  <ol>
+    {% for paso in pasos %}
+    <li class="paso paso-{{ paso.estado }}"{% if paso.estado == 'actual' %} aria-current="step"{% endif %}>
+      <span class="paso-marca" aria-hidden="true">{% if paso.estado == 'hecho' %}<svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>{% else %}{{ paso.numero }}{% endif %}</span>
+      <span class="paso-texto">
+        <span class="paso-nombre">{{ paso.nombre }}<span class="solo-lectores"> ({% if paso.estado == 'hecho' %}completado{% elif paso.estado == 'actual' %}paso actual{% else %}pendiente{% endif %})</span></span>
+        {% if paso.ayuda %}<span class="paso-ayuda">{{ paso.ayuda }}</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}
