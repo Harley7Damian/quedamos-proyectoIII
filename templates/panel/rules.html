@@ -5,9 +5,13 @@
 <p class="muted">Las propuestas de horarios nunca caen dentro de una regla activa. Ejemplos: nada antes de las 10:00, el viernes protegido, sin reuniones de 13:00 a 14:00.</p>
 
 <h2>Reglas registradas</h2>
+<div class="tarjetas-grid">
 {% for rule in rules %}
   <div class="card rule {% if not rule.active %}off{% endif %}">
-    <span class="status {% if rule.active %}aprobada{% else %}cancelada{% endif %}">{% if rule.active %}Activa{% else %}Desactivada{% endif %}</span>
+    <div class="rule-cabecera">
+      <span class="dia-badge">{% if rule.weekday is not None %}{{ rule.get_weekday_display }}{% else %}Todos los días{% endif %}</span>
+      <span class="status {% if rule.active %}aprobada{% else %}cancelada{% endif %}">{% if rule.active %}Activa{% else %}Desactivada{% endif %}</span>
+    </div>
     <strong>{{ rule.label|capfirst }}</strong>
     <div>{{ rule.range_text }}</div>
     <div class="muted">Ejecutivo: {{ rule.executive.full_name }}</div>
@@ -19,6 +23,7 @@
 {% empty %}
   <p class="card muted">Aún no hay reglas. Sin reglas, las propuestas solo consideran la disponibilidad de ambas partes.</p>
 {% endfor %}
+</div>
 
 <h2>Nueva regla</h2>
 <form method="post" action="{% url 'create_rule' %}" class="card">

@@ -341,3 +341,6 @@ table.metricas td.num, table.metricas th.num { text-align:right; }
 .ejecutivo-card .avatar { width:2.5rem; height:2.5rem; font-size:1.1rem; flex:none; }
 .ejecutivo-info { flex:1; min-width:0; }
 .ejecutivo-card form { margin:0; flex:none; }
+.rule-cabecera { display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem; }
+.dia-badge { font-size:.75rem; font-weight:600; padding:.1rem .6rem; border-radius:999px; background:var(--accent-soft); color:var(--brand); border:1px solid var(--accent); }
+.rule .status { float:none; }
