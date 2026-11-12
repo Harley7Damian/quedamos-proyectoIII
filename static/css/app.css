@@ -90,6 +90,20 @@ button.small { padding:.3rem .7rem; font-size:.85rem; background:var(--surface);
 .pill form { display:inline; }
 .status { float:right; font-size:.75rem; font-weight:600; padding:.1rem .6rem; border-radius:999px; background:var(--wait-bg); color:var(--wait-ink); text-transform:capitalize; }
 .status.aprobada { background:var(--ok-bg); color:var(--ok-ink); } .status.propuesta { background:var(--info-bg); color:var(--info-ink); } .status.cancelada { background:var(--off-bg); color:var(--off-ink); }
+/* Estados visibles (TR-58): color + icono + texto, nunca solo color */
+.estado { display:inline-flex; align-items:center; gap:.3rem; text-transform:none; font-size:.8rem; padding:.15rem .65rem .15rem .5rem; border:1px solid transparent; }
+.estado-icono { flex:none; }
+.status.estado-pendiente { background:var(--wait-bg); color:var(--wait-ink); border-color:currentColor; }
+.status.estado-respondio { background:var(--info-bg); color:var(--info-ink); border-color:currentColor; }
+.status.estado-propuesta { background:var(--info-bg); color:var(--info-ink); border-color:currentColor; font-weight:700; }
+.status.estado-otras { background:var(--err-bg); color:var(--err-ink); border-color:currentColor; }
+.status.estado-aprobada { background:var(--ok-bg); color:var(--ok-ink); border-color:currentColor; font-weight:700; }
+.status.estado-cancelada { background:var(--off-bg); color:var(--off-ink); border-color:currentColor; }
+.card-confirmada { border-left:.3rem solid var(--ok-ink); background:var(--ok-bg); }
+.confirmada-horario { color:var(--ok-ink); font-size:1.05rem; margin:.2rem 0; }
+.confirmacion { display:flex; gap:.7rem; align-items:flex-start; padding:.9rem 1rem; border-radius:.8rem; margin:.75rem 0; background:var(--ok-bg); color:var(--ok-ink); border:1px solid var(--ok-ink); border-left-width:.35rem; font-size:1rem; }
+.confirmacion-icono { flex:none; margin-top:.1rem; }
+.confirmacion .btn { margin-left:.4rem; padding:.3rem .8rem; font-size:.9rem; }
 .msg { padding:.6rem .8rem; border-radius:.6rem; margin:.5rem 0; font-size:.9rem; background:var(--info-bg); color:var(--info-ink); }
 .msg.error { background:var(--err-bg); color:var(--err-ink); } .msg.success { background:var(--ok-bg); color:var(--ok-ink); }
 .errorlist { list-style:none; margin:.2rem 0; padding:0; color:var(--err-ink); font-size:.85rem; }

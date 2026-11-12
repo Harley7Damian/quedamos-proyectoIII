@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Exists, F, OuterRef
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -51,7 +51,16 @@ def _links_of(user):
 
 
 def _requests_context(user):
-    return {"requests": MeetingRequest.objects.visible_to(user).select_related("executive", "created_by")}
+    solicitudes = (
+        MeetingRequest.objects.visible_to(user)
+        .select_related("executive", "created_by")
+        .annotate(
+            contraparte_respondio=Exists(
+                Availability.objects.filter(request=OuterRef("pk"), party=Availability.Party.CONTRAPARTE)
+            )
+        )
+    )
+    return {"requests": solicitudes}
 
 
 @login_required

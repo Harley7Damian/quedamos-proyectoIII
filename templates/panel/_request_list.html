@@ -1,12 +1,19 @@
-{% for r in requests %}
-  <div class="card">
-    <span class="status {{ r.status }}">{{ r.get_status_display }}</span>
+{% load scheduling_extras %}{% for r in requests %}
+  {% with slot=r|horario_aprobado %}
+  <div class="card{% if slot %} card-confirmada{% endif %}">
+    {% include "partials/_estado.html" %}
     <strong>{{ r.title }}</strong>
     <div>Con {{ r.counterpart_name }}{% if r.counterpart_email %} ({{ r.counterpart_email }}){% endif %} · {{ r.duration_min }} min</div>
     <div class="muted">Ejecutivo: {{ r.executive.full_name }} · creada por {{ r.created_by.full_name }} · {{ r.created_at|date:"d/m/Y H:i" }}</div>
     {% if r.notes %}<div>{{ r.notes }}</div>{% endif %}
-    <div class="acciones"><a href="{% url 'request_detail' r.pk %}">{% if user.is_executive %}Ver detalle{% else %}Ver detalle y coordinar{% endif %}</a></div>
+    {% if slot %}
+      <div class="confirmada-horario"><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</div>
+      <div class="acciones"><a class="btn" href="{% url 'request_detail' r.pk %}">Ver resultado</a></div>
+    {% else %}
+      <div class="acciones"><a href="{% url 'request_detail' r.pk %}">{% if user.is_executive %}Ver detalle{% else %}Ver detalle y coordinar{% endif %}</a></div>
+    {% endif %}
   </div>
+  {% endwith %}
 {% empty %}
   <div class="card vacio">
     <p><strong>Aún no hay solicitudes de reunión.</strong></p>
