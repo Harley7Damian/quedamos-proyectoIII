@@ -21,6 +21,7 @@ from .calendar_import import ICSError, decode_ics, free_blocks, parse_ics, week_
 from .forms import LinkForm, MeetingRequestForm, SchedulingRuleForm
 from .grid import grid_rows, parse_blocks, week_header
 from .ics import build_ics
+from .pasos import pasos_de
 from .metrics import BASELINE_MESSAGES, meeting_metric, summarize
 from .links import ExpiredLink, InvalidLink, make_approval_token, make_token, read_approval_token, read_token
 from .models import AssistantLink, Availability, MeetingRequest, SchedulingRule
@@ -200,6 +201,7 @@ def _detail_context(user, meeting_request, link=None, approval_link=None):
         "link_days": settings.COUNTERPART_LINK_MAX_AGE // 86400,
         "approval_link": approval_link,
         "approved": _approved_slot(meeting_request),
+        "pasos": pasos_de(meeting_request, executive is not None, counterpart is not None),
     }
 
 
