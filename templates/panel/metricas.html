@@ -7,11 +7,11 @@
 
 {% if summary.count %}
   <div class="resumen">
-    <div class="dato"><strong>{{ summary.count }}</strong><span>reuniones confirmadas</span></div>
-    <div class="dato"><strong>{{ summary.median_time|duracion }}</strong><span>tiempo hasta confirmar, mediana (medido)</span></div>
-    <div class="dato"><strong>{{ summary.mean_time|duracion }}</strong><span>tiempo hasta confirmar, promedio (medido)</span></div>
-    <div class="dato"><strong>{{ summary.mean_rounds }}</strong><span>rondas de propuesta por reunión (medido)</span></div>
-    <div class="dato estimado"><strong>{{ summary.avoided_total }}</strong><span>mensajes evitados en total (estimado)</span></div>
+    <div class="dato dato-reuniones"><strong>{{ summary.count }}</strong><span>Reuniones confirmadas</span></div>
+    <div class="dato dato-mediana"><strong>{{ summary.median_time|duracion }}</strong><span>Tiempo hasta confirmar, mediana (medido)</span></div>
+    <div class="dato dato-promedio"><strong>{{ summary.mean_time|duracion }}</strong><span>Tiempo hasta confirmar, promedio (medido)</span></div>
+    <div class="dato dato-rondas"><strong>{{ summary.mean_rounds }}</strong><span>Rondas de propuesta por reunión (medido)</span></div>
+    <div class="dato estimado"><strong>{{ summary.avoided_total }}</strong><span>Mensajes evitados en total (estimado)</span></div>
   </div>
 
   <div class="card tabla-scroll">
