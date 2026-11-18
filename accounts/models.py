@@ -75,6 +75,12 @@ class Profile(models.Model):
         "chat de Telegram", max_length=32, unique=True, null=True, blank=True
     )
     telegram_vinculado_en = models.DateTimeField("Telegram vinculado", null=True, blank=True)
+    telegram_link_code = models.CharField(
+        "código de vinculación de Telegram", max_length=10, null=True, blank=True
+    )
+    telegram_link_code_expira_en = models.DateTimeField(
+        "expiración del código de Telegram", null=True, blank=True
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -93,3 +99,9 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f"Perfil de {self.user}"
+
+    @property
+    def telegram_link_code_vigente(self) -> bool:
+        from django.utils import timezone
+        return bool(self.telegram_link_code and self.telegram_link_code_expira_en and self.telegram_link_code_expira_en > timezone.now())
+

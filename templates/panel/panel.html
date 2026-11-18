@@ -91,5 +91,30 @@
   </div>
   {% if links %}<p><a href="{% url 'rules' %}">Horarios protegidos de mis ejecutivos</a></p>{% endif %}
 {% endif %}
+
+  <h3>Recordatorios por Telegram</h3>
+  <div class="card">
+    {% if me.profile.telegram_chat_id %}
+      <p class="muted">Vinculado desde el {{ me.profile.telegram_vinculado_en|date:"d/m/Y H:i" }}.</p>
+      <form method="post" action="{% url 'telegram_desvincular' %}">
+        {% csrf_token %}
+        <button type="submit" class="small">Desvincular Telegram</button>
+      </form>
+    {% else %}
+      <p class="muted">Recibe un aviso por Telegram 30 y 5 minutos antes de cada reunión.</p>
+      {% if me.profile.telegram_link_code_vigente %}
+        <div class="code-fila">
+          <span class="code" id="telegram-code">{{ me.profile.telegram_link_code }}</span>
+          <button type="button" class="small copiar" data-copiar="#telegram-code" hidden>Copiar código</button>
+          <span class="copiado muted" role="status" aria-live="polite"></span>
+        </div>
+        <p class="muted">Envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+      {% endif %}
+      <form method="post" action="{% url 'telegram_generar_codigo' %}">
+        {% csrf_token %}
+        <button type="submit">{% if me.profile.telegram_link_code_vigente %}Generar otro código{% else %}Generar código para vincular Telegram{% endif %}</button>
+      </form>
+    {% endif %}
+  </div>
 </section>
 {% endblock %}

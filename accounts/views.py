@@ -1,10 +1,16 @@
+import json
+import re
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from meetings.forms import LinkForm
@@ -12,7 +18,8 @@ from meetings.models import AssistantLink
 from scheduling.mock import MOCK_PROPOSAL
 
 from .forms import AreaForm, ProtectHoursForm, SignupForm, WorkHoursForm
-from .models import Profile, User
+from .models import Profile, User, generate_link_code
+from .telegram import enviar_mensaje_telegram
 
 
 def signup(request):
@@ -137,3 +144,76 @@ def skip_onboarding(request):
         profile.save()
         messages.info(request, "Puedes configurar tus horarios protegidos cuando quieras desde Reglas.")
     return redirect("panel")
+
+# ---------------------------------------------------------------- TR-73: vinculación de Telegram
+
+@login_required
+@require_POST
+def telegram_generar_codigo(request):
+    profile = _profile(request.user)
+    profile.telegram_link_code = generate_link_code()
+    profile.telegram_link_code_expira_en = timezone.now() + timedelta(minutes=settings.TELEGRAM_LINK_CODE_MINUTES)
+    profile.save()
+    messages.success(
+        request,
+        f"Tu código para vincular Telegram es {profile.telegram_link_code}. "
+        f"Envíaselo al bot con /vincular {profile.telegram_link_code} antes de "
+        f"{settings.TELEGRAM_LINK_CODE_MINUTES} minutos.",
+    )
+    return redirect("panel")
+
+
+@login_required
+@require_POST
+def telegram_desvincular(request):
+    profile = _profile(request.user)
+    profile.telegram_chat_id = None
+    profile.telegram_vinculado_en = None
+    profile.save()
+    messages.info(request, "Desvinculaste tu cuenta de Telegram.")
+    return redirect("panel")
+
+
+
+VINCULAR_RE = re.compile(r"^/vincular\s+([A-Za-z0-9]+)")
+
+
+@csrf_exempt
+@require_POST
+def telegram_webhook(request):
+    """Recibe los mensajes que le escriben al bot de Telegram. Siempre responde 200 para que Telegram no reintente."""
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return HttpResponse(status=400)
+
+    message = data.get("message") or {}
+    chat = message.get("chat") or {}
+    chat_id = chat.get("id")
+    texto = message.get("text", "")
+
+    if chat_id is None or not texto:
+        return HttpResponse(status=200)
+
+    match = VINCULAR_RE.match(texto.strip())
+    if not match:
+        return HttpResponse(status=200)
+
+    code = match.group(1).upper()
+    profile = Profile.objects.filter(
+        telegram_link_code=code,
+        telegram_link_code_expira_en__gt=timezone.now(),
+    ).first()
+
+    if profile is None:
+        enviar_mensaje_telegram(str(chat_id), "Ese código no es válido o ya expiró. Genera uno nuevo desde Quedamos.")
+        return HttpResponse(status=200)
+
+    profile.telegram_chat_id = str(chat_id)
+    profile.telegram_vinculado_en = timezone.now()
+    profile.telegram_link_code = None
+    profile.telegram_link_code_expira_en = None
+    profile.save()
+
+    enviar_mensaje_telegram(str(chat_id), "¡Listo! Tu cuenta de Quedamos quedó vinculada a Telegram. Te avisaremos antes de tus reuniones.")
+    return HttpResponse(status=200)

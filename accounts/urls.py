@@ -11,4 +11,7 @@ urlpatterns = [
     path("bienvenida/", views.onboarding, name="onboarding"),
     path("bienvenida/<int:step>/", views.onboarding, name="onboarding_step"),
     path("bienvenida/omitir/", views.skip_onboarding, name="skip_onboarding"),
+    path("telegram/generar-codigo/", views.telegram_generar_codigo, name="telegram_generar_codigo"),
+    path("telegram/desvincular/", views.telegram_desvincular, name="telegram_desvincular"),
+    path("telegram/webhook/", views.telegram_webhook, name="telegram_webhook"),
 ]
