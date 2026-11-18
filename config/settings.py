@@ -84,6 +84,10 @@ COUNTERPART_LINK_MAX_AGE = int(os.environ.get("COUNTERPART_LINK_DAYS", "7")) * 2
 ICS_MAX_BYTES = 1024 * 1024
 # Vigencia del enlace de aprobacion que recibe el ejecutivo (HU-08), en segundos. Mas corto porque las opciones caducan.
 APPROVAL_LINK_MAX_AGE = int(os.environ.get("APPROVAL_LINK_DAYS", "3")) * 24 * 3600
+# Token del bot de Telegram para los recordatorios de reunión (TR-70).
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+# Vigencia del código temporal para vincular Telegram (TR-73), en minutos.
+TELEGRAM_LINK_CODE_MINUTES = int(os.environ.get("TELEGRAM_LINK_CODE_MINUTES", "10"))
 
 # IA (TR-80). Gemini en su nivel gratuito: el cupo es del proyecto, por eso cada usuario tiene un tope diario.
 # El modelo se elige por variable de entorno para poder cambiarlo sin tocar codigo si Google lo retira.
