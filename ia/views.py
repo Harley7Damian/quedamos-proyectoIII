@@ -1,17 +1,23 @@
-"""Captura inteligente (HU-17). La IA propone; solo se guarda lo que la persona confirma en la vista previa."""
+"""Vistas de IA: captura inteligente (HU-17) y acuerdos de la reunion (HU-18).
+
+La IA propone; solo se guarda lo que la persona confirma en la vista previa."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError, transaction
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from meetings.forms import MeetingRequestForm, SchedulingRuleForm
+from meetings.models import MeetingRequest
 
+from . import acuerdos
 from .captura import ESQUEMA, INSTRUCCION, MAX_REGLAS, ejecutivos_de, iniciales_reglas, iniciales_solicitud
 from .gemini import IaError, pedir_json
+from .models import AcuerdosReunion, TareaReunion
 
 
 def _mensaje(request, texto, nivel="info"):
@@ -104,3 +110,130 @@ def confirmar_reglas(request):
     respuesta = HttpResponse()
     respuesta["HX-Redirect"] = reverse("rules")
     return respuesta
+
+
+# ---------------------------------------------------------------- HU-18: acuerdos de la reunion
+
+
+def _reunion_de_la_asistente(user, pk):
+    """404 si no es visible (no se revela que existe); 403 si la ve pero no es asistente, que es quien los registra."""
+    reunion = get_object_or_404(MeetingRequest.objects.visible_to(user).select_related("executive"), pk=pk)
+    if not user.is_assistant:
+        raise PermissionDenied("Esta acción corresponde a la asistente.")
+    return reunion
+
+
+def _motivo_para_no_registrar(reunion):
+    if reunion.status != MeetingRequest.Status.APROBADA:
+        return "Solo las reuniones aprobadas tienen acuerdos."
+    if AcuerdosReunion.objects.filter(request=reunion).exists():
+        return "Esta reunión ya tiene sus acuerdos guardados."
+    return None
+
+
+def _vista_acuerdos(request, reunion, notas, formulario, filas, total):
+    contexto = {"r": reunion, "notas": notas, "form": formulario, "filas": filas, "total": total}
+    return render(request, "ia/_vista_acuerdos.html", contexto)
+
+
+@login_required
+@require_POST
+def acuerdos_generar(request, pk):
+    user = request.user
+    reunion = _reunion_de_la_asistente(user, pk)
+    motivo = _motivo_para_no_registrar(reunion)
+    if motivo:
+        return _mensaje(request, motivo, "error")
+    notas = request.POST.get("notas", "").strip()
+    try:
+        datos = pedir_json(
+            user, acuerdos.instruccion(timezone.localdate()), notas, acuerdos.ESQUEMA, max_chars=acuerdos.MAX_NOTAS
+        )
+    except IaError as error:
+        return _mensaje(request, error.mensaje_usuario, "error")
+
+    iniciales = acuerdos.iniciales_tareas(datos) + [{}] * acuerdos.FILAS_EXTRA
+    filas = [
+        {"i": i, "incluir": True, "form": acuerdos.TareaForm(prefix=f"t{i}", initial=inicial)}
+        for i, inicial in enumerate(iniciales)
+    ]
+    formulario = acuerdos.AcuerdosForm(initial=acuerdos.iniciales_acuerdos(datos))
+    return _vista_acuerdos(request, reunion, notas, formulario, filas, len(filas))
+
+
+@login_required
+@require_POST
+def acuerdos_confirmar(request, pk):
+    user = request.user
+    reunion = _reunion_de_la_asistente(user, pk)
+    motivo = _motivo_para_no_registrar(reunion)
+    if motivo:
+        return _mensaje(request, motivo, "error")
+    notas = request.POST.get("notas", "").strip()
+    try:
+        total = int(request.POST.get("total", "0"))
+    except ValueError:
+        total = 0
+    if not notas or len(notas) > acuerdos.MAX_NOTAS or not 1 <= total <= acuerdos.MAX_TAREAS + acuerdos.FILAS_EXTRA:
+        return _mensaje(request, "No se recibieron los acuerdos. Genera la vista previa otra vez.", "error")
+
+    formulario = acuerdos.AcuerdosForm(request.POST)
+    filas = []
+    for i in range(total):
+        if request.POST.get(f"t{i}-incluir"):
+            filas.append({"i": i, "incluir": True, "form": acuerdos.TareaForm(request.POST, prefix=f"t{i}")})
+    # Se evaluan todas para mostrar todos los errores juntos.
+    validas = [formulario.is_valid()] + [fila["form"].is_valid() for fila in filas]
+    if not all(validas):
+        return _vista_acuerdos(request, reunion, notas, formulario, filas, total)
+
+    datos = formulario.cleaned_data
+    seguimiento = datos["seguimiento_incluir"]
+    try:
+        with transaction.atomic():
+            guardados = AcuerdosReunion.objects.create(
+                request=reunion,
+                notas=notas,
+                resumen=datos["resumen"],
+                seguimiento_asunto=datos["seguimiento_asunto"] if seguimiento else "",
+                seguimiento_duracion=datos["seguimiento_duracion"] if seguimiento else None,
+                created_by=user,
+            )
+            tareas = [fila["form"].cleaned_data for fila in filas if not fila["form"].vacia]
+            TareaReunion.objects.bulk_create(
+                TareaReunion(
+                    acuerdos=guardados,
+                    descripcion=t["descripcion"],
+                    responsable=t["responsable"],
+                    fecha_limite=t["fecha_limite"],
+                    orden=orden,
+                )
+                for orden, t in enumerate(tareas)
+            )
+    except IntegrityError:  # dos confirmaciones a la vez: gana la primera
+        return _mensaje(request, "Esta reunión ya tiene sus acuerdos guardados.", "error")
+    messages.success(request, "Acuerdos guardados.")
+    respuesta = HttpResponse()
+    respuesta["HX-Redirect"] = reverse("request_detail", args=[reunion.pk])
+    return respuesta
+
+
+@login_required
+def seguimiento(request, pk):
+    """Abre el formulario de solicitud ya precargado con el seguimiento propuesto. No crea nada: la persona lo envia."""
+    user = request.user
+    reunion = _reunion_de_la_asistente(user, pk)
+    guardados = AcuerdosReunion.objects.filter(request=reunion).first()
+    if guardados is None or not guardados.tiene_seguimiento:
+        raise Http404("Esta reunión no tiene un seguimiento propuesto.")
+    iniciales = {
+        "executive": reunion.executive_id,
+        "title": guardados.seguimiento_asunto,
+        "counterpart_name": reunion.counterpart_name,
+        "counterpart_email": reunion.counterpart_email,
+    }
+    if guardados.seguimiento_duracion:
+        iniciales["duration_min"] = guardados.seguimiento_duracion
+    formulario = MeetingRequestForm(initial=iniciales, user=user, executives=ejecutivos_de(user))
+    formulario.fields["week"].widget.format = "%Y-%m-%d"
+    return render(request, "ia/seguimiento.html", {"form": formulario, "r": reunion, "me": user})
