@@ -3,3 +3,4 @@ dj-database-url>=2.2
 whitenoise>=6.7
 python-dotenv>=1.0
 playwright
+requests>=2.31

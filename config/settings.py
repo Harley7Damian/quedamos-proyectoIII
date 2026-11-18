@@ -83,6 +83,10 @@ COUNTERPART_LINK_MAX_AGE = int(os.environ.get("COUNTERPART_LINK_DAYS", "7")) * 2
 ICS_MAX_BYTES = 1024 * 1024
 # Vigencia del enlace de aprobacion que recibe el ejecutivo (HU-08), en segundos. Mas corto porque las opciones caducan.
 APPROVAL_LINK_MAX_AGE = int(os.environ.get("APPROVAL_LINK_DAYS", "3")) * 24 * 3600
+# Token del bot de Telegram para los recordatorios de reunión (TR-70).
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+# Vigencia del código temporal para vincular Telegram (TR-73), en minutos.
+TELEGRAM_LINK_CODE_MINUTES = int(os.environ.get("TELEGRAM_LINK_CODE_MINUTES", "10"))
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "panel"
