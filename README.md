@@ -7,9 +7,9 @@ Proyecto del curso **Proyecto Final de Carrera III** (Ingeniería de Software, U
 
 | | |
 | --- | --- |
-| Estado | Módulo 1 implementado y probado. Módulo 2 (propuesta de horarios y aprobación) en planificación desde el Sprint 2. |
+| Estado | Versión v0.4.0. Módulos 1 y 2 implementados y probados: solicitud, disponibilidad de ambas partes, propuesta de tres horarios, aprobación en un toque con enlace firmado, confirmación, historial y métricas. Falta la integración directa con Google Calendar (hoy se importa un archivo `.ics`) y el envío automático del aviso por correo. |
 | Stack | Python, Django, HTMX, SQLite en local, PostgreSQL en producción |
-| Pruebas | 31 pruebas automáticas (`python manage.py test`) |
+| Pruebas | 500 pruebas automáticas en verde al 14/11/2026 (`python manage.py test`), más un recorrido de extremo a extremo con navegador en el pipeline |
 | Gestión | Scrum en Jira, sprints de una semana (lunes a domingo) |
 
 ## Contenido
@@ -58,7 +58,36 @@ El **Módulo 1** corre de punta a punta, con persistencia y pruebas automáticas
 | Reglas de visibilidad | Cada persona ve solo las solicitudes de su propia agenda o de los ejecutivos con los que mantiene un vínculo vigente. |
 | Maqueta de la tarjeta de aprobación | La ruta `/demo/tarjeta/` muestra la tarjeta con datos de ejemplo definidos por el contrato de datos del Módulo 2. No usa la base de datos. |
 
-Lo que **todavía no existe**: enlace compartido para la contraparte, cálculo de los tres horarios, aprobación con un toque, aviso por correo, integración con calendarios y métricas de uso. Están planificados en los sprints 2 a 4 ([sección 13](#13-gestión-del-proyecto-y-hoja-de-ruta)).
+El **Módulo 2** se agregó en los sprints 2 a 4 y también corre de punta a punta, con pruebas:
+
+| Funcionalidad | Detalle |
+| --- | --- |
+| Enlace para la contraparte | La asistente genera un enlace firmado y con vencimiento (`/c/<token>/`). La contraparte marca su disponibilidad en una cuadrícula semanal sin crear cuenta ni instalar nada. |
+| Disponibilidad del ejecutivo | La asistente marca cuándo puede reunirse el ejecutivo, o importa su calendario desde un archivo `.ics` (se calculan los horarios libres y no se guardan los eventos). |
+| Horarios protegidos y reglas | Cada ejecutivo registra reglas de horarios protegidos, que nunca se proponen. |
+| Propuesta de tres horarios | El algoritmo de ranking cruza ambas agendas y propone tres horarios ordenados, cada uno con una frase que explica el motivo. Si no hay coincidencia, lo informa con un aviso ámbar y sugiere ampliar la disponibilidad o elegir otra semana. |
+| Aprobación en un toque | El ejecutivo abre un enlace firmado (`/a/<token>/`) desde su celular, elige una opción o pide otras, sin iniciar sesión. |
+| Confirmación e invitación | Al confirmarse se muestra una tarjeta de confirmación y se descarga una invitación `.ics`. El aviso al ejecutivo se hace con un plan alterno: copiar el enlace o abrir un correo prellenado. |
+| Seguimiento visible | La solicitud se ve como un recorrido por pasos, con estados con color, ícono y texto, y avisos flotantes. |
+| Historial y métricas | Historial de reuniones y vista de métricas de uso que rotula lo medido y lo estimado. |
+| Aplicación y operación | Landing pública con los planes, bienvenida por rol, ruta de salud `/salud/` y despliegue automático con retroceso. |
+
+Lo que **todavía no existe**: integración directa con Google Calendar (se usa el plan alterno por archivo `.ics`), envío automático del aviso por correo y alertas que despierten al ejecutivo (idea en evaluación). Ver [sección 15](#15-limitaciones-conocidas).
+
+### Asistente de IA (Sprint 6)
+
+Funciones opcionales que se activan solo si hay una clave de Gemini configurada (`GEMINI_API_KEY`). Sin clave, la aplicación funciona igual que antes. La IA solo propone: siempre hay una vista previa editable y nada se guarda hasta que la persona confirma.
+
+- **Captura inteligente (HU-17).** En el panel, la asistente escribe o dicta una frase ("reunión con el proveedor de una hora la próxima semana" o "nada antes de las 10") y la IA la interpreta como una solicitud o como reglas de horario protegido. Lo confirmado pasa por los mismos formularios y validaciones que el flujo manual.
+- **Acuerdos de la reunión (HU-18).** En el detalle de una solicitud aprobada, la asistente pega las notas (hasta 6.000 caracteres) y obtiene un resumen, tareas con responsable y fecha límite, y una propuesta de seguimiento que abre el formulario de solicitud ya precargado.
+- **Tablero de tareas y exportación CSV (HU-19).** Vista "Tareas" con filtro por estado y por reunión, y un CSV (Resumen, Descripción, Tipo, Fecha límite, Etiquetas) que se importa en Jira.
+- **Envío a Jira por API (HU-20).** Botón "Enviar a Jira" por tarea, una sola vez por tarea, hacia un proyecto de demostración de Jira. Si falta la configuración, el botón no se muestra y queda el CSV.
+
+**Límites del nivel gratuito.** Modelo principal `gemini-3.5-flash-lite` y respaldo `gemini-3.1-flash-lite`: 15 solicitudes por minuto y 500 por día para todo el proyecto de Google AI Studio (valores vigentes en noviembre de 2026; Google puede cambiarlos). Cada usuario tiene un tope de 30 llamadas al día para no agotar el cupo común.
+
+**Usar solo datos ficticios.** En el nivel gratuito, Google puede usar el contenido enviado para mejorar sus productos. No pegues información real de reuniones. La pantalla lo advierte.
+
+La decisión y las alternativas descartadas están en [`docs/adr/ADR-002-ia-gemini.md`](docs/adr/ADR-002-ia-gemini.md).
 
 ## 3. Cómo se usa (flujo por rol)
 
@@ -83,11 +112,11 @@ sequenceDiagram
 | Ejecutivo | La persona cuya agenda se gestiona. Solo aparecen los ejecutivos vinculados. | Rocio Damian Gavino |
 | Asunto | Motivo de la reunión, entre 3 y 120 caracteres. | Revisión trimestral de ventas |
 | Contraparte | Persona de la otra parte con quien se coordina, entre 2 y 80 caracteres. | Pedro Gómez |
-| Correo de la contraparte | Opcional. Se usará para enviar el enlace de disponibilidad en el Módulo 2. | pedro.gomez@empresa.com |
+| Correo de la contraparte | Opcional. Se usa para preparar el correo con el enlace de disponibilidad. | pedro.gomez@empresa.com |
 | Duración | 15, 30, 45, 60, 90 o 120 minutos. | 45 minutos |
 | Notas | Opcional, hasta 500 caracteres. | Prefiere mañanas, presencial |
 
-Al crear la solicitud queda en estado **pendiente**.
+Al crear la solicitud queda en estado **pendiente**. Desde el detalle, la asistente sigue el recorrido: genera el enlace para la contraparte, registra la disponibilidad del ejecutivo, genera la propuesta de tres horarios y comparte el enlace de aprobación. La solicitud pasa por los estados pendiente, propuesta y aprobada, o cancelada.
 
 ## 4. Arquitectura y decisiones
 
@@ -163,6 +192,10 @@ erDiagram
 | `AssistantLink` | `meetings` | Par único (asistente, ejecutivo). Restricción de base de datos que impide vincularse con uno mismo. |
 | `MeetingRequest` | `meetings` | Duración restringida a 15, 30, 45, 60, 90 o 120 minutos. Estado por defecto `pendiente`. Índice por ejecutivo y fecha de creación. |
 
+- `ia.UsoIA`: llamadas a la IA por usuario y día (solo el contador, nunca el texto enviado).
+- `ia.AcuerdosReunion`: notas, resumen y seguimiento propuesto de una reunión aprobada (uno por solicitud).
+- `ia.TareaReunion`: tarea acordada en una reunión (descripción, responsable en texto, fecha límite, estado hecha y clave de Jira si se envió).
+
 ## 6. Seguridad y permisos
 
 La regla "cada persona ve solo lo suyo" está concentrada en un único punto de la capa de aplicación: `MeetingRequest.objects.visible_to(user)` y la función `_executives_of(user)` en `meetings/`.
@@ -189,6 +222,30 @@ La regla "cada persona ve solo lo suyo" está concentrada en un único punto de 
 | `/panel/vincular/` | POST | Vincular a la asistente con un ejecutivo mediante su código | Sí |
 | `/panel/vinculo/<id>/eliminar/` | POST | Eliminar un vínculo | Sí |
 | `/demo/tarjeta/` | GET | Maqueta de la tarjeta de aprobación con datos de ejemplo | No |
+| `/salud/` | GET | Ruta de salud usada por el despliegue | No |
+| `/bienvenida/` | GET, POST | Recorrido de bienvenida según el rol | Sí |
+| `/panel/solicitudes/<id>/` | GET | Detalle de la solicitud con el recorrido por pasos | Sí |
+| `/panel/solicitudes/<id>/enlace/` | POST | Generar el enlace firmado para la contraparte | Sí |
+| `/panel/solicitudes/<id>/disponibilidad/` | POST | Guardar la disponibilidad del ejecutivo | Sí |
+| `/panel/solicitudes/<id>/importar-calendario/` | POST | Importar la disponibilidad desde un archivo `.ics` | Sí |
+| `/panel/solicitudes/<id>/propuesta/` | POST | Generar la propuesta de tres horarios | Sí |
+| `/panel/solicitudes/<id>/enlace-aprobacion/` | POST | Generar el enlace de aprobación para el ejecutivo | Sí |
+| `/panel/solicitudes/<id>/invitacion.ics` | GET | Descargar la invitación de la reunión confirmada | Sí |
+| `/panel/historial/` | GET | Historial de reuniones | Sí |
+| `/panel/metricas/` | GET | Métricas de uso | Sí |
+| `/panel/reglas/` | GET | Reglas de horarios protegidos (con rutas para crear, editar y alternar) | Sí |
+| `/c/<token>/` | GET, POST | Disponibilidad de la contraparte, mediante enlace firmado | No |
+| `/a/<token>/` | GET, POST | Aprobación del ejecutivo, mediante enlace firmado | No |
+| `/a/<token>/invitacion.ics` | GET | Invitación `.ics` desde el enlace de aprobación | No |
+| `/panel/captura/` | POST | Interpretar con IA una frase como solicitud o reglas (vista previa) | Sí |
+| `/panel/captura/reglas/` | POST | Confirmar y guardar las reglas de la vista previa | Sí |
+| `/panel/solicitudes/<id>/acuerdos/generar/` | POST | Generar resumen, tareas y seguimiento a partir de las notas | Sí |
+| `/panel/solicitudes/<id>/acuerdos/confirmar/` | POST | Guardar los acuerdos de la vista previa | Sí |
+| `/panel/solicitudes/<id>/seguimiento/` | GET | Formulario de solicitud precargado con el seguimiento propuesto | Sí |
+| `/panel/tareas/` | GET | Tablero de tareas con filtros | Sí |
+| `/panel/tareas/exportar.csv` | GET | Exportar las tareas a CSV para Jira | Sí |
+| `/panel/tareas/<id>/estado/` | POST | Marcar una tarea como hecha o reabrirla | Sí |
+| `/panel/tareas/<id>/jira/` | POST | Enviar una tarea a Jira (solo asistente) | Sí |
 | `/admin/` | GET | Administración de Django | Superusuario |
 
 ## 8. Instalación y ejecución local
@@ -236,7 +293,7 @@ Abrir <http://127.0.0.1:8000/> en el navegador. La base de datos local se crea e
 
 | Comando | Para qué sirve |
 | --- | --- |
-| `python manage.py test` | Ejecuta las 31 pruebas automáticas. |
+| `python manage.py test` | Ejecuta las 500 pruebas automáticas (al 14/11/2026). |
 | `python manage.py createsuperuser` | Crea un administrador para entrar a `/admin/` y revisar los datos. |
 | `python manage.py makemigrations` y luego `python manage.py migrate` | Después de modificar un modelo. La migración se sube junto con el código. |
 
@@ -252,6 +309,17 @@ En local la aplicación funciona sin ninguna variable. Para personalizar, copiar
 | `CSRF_TRUSTED_ORIGINS` | vacío | En producción, por ejemplo `https://tu-app.onrender.com`. |
 | `DATABASE_URL` | SQLite local | En producción, `postgres://usuario:clave@host:5432/base`. |
 | `SECURE_SSL_REDIRECT` | `1` (solo con `DEBUG=0`) | Redirige HTTP a HTTPS. |
+| `GEMINI_API_KEY` | vacío | Clave de Google AI Studio. Sin ella, las funciones de IA no se muestran. Secreta: solo en el entorno. |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Modelo principal. |
+| `GEMINI_MODEL_FALLBACK` | `gemini-3.1-flash-lite` | Modelo de respaldo si el principal responde 429, 404 o error del servicio. |
+| `GEMINI_TIMEOUT` | `20` | Segundos de espera por llamada. |
+| `IA_LLAMADAS_POR_USUARIO_DIA` | `30` | Tope de llamadas a la IA por usuario al día. |
+| `JIRA_SITE` | vacío | Sitio de Jira Cloud, por ejemplo `tuequipo.atlassian.net`. |
+| `JIRA_EMAIL` | vacío | Correo de la cuenta que creó el token. |
+| `JIRA_TOKEN` | vacío | Token de API de Atlassian. Secreto: solo en el entorno, nunca en el repositorio. |
+| `JIRA_PROJECT` | vacío | Clave del proyecto de demostración de Jira (no el proyecto evaluado). |
+| `JIRA_ISSUE_TYPE` | `Tarea` | Nombre del tipo de incidencia en el proyecto (`Task` si está en inglés). |
+| `JIRA_TIMEOUT` | `15` | Segundos de espera por llamada a Jira. |
 
 ## 10. Pruebas
 
@@ -259,14 +327,16 @@ En local la aplicación funciona sin ninguna variable. Para personalizar, copiar
 python manage.py test
 ```
 
-Son 31 pruebas automáticas que se ejecutan en menos de un segundo (las contraseñas usan un hash rápido únicamente durante las pruebas):
+Son 500 pruebas automáticas en verde al 14/11/2026 (las contraseñas usan un hash rápido únicamente durante las pruebas). Todas se ejecutan en el pipeline de GitHub Actions, que además corre las pruebas contra PostgreSQL 16, exige una cobertura mínima del 90 % y revisa el estilo con flake8.
 
 | Aplicación | Pruebas | Qué cubren |
 | --- | --- | --- |
-| `accounts` | 11 | Registro con rol, rol inválido, correo repetido o con mayúsculas, contraseña débil, código de 6 caracteres solo para ejecutivos, códigos únicos e inmutables, ingreso en cualquier capitalización, credenciales incorrectas, panel que exige sesión, cierre de sesión. |
-| `meetings` | 20 | Vinculación con código en minúsculas o con espacios, vínculo repetido, código inválido o vacío, ejecutivo que intenta vincularse, desvinculación, tercero que intenta borrar un vínculo ajeno, vínculo con uno mismo, creación de solicitudes y su visibilidad, suplantación del creador, validaciones, errores en pantalla, acceso anónimo, método HTTP, escape de HTML y carga de la maqueta. |
+| `accounts` | 60 | Registro con rol, contraseñas, código de vinculación, ingreso, bienvenida por rol, usabilidad y cierre de sesión. |
+| `meetings` | 313 | Vínculos, solicitudes y su visibilidad, enlaces firmados, disponibilidad, importación `.ics`, propuesta, aprobación, confirmación, historial, métricas, reglas, roles y permisos, avisos, estados y recorrido por pasos. |
+| `scheduling` | 103 | Algoritmo de ranking y propuesta de horarios, reglas de horarios protegidos, formato de hora de 24 horas y landing. |
+| `config` | 24 | Cabecera HSTS, tipografía autoalojada sin recursos externos, ruta de salud y registros. |
 
-Entornos en los que se verificó la suite completa: Python 3.10 con Django 5.2 y Python 3.13 con Django 6.1. Además se ejecutó un recorrido automatizado de extremo a extremo con navegador (ejecutivo y asistente en dos contextos: vínculo, creación de solicitud y aparición en el panel del ejecutivo en menos de 9 segundos).
+Además, el job `navegador` del pipeline ejecuta un recorrido de extremo a extremo con Playwright (ejecutivo, asistente y contraparte, hasta la reunión confirmada) en menos de 9 segundos, y la guía [`docs/PASOS_MODULO1.md`](docs/PASOS_MODULO1.md) describe el recorrido manual. Las pruebas automáticas no sustituyen la validación con usuarios, que sigue pendiente (ver [sección 14](#14-supuestos-e-hipótesis-no-validadas)).
 
 Regla del equipo: toda regla de permisos nueva se entrega con su prueba en el mismo cambio.
 
@@ -278,7 +348,7 @@ La aplicación está publicada (TR-20) en Render, con la base de datos PostgreSQ
 - Base de datos: PostgreSQL en Neon, con conexión directa (sin pooler), tomada de la variable `DATABASE_URL`.
 - Comando de construcción: `bash build.sh` (instala `requirements-prod.txt`, ejecuta `collectstatic` y `migrate`).
 - Comando de inicio: `gunicorn config.wsgi --log-file -`. Render no lee el `Procfile`, por lo que el comando se define en el panel del servicio.
-- Variables en Render: `PYTHON_VERSION`, `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y `DATABASE_URL`. Los valores sensibles existen solo en el panel de Render y no están en el repositorio.
+- Variables en Render: `PYTHON_VERSION`, `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,`DATABASE_URL`, GEMINI_API_KEY, JIRA_SITE, JIRA_EMAIL, JIRA_TOKEN y JIRA_PROJECT (las dos claves como secretas). Los valores sensibles existen solo en el panel de Render y no están en el repositorio.
 - Publicación: automática desde `main` mediante el pipeline (ver la sección siguiente). El Auto-Deploy de Render permanece en Off.
 
 El plan gratuito de Render duerme la aplicación tras un periodo de inactividad y Neon suspende su cómputo tras 5 minutos sin uso, por lo que la primera visita puede tardar hasta un minuto. Conviene abrirla antes de una demostración.
@@ -301,13 +371,15 @@ El detalle completo de cada etapa (qué hace, por qué existe y cómo reproducir
 ```text
 .
 ├── config/                  Ajustes (settings.py), rutas (urls.py), wsgi y asgi
-├── accounts/                Usuario con rol, registro e ingreso, 11 pruebas
-├── meetings/                Vínculos asistente-ejecutivo y solicitudes, 20 pruebas
-├── scheduling/              Contratos de datos y datos de ejemplo del Módulo 2
+├── accounts/                Usuario con rol, registro, ingreso y bienvenida, 60 pruebas
+├── meetings/                Vínculos, solicitudes, enlaces, propuesta, aprobación, historial y métricas, 313 pruebas
+├── scheduling/              Algoritmo de ranking, reglas, contratos de datos y landing, 103 pruebas
+├── ia/                      Asistente de IA: cliente de Gemini, captura, acuerdos, tareas y envío a Jira
 ├── templates/               Plantillas HTML (base, registro, acceso, panel, maqueta)
 ├── static/                  CSS propio y HTMX incluido localmente
 ├── docs/
 │   ├── adr/ADR-001-stack.md          Decisión de stack y arquitectura
+│   ├── adr/ADR-002-ia-gemini.md      Decisión del asistente de IA con Gemini y Jira
 │   ├── PASOS_MODULO1.md              Guía operativa paso a paso
 │   ├── Planificacion_Sprints_Quedamos_Jira.md   Plan de sprints y tarjetas
 │   └── referencia/matching.ts        Algoritmo de ranking del prototipo original
@@ -347,14 +419,14 @@ Las épicas son: validación con el profesor y supuestos, base técnica, cuentas
 
 ## 14. Supuestos e hipótesis no validadas
 
-El proyecto cambió de segmento (de estudiantes a corporativo) por recomendación del docente. Las hipótesis siguientes se tratan como **supuestos razonables** y no se presentan como validadas. Se contrastarán en las revisiones de sprint con el docente actuando como usuario (TR-10 y TR-17) y con las métricas de uso (HU-10).
+El proyecto cambió de segmento (de estudiantes a corporativo) por recomendación del docente. Las hipótesis siguientes se tratan como **supuestos razonables** y no se presentan como validadas. Se contrastan con el uso del producto por el docente (10/11/2026, único usuario consultado hasta ahora) y con las métricas de uso (HU-10).
 
 | Código | Hipótesis | Cómo se contrasta |
 | --- | --- | --- |
-| H1 | Coordinar reuniones consume tiempo y genera idas y vueltas por correo. | Revisiones de sprint TR-10 y TR-17. |
-| H2 | La asistente opera la coordinación y el ejecutivo solo aprueba. | Revisiones de sprint TR-10 y TR-17. |
+| H1 | Coordinar reuniones consume tiempo y genera idas y vueltas por correo. | Uso del producto por el docente y entrevistas con usuarios corporativos (pendiente). |
+| H2 | La asistente opera la coordinación y el ejecutivo solo aprueba. | Uso del producto por el docente y entrevistas con usuarios corporativos (pendiente). |
 | H3 | Una propuesta ordenada reduce los mensajes cruzados. | Métrica de mensajes evitados (HU-10). |
-| H4 | El ejecutivo aprueba con un toque sin aprender una herramienta nueva. | Pruebas con el docente (TR-17). |
+| H4 | El ejecutivo aprueba con un toque sin aprender una herramienta nueva. | Pruebas con usuarios ejecutivos (pendiente). |
 | H5 | El tiempo hasta confirmar baja frente a la línea base. | Métrica de tiempo hasta confirmar (HU-10). |
 
 El precio por asiento tampoco tiene un dato propio: se contrastará con el benchmark de herramientas (TR-22) y con la consulta al docente.
@@ -363,10 +435,17 @@ El precio por asiento tampoco tiene un dato propio: se contrastará con el bench
 
 - El panel consulta cada 5 segundos; no es tiempo real verdadero. Si se necesitara, se evaluaría Django Channels en un sprint posterior.
 - En el registro se elige el rol. Es aceptable para la demostración; en producción el rol de ejecutivo debería verificarse, por ejemplo por dominio corporativo.
-- El Módulo 2 (cálculo de horarios, enlace para la contraparte, aprobación y correo) y la integración con calendarios aún no están implementados.
-- La verificación de permisos de Google Calendar puede exigir usuarios de prueba; por eso existe el plan alterno de importar un archivo `.ics` (TR-14).
+- El aviso al ejecutivo no se envía solo: se copia el enlace o se abre un correo prellenado. El envío automático por correo está pendiente.
+- No hay integración directa con Google Calendar; la disponibilidad del ejecutivo se marca a mano o se importa desde un archivo `.ics`.
+- No hubo pruebas con usuarios corporativos: las hipótesis H1 a H5 y el precio por asiento siguen sin validar.
+- La verificación de permisos de Google Calendar puede exigir usuarios de prueba; por eso se implementó el plan alterno de importar un archivo `.ics` (TR-14).
 - La instancia desplegada usa los planes gratuitos de Render y Neon, que se suspenden por inactividad, y su publicación es automática desde `main` con el pipeline en verde (TR-37).
 - Las menciones a herramientas de la competencia provienen de información de sus propios proveedores y se contrastarán con fuentes primarias en el benchmark (TR-22).
+- Las funciones de IA usan el nivel gratuito de Gemini: 15 solicitudes por minuto y 500 por día para todo el proyecto, y Google puede usar el contenido enviado para mejorar sus productos. Por eso la demostración usa solo datos ficticios.
+- El dictado por voz depende del navegador (soporte parcial) y es opcional; el campo de texto siempre funciona.
+- El envío a Jira usa una sola cuenta y un solo proyecto de demostración configurados en el servidor; cada persona no conecta su propio Jira. Si el token vence o se revoca, queda la exportación CSV.
+- Cada reunión tiene un solo registro de acuerdos: una vez confirmado no se vuelve a generar, y las tareas solo se marcan como hechas.
+- La calidad de la salida del modelo no está garantizada: por eso nada se guarda sin que la persona revise y confirme.
 
 ## 16. Equipo y documentación relacionada
 
