@@ -1,0 +1,60 @@
+{% extends "panel/base_panel.html" %}
+{% load static %}
+{% block title %}Tareas · Quedamos{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/captura.css' %}">
+<section aria-labelledby="titulo-tareas">
+  <div class="encabezado">
+    <div>
+      <h1 id="titulo-tareas">Tareas de las reuniones</h1>
+      <p class="muted">{{ pendientes }} pendiente{{ pendientes|pluralize }} de {{ total }}. Salen de la sección «Después de la reunión» de cada solicitud aprobada.</p>
+    </div>
+  </div>
+
+  <form method="get" class="card en-linea tareas-filtros" aria-label="Filtrar tareas">
+    <div>
+      <label for="filtro-estado">Estado</label>
+      <select id="filtro-estado" name="estado">
+        <option value="">Todas</option>
+        <option value="pendiente"{% if filtros.estado == 'pendiente' %} selected{% endif %}>Pendientes</option>
+        <option value="hecha"{% if filtros.estado == 'hecha' %} selected{% endif %}>Hechas</option>
+      </select>
+    </div>
+    <div>
+      <label for="filtro-reunion">Reunión</label>
+      <select id="filtro-reunion" name="reunion">
+        <option value="">Todas</option>
+        {% for reunion in reuniones %}<option value="{{ reunion.pk }}"{% if filtros.reunion == reunion.pk|stringformat:"s" %} selected{% endif %}>{{ reunion.title }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit">Filtrar</button>
+    <a class="btn" href="{{ url_csv }}">Exportar CSV para Jira</a>
+  </form>
+
+  {% if tareas %}
+    <ul class="tareas-lista">
+      {% for t in tareas %}
+        <li class="card tarea{% if t.hecha %} tarea-hecha{% endif %}">
+          <div class="tarea-texto">
+            <strong>{{ t.descripcion }}</strong>
+            <div class="muted">
+              {% if t.responsable %}{{ t.responsable }} · {% endif %}{% if t.fecha_limite %}hasta el {{ t.fecha_limite|date:"d/m/Y" }}{% else %}sin fecha límite{% endif %}{% if t.vencida %} · <strong>vencida</strong>{% endif %}
+              · <a href="{% url 'request_detail' t.acuerdos.request_id %}">{{ t.acuerdos.request.title }}</a>
+            </div>
+          </div>
+          <form method="post" action="{% url 'ia_tarea_estado' t.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="estado" value="{{ filtros.estado }}">
+            <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
+            <button type="submit" class="small">{% if t.hecha %}Reabrir{% else %}Marcar como hecha{% endif %}</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif total %}
+    <p class="card muted">Ninguna tarea coincide con el filtro.</p>
+  {% else %}
+    <p class="card muted">Todavía no hay tareas. Aparecen cuando confirmas los acuerdos de una reunión aprobada.</p>
+  {% endif %}
+</section>
+{% endblock %}

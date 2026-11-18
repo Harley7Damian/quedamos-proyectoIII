@@ -24,6 +24,7 @@
         <p><a class="btn" href="{% url 'ia_seguimiento' r.pk %}">Proponer seguimiento</a> <span class="muted">Abre el formulario de solicitud con estos datos; no se crea nada hasta que lo envíes.</span></p>
       {% endif %}
     {% endif %}
+    <p><a href="{% url 'ia_tareas' %}?reunion={{ r.pk }}">Ver estas tareas en el tablero</a></p>
     <p class="muted">Registrado por {{ acuerdos.created_by.full_name }} el {{ acuerdos.created_at|date:"d/m/Y H:i" }}.</p>
   {% else %}
     <p class="muted">Pega las notas o la transcripción de la reunión y obtén un resumen, las tareas con responsable y una propuesta de seguimiento. Verás una vista previa editable y nada se guarda hasta que la confirmes.</p>
