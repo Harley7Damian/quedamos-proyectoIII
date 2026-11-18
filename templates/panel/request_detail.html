@@ -1,5 +1,5 @@
 {% extends "panel/base_panel.html" %}
-{% load scheduling_extras %}
+{% load scheduling_extras ia_extras %}
 {% block title %}{{ r.title }} · Quedamos{% endblock %}
 {% block content %}
 <p class="volver"><a href="{% url 'panel' %}">← Volver a las solicitudes</a></p>
@@ -21,6 +21,7 @@
     <div class="msg error"><strong>El ejecutivo pidió otras opciones</strong> el {{ r.new_options_requested_at|date:"d/m/Y H:i" }}. Ajusta la disponibilidad o las reglas y genera una nueva propuesta.</div>
   {% endif %}
 {% endif %}
+{% acuerdos_reunion r %}
 
 <h2>1. Disponibilidad del ejecutivo</h2>
 {% if me.is_executive %}

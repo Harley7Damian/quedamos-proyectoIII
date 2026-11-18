@@ -1,0 +1,23 @@
+{% extends "panel/base_panel.html" %}
+{% block title %}Seguimiento de {{ r.title }} · Quedamos{% endblock %}
+{% block content %}
+<p class="volver"><a href="{% url 'request_detail' r.pk %}">← Volver a la reunión</a></p>
+<h1>Proponer seguimiento</h1>
+<p class="muted">Datos tomados de los acuerdos de «{{ r.title }}». Revísalos: la solicitud no existe hasta que pulses Crear solicitud.</p>
+<form method="post" action="{% url 'create_request' %}" class="card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {{ form.executive.label_tag }}{{ form.executive }}{{ form.executive.errors }}
+  {{ form.title.label_tag }}{{ form.title }}{{ form.title.errors }}
+  <div class="grid2">
+    <div>{{ form.counterpart_name.label_tag }}{{ form.counterpart_name }}{{ form.counterpart_name.errors }}</div>
+    <div>{{ form.counterpart_email.label_tag }}{{ form.counterpart_email }}{{ form.counterpart_email.errors }}</div>
+  </div>
+  <div class="grid2">
+    <div>{{ form.duration_min.label_tag }}{{ form.duration_min }}{{ form.duration_min.errors }}</div>
+    <div>{{ form.week.label_tag }}{{ form.week }}{{ form.week.errors }}</div>
+  </div>
+  {{ form.notes.label_tag }}{{ form.notes }}{{ form.notes.errors }}
+  <p><button type="submit">Crear solicitud</button></p>
+</form>
+{% endblock %}
