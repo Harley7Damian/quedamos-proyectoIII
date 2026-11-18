@@ -99,3 +99,9 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f"Perfil de {self.user}"
+
+    @property
+    def telegram_link_code_vigente(self) -> bool:
+        from django.utils import timezone
+        return bool(self.telegram_link_code and self.telegram_link_code_expira_en and self.telegram_link_code_expira_en > timezone.now())
+
