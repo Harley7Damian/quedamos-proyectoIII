@@ -1,0 +1,29 @@
+<form hx-post="{% url 'ia_acuerdos_confirmar' r.pk %}" hx-target="#acuerdos-resultado" hx-swap="innerHTML" class="card captura-vista">
+  {% csrf_token %}
+  <h3>Esto entendí</h3>
+  <p class="muted">Corrige el resumen, edita las tareas, quita la marca de las que no correspondan o completa las filas vacías para agregar otras. Nada se guarda hasta que pulses Confirmar acuerdos.</p>
+  <input type="hidden" name="total" value="{{ total }}">
+  <input type="hidden" name="notas" value="{{ notas }}">
+  {{ form.non_field_errors }}
+  {{ form.resumen.label_tag }}{{ form.resumen }}{{ form.resumen.errors }}
+  <h4>Tareas</h4>
+  {% for fila in filas %}
+    <fieldset class="captura-regla">
+      <legend class="oculto">Tarea {{ forloop.counter }}</legend>
+      <label class="captura-incluir"><input type="checkbox" name="t{{ fila.i }}-incluir" value="1"{% if fila.incluir %} checked{% endif %}> Guardar</label>
+      {{ fila.form.non_field_errors }}
+      <div class="acuerdos-tarea-campos">
+        <div>{{ fila.form.descripcion.label_tag }}{{ fila.form.descripcion }}{{ fila.form.descripcion.errors }}</div>
+        <div>{{ fila.form.responsable.label_tag }}{{ fila.form.responsable }}{{ fila.form.responsable.errors }}</div>
+        <div>{{ fila.form.fecha_limite.label_tag }}{{ fila.form.fecha_limite }}{{ fila.form.fecha_limite.errors }}</div>
+      </div>
+    </fieldset>
+  {% endfor %}
+  <h4>Seguimiento</h4>
+  <label class="captura-incluir">{{ form.seguimiento_incluir }} {{ form.seguimiento_incluir.label }}</label>
+  <div class="grid2">
+    <div>{{ form.seguimiento_asunto.label_tag }}{{ form.seguimiento_asunto }}{{ form.seguimiento_asunto.errors }}</div>
+    <div>{{ form.seguimiento_duracion.label_tag }}{{ form.seguimiento_duracion }}{{ form.seguimiento_duracion.errors }}</div>
+  </div>
+  <p><button type="submit">Confirmar acuerdos</button></p>
+</form>

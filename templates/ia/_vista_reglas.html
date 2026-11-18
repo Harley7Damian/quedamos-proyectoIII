@@ -1,0 +1,24 @@
+<form hx-post="{% url 'ia_confirmar_reglas' %}" hx-target="#captura-resultado" hx-swap="innerHTML" class="card captura-vista">
+  {% csrf_token %}
+  <h3>Esto entendí</h3>
+  <p class="muted">Revisa cada regla, quita la marca de las que no quieras y corrige lo que haga falta. Nada se guarda hasta que pulses Confirmar reglas.</p>
+  <input type="hidden" name="total" value="{{ total }}">
+  <label for="captura-ejecutivo">Ejecutivo</label>
+  <select id="captura-ejecutivo" name="executive">
+    {% for e in ejecutivos %}<option value="{{ e.pk }}"{% if ejecutivo_id == e.pk|stringformat:"s" %} selected{% endif %}>{{ e.full_name }}</option>{% endfor %}
+  </select>
+  {% for fila in filas %}
+    <fieldset class="captura-regla">
+      <legend class="oculto">Regla {{ forloop.counter }}</legend>
+      <label class="captura-incluir"><input type="checkbox" name="r{{ fila.i }}-incluir" value="1"{% if fila.incluir %} checked{% endif %}> Guardar</label>
+      {{ fila.form.non_field_errors }}
+      <div class="captura-regla-campos">
+        <div>{{ fila.form.weekday.label_tag }}{{ fila.form.weekday }}{{ fila.form.weekday.errors }}</div>
+        <div>{{ fila.form.start_hour.label_tag }}{{ fila.form.start_hour }}{{ fila.form.start_hour.errors }}</div>
+        <div>{{ fila.form.end_hour.label_tag }}{{ fila.form.end_hour }}{{ fila.form.end_hour.errors }}</div>
+      </div>
+      {{ fila.form.executive.errors }}
+    </fieldset>
+  {% endfor %}
+  <p><button type="submit">Confirmar reglas</button></p>
+</form>

@@ -1,0 +1,44 @@
+{% load static %}
+{# HU-18: seccion "Despues de la reunion" del detalle de una solicitud aprobada. #}
+{% if mostrar %}
+<link rel="stylesheet" href="{% static 'css/captura.css' %}">
+<section class="card acuerdos" id="acuerdos" aria-labelledby="titulo-acuerdos">
+  <h2 id="titulo-acuerdos">Después de la reunión</h2>
+  {% if acuerdos %}
+    <h3>Resumen</h3>
+    <p class="acuerdos-resumen">{{ acuerdos.resumen|linebreaksbr }}</p>
+    <h3>Tareas</h3>
+    {% if tareas %}
+      <ul class="acuerdos-tareas">
+        {% for t in tareas %}
+          <li><strong>{{ t.descripcion }}</strong>{% if t.responsable %} · {{ t.responsable }}{% endif %}{% if t.fecha_limite %} · hasta el {{ t.fecha_limite|date:"d/m/Y" }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Las notas no dejaron tareas.</p>
+    {% endif %}
+    {% if acuerdos.tiene_seguimiento %}
+      <h3>Seguimiento propuesto</h3>
+      <p>{{ acuerdos.seguimiento_asunto }}{% if acuerdos.seguimiento_duracion %} · {{ acuerdos.seguimiento_duracion }} min{% endif %}</p>
+      {% if me.is_assistant %}
+        <p><a class="btn" href="{% url 'ia_seguimiento' r.pk %}">Proponer seguimiento</a> <span class="muted">Abre el formulario de solicitud con estos datos; no se crea nada hasta que lo envíes.</span></p>
+      {% endif %}
+    {% endif %}
+    <p><a href="{% url 'ia_tareas' %}?reunion={{ r.pk }}">Ver estas tareas en el tablero</a></p>
+    <p class="muted">Registrado por {{ acuerdos.created_by.full_name }} el {{ acuerdos.created_at|date:"d/m/Y H:i" }}.</p>
+  {% else %}
+    <p class="muted">Pega las notas o la transcripción de la reunión y obtén un resumen, las tareas con responsable y una propuesta de seguimiento. Verás una vista previa editable y nada se guarda hasta que la confirmes.</p>
+    <form hx-post="{% url 'ia_acuerdos_generar' r.pk %}" hx-target="#acuerdos-resultado" hx-swap="innerHTML" hx-indicator="#acuerdos-cargando" hx-disabled-elt="#acuerdos-generar">
+      {% csrf_token %}
+      <label for="acuerdos-notas">Notas de la reunión</label>
+      <textarea id="acuerdos-notas" name="notas" rows="8" maxlength="{{ max_notas }}" required></textarea>
+      <div class="en-linea captura-acciones">
+        <button type="submit" id="acuerdos-generar">Generar acuerdos</button>
+        <span id="acuerdos-cargando" class="htmx-indicator muted" role="status">Generando…</span>
+      </div>
+      <p class="muted captura-aviso">Hasta {{ max_notas }} caracteres. El texto se envía a Gemini (Google) para interpretarlo. En la demostración usa solo datos ficticios.</p>
+    </form>
+    <div id="acuerdos-resultado" aria-live="polite"></div>
+  {% endif %}
+</section>
+{% endif %}

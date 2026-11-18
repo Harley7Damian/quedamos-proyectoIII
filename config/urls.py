@@ -9,4 +9,5 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("", include("meetings.urls")),
     path("", include("scheduling.urls")),
+    path("", include("ia.urls")),
 ]
