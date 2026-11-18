@@ -74,6 +74,21 @@ El **Módulo 2** se agregó en los sprints 2 a 4 y también corre de punta a pun
 
 Lo que **todavía no existe**: integración directa con Google Calendar (se usa el plan alterno por archivo `.ics`), envío automático del aviso por correo y alertas que despierten al ejecutivo (idea en evaluación). Ver [sección 15](#15-limitaciones-conocidas).
 
+### Asistente de IA (Sprint 6)
+
+Funciones opcionales que se activan solo si hay una clave de Gemini configurada (`GEMINI_API_KEY`). Sin clave, la aplicación funciona igual que antes. La IA solo propone: siempre hay una vista previa editable y nada se guarda hasta que la persona confirma.
+
+- **Captura inteligente (HU-17).** En el panel, la asistente escribe o dicta una frase ("reunión con el proveedor de una hora la próxima semana" o "nada antes de las 10") y la IA la interpreta como una solicitud o como reglas de horario protegido. Lo confirmado pasa por los mismos formularios y validaciones que el flujo manual.
+- **Acuerdos de la reunión (HU-18).** En el detalle de una solicitud aprobada, la asistente pega las notas (hasta 6.000 caracteres) y obtiene un resumen, tareas con responsable y fecha límite, y una propuesta de seguimiento que abre el formulario de solicitud ya precargado.
+- **Tablero de tareas y exportación CSV (HU-19).** Vista "Tareas" con filtro por estado y por reunión, y un CSV (Resumen, Descripción, Tipo, Fecha límite, Etiquetas) que se importa en Jira.
+- **Envío a Jira por API (HU-20).** Botón "Enviar a Jira" por tarea, una sola vez por tarea, hacia un proyecto de demostración de Jira. Si falta la configuración, el botón no se muestra y queda el CSV.
+
+**Límites del nivel gratuito.** Modelo principal `gemini-3.5-flash-lite` y respaldo `gemini-3.1-flash-lite`: 15 solicitudes por minuto y 500 por día para todo el proyecto de Google AI Studio (valores vigentes en noviembre de 2026; Google puede cambiarlos). Cada usuario tiene un tope de 30 llamadas al día para no agotar el cupo común.
+
+**Usar solo datos ficticios.** En el nivel gratuito, Google puede usar el contenido enviado para mejorar sus productos. No pegues información real de reuniones. La pantalla lo advierte.
+
+La decisión y las alternativas descartadas están en [`docs/adr/ADR-002-ia-gemini.md`](docs/adr/ADR-002-ia-gemini.md).
+
 ## 3. Cómo se usa (flujo por rol)
 
 ```mermaid
@@ -177,6 +192,10 @@ erDiagram
 | `AssistantLink` | `meetings` | Par único (asistente, ejecutivo). Restricción de base de datos que impide vincularse con uno mismo. |
 | `MeetingRequest` | `meetings` | Duración restringida a 15, 30, 45, 60, 90 o 120 minutos. Estado por defecto `pendiente`. Índice por ejecutivo y fecha de creación. |
 
+- `ia.UsoIA`: llamadas a la IA por usuario y día (solo el contador, nunca el texto enviado).
+- `ia.AcuerdosReunion`: notas, resumen y seguimiento propuesto de una reunión aprobada (uno por solicitud).
+- `ia.TareaReunion`: tarea acordada en una reunión (descripción, responsable en texto, fecha límite, estado hecha y clave de Jira si se envió).
+
 ## 6. Seguridad y permisos
 
 La regla "cada persona ve solo lo suyo" está concentrada en un único punto de la capa de aplicación: `MeetingRequest.objects.visible_to(user)` y la función `_executives_of(user)` en `meetings/`.
@@ -218,6 +237,15 @@ La regla "cada persona ve solo lo suyo" está concentrada en un único punto de 
 | `/c/<token>/` | GET, POST | Disponibilidad de la contraparte, mediante enlace firmado | No |
 | `/a/<token>/` | GET, POST | Aprobación del ejecutivo, mediante enlace firmado | No |
 | `/a/<token>/invitacion.ics` | GET | Invitación `.ics` desde el enlace de aprobación | No |
+| `/panel/captura/` | POST | Interpretar con IA una frase como solicitud o reglas (vista previa) | Sí |
+| `/panel/captura/reglas/` | POST | Confirmar y guardar las reglas de la vista previa | Sí |
+| `/panel/solicitudes/<id>/acuerdos/generar/` | POST | Generar resumen, tareas y seguimiento a partir de las notas | Sí |
+| `/panel/solicitudes/<id>/acuerdos/confirmar/` | POST | Guardar los acuerdos de la vista previa | Sí |
+| `/panel/solicitudes/<id>/seguimiento/` | GET | Formulario de solicitud precargado con el seguimiento propuesto | Sí |
+| `/panel/tareas/` | GET | Tablero de tareas con filtros | Sí |
+| `/panel/tareas/exportar.csv` | GET | Exportar las tareas a CSV para Jira | Sí |
+| `/panel/tareas/<id>/estado/` | POST | Marcar una tarea como hecha o reabrirla | Sí |
+| `/panel/tareas/<id>/jira/` | POST | Enviar una tarea a Jira (solo asistente) | Sí |
 | `/admin/` | GET | Administración de Django | Superusuario |
 
 ## 8. Instalación y ejecución local
@@ -281,6 +309,17 @@ En local la aplicación funciona sin ninguna variable. Para personalizar, copiar
 | `CSRF_TRUSTED_ORIGINS` | vacío | En producción, por ejemplo `https://tu-app.onrender.com`. |
 | `DATABASE_URL` | SQLite local | En producción, `postgres://usuario:clave@host:5432/base`. |
 | `SECURE_SSL_REDIRECT` | `1` (solo con `DEBUG=0`) | Redirige HTTP a HTTPS. |
+| `GEMINI_API_KEY` | vacío | Clave de Google AI Studio. Sin ella, las funciones de IA no se muestran. Secreta: solo en el entorno. |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Modelo principal. |
+| `GEMINI_MODEL_FALLBACK` | `gemini-3.1-flash-lite` | Modelo de respaldo si el principal responde 429, 404 o error del servicio. |
+| `GEMINI_TIMEOUT` | `20` | Segundos de espera por llamada. |
+| `IA_LLAMADAS_POR_USUARIO_DIA` | `30` | Tope de llamadas a la IA por usuario al día. |
+| `JIRA_SITE` | vacío | Sitio de Jira Cloud, por ejemplo `tuequipo.atlassian.net`. |
+| `JIRA_EMAIL` | vacío | Correo de la cuenta que creó el token. |
+| `JIRA_TOKEN` | vacío | Token de API de Atlassian. Secreto: solo en el entorno, nunca en el repositorio. |
+| `JIRA_PROJECT` | vacío | Clave del proyecto de demostración de Jira (no el proyecto evaluado). |
+| `JIRA_ISSUE_TYPE` | `Tarea` | Nombre del tipo de incidencia en el proyecto (`Task` si está en inglés). |
+| `JIRA_TIMEOUT` | `15` | Segundos de espera por llamada a Jira. |
 
 ## 10. Pruebas
 
@@ -309,7 +348,7 @@ La aplicación está publicada (TR-20) en Render, con la base de datos PostgreSQ
 - Base de datos: PostgreSQL en Neon, con conexión directa (sin pooler), tomada de la variable `DATABASE_URL`.
 - Comando de construcción: `bash build.sh` (instala `requirements-prod.txt`, ejecuta `collectstatic` y `migrate`).
 - Comando de inicio: `gunicorn config.wsgi --log-file -`. Render no lee el `Procfile`, por lo que el comando se define en el panel del servicio.
-- Variables en Render: `PYTHON_VERSION`, `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y `DATABASE_URL`. Los valores sensibles existen solo en el panel de Render y no están en el repositorio.
+- Variables en Render: `PYTHON_VERSION`, `DEBUG=0`, `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,`DATABASE_URL`, GEMINI_API_KEY, JIRA_SITE, JIRA_EMAIL, JIRA_TOKEN y JIRA_PROJECT (las dos claves como secretas). Los valores sensibles existen solo en el panel de Render y no están en el repositorio.
 - Publicación: automática desde `main` mediante el pipeline (ver la sección siguiente). El Auto-Deploy de Render permanece en Off.
 
 El plan gratuito de Render duerme la aplicación tras un periodo de inactividad y Neon suspende su cómputo tras 5 minutos sin uso, por lo que la primera visita puede tardar hasta un minuto. Conviene abrirla antes de una demostración.
@@ -335,10 +374,12 @@ El detalle completo de cada etapa (qué hace, por qué existe y cómo reproducir
 ├── accounts/                Usuario con rol, registro, ingreso y bienvenida, 60 pruebas
 ├── meetings/                Vínculos, solicitudes, enlaces, propuesta, aprobación, historial y métricas, 313 pruebas
 ├── scheduling/              Algoritmo de ranking, reglas, contratos de datos y landing, 103 pruebas
+├── ia/                      Asistente de IA: cliente de Gemini, captura, acuerdos, tareas y envío a Jira
 ├── templates/               Plantillas HTML (base, registro, acceso, panel, maqueta)
 ├── static/                  CSS propio y HTMX incluido localmente
 ├── docs/
 │   ├── adr/ADR-001-stack.md          Decisión de stack y arquitectura
+│   ├── adr/ADR-002-ia-gemini.md      Decisión del asistente de IA con Gemini y Jira
 │   ├── PASOS_MODULO1.md              Guía operativa paso a paso
 │   ├── Planificacion_Sprints_Quedamos_Jira.md   Plan de sprints y tarjetas
 │   └── referencia/matching.ts        Algoritmo de ranking del prototipo original
@@ -400,6 +441,11 @@ El precio por asiento tampoco tiene un dato propio: se contrastará con el bench
 - La verificación de permisos de Google Calendar puede exigir usuarios de prueba; por eso se implementó el plan alterno de importar un archivo `.ics` (TR-14).
 - La instancia desplegada usa los planes gratuitos de Render y Neon, que se suspenden por inactividad, y su publicación es automática desde `main` con el pipeline en verde (TR-37).
 - Las menciones a herramientas de la competencia provienen de información de sus propios proveedores y se contrastarán con fuentes primarias en el benchmark (TR-22).
+- Las funciones de IA usan el nivel gratuito de Gemini: 15 solicitudes por minuto y 500 por día para todo el proyecto, y Google puede usar el contenido enviado para mejorar sus productos. Por eso la demostración usa solo datos ficticios.
+- El dictado por voz depende del navegador (soporte parcial) y es opcional; el campo de texto siempre funciona.
+- El envío a Jira usa una sola cuenta y un solo proyecto de demostración configurados en el servidor; cada persona no conecta su propio Jira. Si el token vence o se revoca, queda la exportación CSV.
+- Cada reunión tiene un solo registro de acuerdos: una vez confirmado no se vuelve a generar, y las tareas solo se marcan como hechas.
+- La calidad de la salida del modelo no está garantizada: por eso nada se guarda sin que la persona revise y confirme.
 
 ## 16. Equipo y documentación relacionada
 
