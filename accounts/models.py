@@ -71,6 +71,10 @@ class Profile(models.Model):
     work_end = models.PositiveSmallIntegerField("fin de la jornada", default=18)
     onboarding_completed_at = models.DateTimeField("onboarding completado", null=True, blank=True)
     onboarding_skipped_at = models.DateTimeField("onboarding omitido", null=True, blank=True)
+    telegram_chat_id = models.CharField(
+        "chat de Telegram", max_length=32, unique=True, null=True, blank=True
+    )
+    telegram_vinculado_en = models.DateTimeField("Telegram vinculado", null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
