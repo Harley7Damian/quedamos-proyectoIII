@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "accounts",
     "meetings",
     "scheduling",
+    "ia",
 ]
 
 MIDDLEWARE = [
@@ -84,6 +85,14 @@ ICS_MAX_BYTES = 1024 * 1024
 # Vigencia del enlace de aprobacion que recibe el ejecutivo (HU-08), en segundos. Mas corto porque las opciones caducan.
 APPROVAL_LINK_MAX_AGE = int(os.environ.get("APPROVAL_LINK_DAYS", "3")) * 24 * 3600
 
+# IA (TR-80). Gemini en su nivel gratuito: el cupo es del proyecto, por eso cada usuario tiene un tope diario.
+# El modelo se elige por variable de entorno para poder cambiarlo sin tocar codigo si Google lo retira.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GEMINI_MODEL_FALLBACK = os.environ.get("GEMINI_MODEL_FALLBACK", "gemini-3.1-flash-lite")
+GEMINI_TIMEOUT = int(os.environ.get("GEMINI_TIMEOUT", "20"))  # segundos; una llamada normal tarda unos 5
+IA_LLAMADAS_POR_USUARIO_DIA = int(os.environ.get("IA_LLAMADAS_POR_USUARIO_DIA", "30"))
+
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "panel"
 LOGOUT_REDIRECT_URL = "login"
@@ -137,3 +146,4 @@ if "test" in sys.argv:
     # Hash rapido solo para las pruebas automaticas (nunca en uso normal).
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     LOGGING["handlers"]["consola"]["level"] = "CRITICAL"  # sin ruido en la salida de las pruebas
+    GEMINI_API_KEY = ""  # las pruebas nunca llaman a la IA real aunque haya una clave en el entorno
