@@ -49,6 +49,7 @@ class TareaReunion(models.Model):
     descripcion = models.CharField("descripción", max_length=200)
     responsable = models.CharField("responsable", max_length=80, blank=True)
     fecha_limite = models.DateField("fecha límite", null=True, blank=True)
+    hecha = models.BooleanField("hecha", default=False)
     orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

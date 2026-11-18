@@ -17,3 +17,11 @@
 .acuerdos-tareas li { margin: .35rem 0; }
 .acuerdos-tarea-campos { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0 .75rem; }
 @media (max-width: 560px) { .acuerdos-tarea-campos { grid-template-columns: 1fr; } }
+
+/* HU-19: tablero de tareas. */
+.tareas-filtros { align-items: end; flex-wrap: wrap; gap: .75rem; }
+.tareas-lista { list-style: none; padding: 0; margin: .75rem 0; }
+.tarea { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: .5rem 0; }
+.tarea-hecha .tarea-texto strong { text-decoration: line-through; }
+.tarea-hecha { opacity: .75; }
+@media (max-width: 560px) { .tarea { flex-direction: column; align-items: stretch; } }
