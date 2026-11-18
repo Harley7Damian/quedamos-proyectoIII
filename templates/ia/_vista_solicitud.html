@@ -1,0 +1,18 @@
+<form method="post" action="{% url 'create_request' %}" class="card captura-vista">
+  {% csrf_token %}
+  <h3>Esto entendí</h3>
+  <p class="muted">Revisa los datos y corrige lo que haga falta. Lo que no dijiste quedó vacío. La solicitud no existe hasta que pulses Confirmar solicitud.</p>
+  {{ form.non_field_errors }}
+  {{ form.executive.label_tag }}{{ form.executive }}{{ form.executive.errors }}
+  {{ form.title.label_tag }}{{ form.title }}{{ form.title.errors }}
+  <div class="grid2">
+    <div>{{ form.counterpart_name.label_tag }}{{ form.counterpart_name }}{{ form.counterpart_name.errors }}</div>
+    <div>{{ form.counterpart_email.label_tag }}{{ form.counterpart_email }}{{ form.counterpart_email.errors }}</div>
+  </div>
+  <div class="grid2">
+    <div>{{ form.duration_min.label_tag }}{{ form.duration_min }}{{ form.duration_min.errors }}</div>
+    <div>{{ form.week.label_tag }}{{ form.week }}{{ form.week.errors }}</div>
+  </div>
+  {{ form.notes.label_tag }}{{ form.notes }}{{ form.notes.errors }}
+  <p><button type="submit">Confirmar solicitud</button></p>
+</form>
