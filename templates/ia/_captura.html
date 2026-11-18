@@ -1,0 +1,21 @@
+{% load static %}
+{# HU-17: cuadro de captura inteligente. El script de dictado es una mejora opcional: sin el, se escribe el texto. #}
+<link rel="stylesheet" href="{% static 'css/captura.css' %}">
+<section class="card captura" id="captura" aria-labelledby="titulo-captura">
+  <h2 id="titulo-captura">Captura rápida con IA</h2>
+  <p class="muted">Dicta o escribe una solicitud ("reunión con el proveedor de una hora la próxima semana") o una regla ("nada antes de las 10"). Verás una vista previa y nada se guarda hasta que la confirmes.</p>
+  <form hx-post="{% url 'ia_capturar' %}" hx-target="#captura-resultado" hx-swap="innerHTML" hx-indicator="#captura-cargando" hx-disabled-elt="#captura-interpretar">
+    {% csrf_token %}
+    <label for="captura-texto">Lo que quieres registrar</label>
+    <textarea id="captura-texto" name="texto" rows="3" maxlength="1000" required></textarea>
+    <div class="en-linea captura-acciones">
+      <button type="button" class="small" id="captura-dictar" aria-pressed="false" hidden>Dictar</button>
+      <button type="submit" id="captura-interpretar">Interpretar</button>
+      <span id="captura-cargando" class="htmx-indicator muted" role="status">Interpretando…</span>
+      <span id="captura-estado" class="muted" role="status" aria-live="polite"></span>
+    </div>
+    <p class="muted captura-aviso">El texto se envía a Gemini (Google) para interpretarlo. En la demostración usa solo datos ficticios.</p>
+  </form>
+  <div id="captura-resultado" aria-live="polite"></div>
+</section>
+<script src="{% static 'js/captura.js' %}" defer></script>

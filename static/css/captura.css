@@ -1,0 +1,12 @@
+/* HU-17: captura inteligente. Solo usa las variables de color del tema ya existente. */
+.captura textarea { resize: vertical; }
+.captura-acciones { margin-top: .5rem; }
+.captura-aviso { margin: .5rem 0 0; }
+.captura-vista { margin-top: .75rem; border-left: .3rem solid var(--brand); }
+.captura-mensaje { margin-top: .75rem; padding: .6rem .8rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); }
+.captura-mensaje p { margin: 0; }
+.captura-mensaje-error { border-color: var(--field-line); border-left: .3rem solid var(--ink); }
+.captura-regla { border: 1px solid var(--line); border-radius: .6rem; margin: .5rem 0; padding: .5rem .75rem; }
+.captura-incluir { display: inline-flex; gap: .4rem; align-items: center; font-weight: 600; }
+.captura-regla-campos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 .75rem; }
+@media (max-width: 560px) { .captura-regla-campos { grid-template-columns: 1fr; } }
