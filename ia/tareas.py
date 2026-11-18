@@ -8,6 +8,8 @@ import io
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,6 +20,7 @@ from django.views.decorators.http import require_POST, require_safe
 
 from meetings.models import MeetingRequest
 
+from . import jira
 from .models import TareaReunion
 
 ETIQUETA_JIRA = "quedamos-ia"
@@ -65,6 +68,7 @@ def tablero(request):
     tareas = list(_filtrar(visibles, filtros))
     for tarea in tareas:
         tarea.vencida = bool(tarea.fecha_limite and tarea.fecha_limite < hoy and not tarea.hecha)
+        tarea.url_jira = jira.url_incidencia(tarea.jira_key)
     contexto = {
         "me": user,
         "tareas": tareas,
@@ -73,6 +77,7 @@ def tablero(request):
         "total": visibles.count(),
         "pendientes": visibles.filter(hecha=False).count(),
         "url_csv": _con_filtros("ia_tareas_csv", filtros),
+        "puede_enviar_a_jira": user.is_assistant and jira.configurado(),
     }
     return render(request, "ia/tareas.html", contexto)
 
@@ -86,6 +91,35 @@ def cambiar_estado(request, pk):
     tarea.save(update_fields=["hecha"])
     messages.success(request, "Tarea marcada como hecha." if tarea.hecha else "Tarea reabierta.")
     return redirect(_con_filtros("ia_tareas", _filtros(request.POST)))
+
+
+@login_required
+@require_POST
+def enviar_a_jira(request, pk):
+    """Crea la incidencia de una tarea en Jira, una sola vez. Si algo falla, la tarea no queda marcada como enviada."""
+    user = request.user
+    destino = redirect(_con_filtros("ia_tareas", _filtros(request.POST)))
+    # 404 si no la ve (no se revela que existe); 403 si la ve pero no es asistente, que es quien envia.
+    get_object_or_404(tareas_visibles(user), pk=pk)
+    if not user.is_assistant:
+        raise PermissionDenied("Esta acción corresponde a la asistente.")
+    if not jira.configurado():
+        messages.error(request, jira.JiraNoConfigurado.mensaje_usuario)
+        return destino
+    with transaction.atomic():
+        # La fila queda bloqueada (en PostgreSQL) mientras se llama a Jira: un doble clic no crea dos incidencias.
+        tarea = TareaReunion.objects.select_for_update().select_related("acuerdos__request").get(pk=pk)
+        if tarea.enviada_a_jira:
+            messages.info(request, f"Esta tarea ya está en Jira ({tarea.jira_key}).")
+            return destino
+        try:
+            tarea.jira_key = jira.crear_incidencia(tarea)
+        except jira.JiraError as error:
+            messages.error(request, error.mensaje_usuario)
+            return destino
+        tarea.save(update_fields=["jira_key"])
+    messages.success(request, f"Tarea enviada a Jira: {tarea.jira_key}.")
+    return destino
 
 
 def _celda(valor) -> str:

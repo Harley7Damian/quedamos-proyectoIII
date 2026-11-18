@@ -93,6 +93,15 @@ GEMINI_MODEL_FALLBACK = os.environ.get("GEMINI_MODEL_FALLBACK", "gemini-3.1-flas
 GEMINI_TIMEOUT = int(os.environ.get("GEMINI_TIMEOUT", "20"))  # segundos; una llamada normal tarda unos 5
 IA_LLAMADAS_POR_USUARIO_DIA = int(os.environ.get("IA_LLAMADAS_POR_USUARIO_DIA", "30"))
 
+# Jira (HU-20). Sin las cuatro primeras variables el boton "Enviar a Jira" no se muestra y queda la exportacion CSV.
+# El proyecto de destino es el de demostracion, nunca el que se evalua. El token solo vive en el entorno.
+JIRA_SITE = os.environ.get("JIRA_SITE", "")  # por ejemplo tuequipo.atlassian.net
+JIRA_EMAIL = os.environ.get("JIRA_EMAIL", "")
+JIRA_TOKEN = os.environ.get("JIRA_TOKEN", "")
+JIRA_PROJECT = os.environ.get("JIRA_PROJECT", "")
+JIRA_ISSUE_TYPE = os.environ.get("JIRA_ISSUE_TYPE", "Tarea")  # nombre del tipo en el proyecto (Task si esta en ingles)
+JIRA_TIMEOUT = int(os.environ.get("JIRA_TIMEOUT", "15"))  # segundos
+
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "panel"
 LOGOUT_REDIRECT_URL = "login"
@@ -147,3 +156,4 @@ if "test" in sys.argv:
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     LOGGING["handlers"]["consola"]["level"] = "CRITICAL"  # sin ruido en la salida de las pruebas
     GEMINI_API_KEY = ""  # las pruebas nunca llaman a la IA real aunque haya una clave en el entorno
+    JIRA_SITE = JIRA_EMAIL = JIRA_TOKEN = JIRA_PROJECT = ""  # ni a Jira
