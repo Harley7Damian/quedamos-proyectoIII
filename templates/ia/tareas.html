@@ -42,12 +42,24 @@
               · <a href="{% url 'request_detail' t.acuerdos.request_id %}">{{ t.acuerdos.request.title }}</a>
             </div>
           </div>
-          <form method="post" action="{% url 'ia_tarea_estado' t.pk %}">
-            {% csrf_token %}
-            <input type="hidden" name="estado" value="{{ filtros.estado }}">
-            <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
-            <button type="submit" class="small">{% if t.hecha %}Reabrir{% else %}Marcar como hecha{% endif %}</button>
-          </form>
+          <div class="tarea-acciones">
+            <form method="post" action="{% url 'ia_tarea_estado' t.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="estado" value="{{ filtros.estado }}">
+              <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
+              <button type="submit" class="small">{% if t.hecha %}Reabrir{% else %}Marcar como hecha{% endif %}</button>
+            </form>
+            {% if t.jira_key %}
+              <span class="muted tarea-jira">En Jira: {% if t.url_jira %}<a href="{{ t.url_jira }}" target="_blank" rel="noopener noreferrer">{{ t.jira_key }}</a>{% else %}{{ t.jira_key }}{% endif %}</span>
+            {% elif puede_enviar_a_jira %}
+              <form method="post" action="{% url 'ia_tarea_jira' t.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="estado" value="{{ filtros.estado }}">
+                <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
+                <button type="submit" class="small">Enviar a Jira</button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>

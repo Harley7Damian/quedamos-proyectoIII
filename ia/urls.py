@@ -11,4 +11,5 @@ urlpatterns = [
     path("panel/tareas/", tareas.tablero, name="ia_tareas"),
     path("panel/tareas/exportar.csv", tareas.exportar_csv, name="ia_tareas_csv"),
     path("panel/tareas/<int:pk>/estado/", tareas.cambiar_estado, name="ia_tarea_estado"),
+    path("panel/tareas/<int:pk>/jira/", tareas.enviar_a_jira, name="ia_tarea_jira"),
 ]

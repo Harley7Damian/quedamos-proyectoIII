@@ -50,6 +50,7 @@ class TareaReunion(models.Model):
     responsable = models.CharField("responsable", max_length=80, blank=True)
     fecha_limite = models.DateField("fecha límite", null=True, blank=True)
     hecha = models.BooleanField("hecha", default=False)
+    jira_key = models.CharField("clave en Jira", max_length=30, blank=True)  # vacia mientras no se envio (HU-20)
     orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -57,3 +58,7 @@ class TareaReunion(models.Model):
 
     def __str__(self):
         return self.descripcion
+
+    @property
+    def enviada_a_jira(self) -> bool:
+        return bool(self.jira_key)
