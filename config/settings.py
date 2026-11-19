@@ -86,6 +86,8 @@ ICS_MAX_BYTES = 1024 * 1024
 APPROVAL_LINK_MAX_AGE = int(os.environ.get("APPROVAL_LINK_DAYS", "3")) * 24 * 3600
 # Token del bot de Telegram para los recordatorios de reunión (TR-70).
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+# URL pública del sitio, para armar enlaces dentro de mensajes (TR-75).
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 # Vigencia del código temporal para vincular Telegram (TR-73), en minutos.
 TELEGRAM_LINK_CODE_MINUTES = int(os.environ.get("TELEGRAM_LINK_CODE_MINUTES", "10"))
 
