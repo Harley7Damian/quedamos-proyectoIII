@@ -154,3 +154,13 @@ class EnviarMensajeTelegramTests(TestCase):
         with self.settings(TELEGRAM_BOT_TOKEN=""):
             ok = enviar_mensaje_telegram("123", "hola")
         self.assertFalse(ok)
+
+    @mock.patch("accounts.telegram.requests.post")
+    def test_chat_id_invalido_devuelve_false_sin_lanzar_error(self, post_mock):
+        import requests
+        response = mock.Mock()
+        response.raise_for_status.side_effect = requests.HTTPError("400 Client Error: Bad Request")
+        post_mock.return_value = response
+        with self.settings(TELEGRAM_BOT_TOKEN="token-de-prueba"):
+            ok = enviar_mensaje_telegram("chat_id_invalido", "hola")
+        self.assertFalse(ok)
