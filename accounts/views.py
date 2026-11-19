@@ -182,6 +182,10 @@ VINCULAR_RE = re.compile(r"^/vincular\s+([A-Za-z0-9]+)")
 @require_POST
 def telegram_webhook(request):
     """Recibe los mensajes que le escriben al bot de Telegram. Siempre responde 200 para que Telegram no reintente."""
+    secreto_esperado = settings.TELEGRAM_WEBHOOK_SECRET
+    if secreto_esperado and request.headers.get("X-Telegram-Bot-Api-Secret-Token") != secreto_esperado:
+        return HttpResponse(status=403)
+    
     try:
         data = json.loads(request.body.decode("utf-8"))
     except (ValueError, UnicodeDecodeError):

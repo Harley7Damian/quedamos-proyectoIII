@@ -112,6 +112,25 @@ class WebhookTests(TelegramBase):
     def test_solo_acepta_post(self):
         self.assertEqual(self.client.get(reverse("telegram_webhook")).status_code, 405)
 
+    def test_rechaza_sin_el_secreto_correcto_cuando_esta_configurado(self):
+        with self.settings(TELEGRAM_WEBHOOK_SECRET="un-secreto"):
+            r = self.post_mensaje(123, "/vincular ABC123")
+        self.assertEqual(r.status_code, 403)
+
+    @mock.patch("accounts.views.enviar_mensaje_telegram")
+    def test_acepta_con_el_secreto_correcto(self, enviar_mock):
+        p = self.profile()
+        p.telegram_link_code = "ABC123"
+        p.telegram_link_code_expira_en = timezone.now() + timedelta(minutes=5)
+        p.save()
+        with self.settings(TELEGRAM_WEBHOOK_SECRET="un-secreto"):
+            body = json.dumps({"message": {"chat": {"id": 123}, "text": "/vincular ABC123"}})
+            r = self.client.post(
+                reverse("telegram_webhook"), data=body, content_type="application/json",
+                HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN="un-secreto",
+            )
+        self.assertEqual(r.status_code, 200)
+
 
 class DesvincularTests(TelegramBase):
     def test_requiere_sesion(self):
