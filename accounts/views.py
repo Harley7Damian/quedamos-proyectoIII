@@ -6,7 +6,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse
+from django.core.management import call_command
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -221,3 +222,10 @@ def telegram_webhook(request):
 
     enviar_mensaje_telegram(str(chat_id), "¡Listo! Tu cuenta de Quedamos quedó vinculada a Telegram. Te avisaremos antes de tus reuniones.")
     return HttpResponse(status=200)
+
+def ejecutar_recordatorios(request):
+    secreto = request.GET.get("secreto", "")
+    if secreto != settings.TAREAS_SECRET or not settings.TAREAS_SECRET:
+        return HttpResponseForbidden("No autorizado")
+    call_command("enviar_recordatorios")
+    return HttpResponse("ok")
