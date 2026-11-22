@@ -38,7 +38,7 @@ class Command(BaseCommand):
             approved_start__gt=desde,
             approved_start__lte=hasta,
             **{f"{campo}__isnull": True},
-        )
+        ).order_by("approved_start", "pk")
         for solicitud in pendientes:
             try:
                 texto = generar_texto(solicitud)
