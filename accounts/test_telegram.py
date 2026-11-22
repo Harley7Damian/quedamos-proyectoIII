@@ -3,7 +3,7 @@ import json
 from datetime import timedelta
 from unittest import mock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -49,6 +49,7 @@ class GenerarCodigoTests(TelegramBase):
         self.assertContains(r, p.telegram_link_code)
 
 
+@override_settings(TELEGRAM_WEBHOOK_SECRET="")
 class WebhookTests(TelegramBase):
     def post_mensaje(self, chat_id, texto):
         body = json.dumps({"message": {"chat": {"id": chat_id}, "text": texto}})

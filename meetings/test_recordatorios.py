@@ -1,4 +1,4 @@
-"""Pruebas del comando que envia los recordatorios de Telegram (TR-76)."""
+"""Pruebas del comando que envia los recordatorios de Telegram (TR-76/TR-79)."""
 from datetime import date, datetime, timedelta
 from unittest import mock
 from zoneinfo import ZoneInfo
@@ -76,31 +76,43 @@ class EnviarRecordatoriosTests(TestCase):
         enviar_mock.assert_not_called()
 
     @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
-    def test_ignora_reuniones_fuera_de_la_ventana(self, enviar_mock):
+    def test_ignora_reuniones_muy_lejanas(self, enviar_mock):
         self.crear_solicitud(minutos_para_empezar=45)
         self.correr_comando()
         enviar_mock.assert_not_called()
 
     @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
-    def test_no_envia_un_minuto_antes_del_limite_de_30(self, enviar_mock):
-        self.crear_solicitud(minutos_para_empezar=29)
+    def test_envia_el_de_30_aunque_la_reunion_se_haya_creado_tarde(self, enviar_mock):
+        """Caso borde real (TR-79): la reunión se crea cuando ya faltan menos de
+        30 minutos (p. ej. 27). Antes esto hacía que el recordatorio de 30 min se
+        perdiera para siempre; ahora debe enviarse en la siguiente corrida."""
+        self.crear_solicitud(minutos_para_empezar=27)
+        self.correr_comando()
+        self.assertEqual(enviar_mock.call_count, 2)
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_envia_el_de_5_aunque_el_cron_se_haya_atrasado(self, enviar_mock):
+        """Caso borde real (TR-79): el cron no corrió justo en el minuto exacto
+        (p. ej. faltan 3 minutos, no 5). Debe seguir enviando el recordatorio de
+        5 minutos mientras la reunión no haya empezado."""
+        self.crear_solicitud(minutos_para_empezar=3)
+        self.correr_comando()
+        self.assertEqual(enviar_mock.call_count, 2)
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_no_envia_si_la_reunion_ya_empezo(self, enviar_mock):
+        self.crear_solicitud(minutos_para_empezar=-5)
         self.correr_comando()
         enviar_mock.assert_not_called()
 
     @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
-    def test_no_envia_un_minuto_despues_del_limite_de_30(self, enviar_mock):
-        self.crear_solicitud(minutos_para_empezar=31)
+    def test_un_error_en_una_solicitud_no_detiene_a_las_demas(self, enviar_mock):
+        """Caso borde (TR-79): si falla el envío de una reunión (p. ej. Telegram
+        no responde), las demás reuniones de la misma corrida deben seguir
+        procesándose igual."""
+        self.crear_solicitud(minutos_para_empezar=30)
+        otra = self.crear_solicitud(minutos_para_empezar=30)
+        enviar_mock.side_effect = [Exception("boom"), None, None, None]
         self.correr_comando()
-        enviar_mock.assert_not_called()
-
-    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
-    def test_no_envia_un_minuto_antes_del_limite_de_5(self, enviar_mock):
-        self.crear_solicitud(minutos_para_empezar=4)
-        self.correr_comando()
-        enviar_mock.assert_not_called()
-
-    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
-    def test_no_envia_un_minuto_despues_del_limite_de_5(self, enviar_mock):
-        self.crear_solicitud(minutos_para_empezar=6)
-        self.correr_comando()
-        enviar_mock.assert_not_called()
+        otra.refresh_from_db()
+        self.assertIsNotNone(otra.recordatorio_30_enviado_en)
