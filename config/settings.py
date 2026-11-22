@@ -92,6 +92,7 @@ SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 TELEGRAM_LINK_CODE_MINUTES = int(os.environ.get("TELEGRAM_LINK_CODE_MINUTES", "10"))
 # Clave secreta para verificar que las peticiones al webhook vienen de Telegram (TR-77).
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
+TAREAS_SECRET = os.environ.get("TAREAS_SECRET", "")
 
 # IA (TR-80). Gemini en su nivel gratuito: el cupo es del proyecto, por eso cada usuario tiene un tope diario.
 # El modelo se elige por variable de entorno para poder cambiarlo sin tocar codigo si Google lo retira.
