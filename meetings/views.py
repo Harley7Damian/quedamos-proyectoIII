@@ -384,7 +384,7 @@ def public_availability(request, token):
                 request=meeting_request, party=Availability.Party.CONTRAPARTE, defaults={"blocks": blocks}
             )
             messages.success(request, "Listo, registramos tu disponibilidad. Puedes volver a abrir este enlace para cambiarla.")
-            return redirect(request.path)
+            return redirect("public_availability", token=token)  # por nombre de ruta, no con la ruta recibida (CodeQL py/url-redirection)
         error = "Marca al menos un horario en el que puedas reunirte."
 
     ctx = {
