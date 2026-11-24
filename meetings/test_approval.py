@@ -96,6 +96,14 @@ class CreateApprovalLinkTests(ApprovalBase):
         self.assertContains(r, "Primero genera una propuesta de horarios")
         self.assertNotContains(r, "/a/")
 
+    def test_con_la_reunion_ya_aprobada_se_informa_en_lugar_de_mostrar_un_error(self):
+        MeetingRequest.objects.filter(pk=self.req.pk).update(status="aprobada")
+        self.login(self.asis)
+        r = self.client.post(reverse("create_approval_link", args=[self.req.pk]), follow=True)
+        self.assertContains(r, "Esta reunión ya fue aprobada")
+        self.assertNotContains(r, "Primero genera una propuesta de horarios")
+        self.assertNotContains(r, "/a/")
+
     def test_una_asistente_sin_vinculo_recibe_404(self):
         self.login(self.otra)
         self.assertEqual(self.create().status_code, 404)
