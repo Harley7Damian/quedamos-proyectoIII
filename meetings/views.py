@@ -337,6 +337,10 @@ def generate_proposal(request, pk):
 def create_approval_link(request, pk):
     """La asistente genera el enlace de aprobacion que se envia al ejecutivo (HU-08). Solo con una propuesta vigente."""
     meeting_request = _visible_request_or_404(request.user, pk)
+    if meeting_request.status == MeetingRequest.Status.APROBADA:
+        # Al actualizar la pagina con F5 el navegador reenvia el POST: se explica el estado real en lugar de un error.
+        messages.info(request, "Esta reunión ya fue aprobada. No hace falta generar otro enlace.")
+        return redirect("request_detail", pk=pk)
     if meeting_request.status != MeetingRequest.Status.PROPUESTA:
         messages.error(request, "Primero genera una propuesta de horarios: el enlace de aprobación se crea sobre una propuesta vigente.")
         return redirect("request_detail", pk=pk)
