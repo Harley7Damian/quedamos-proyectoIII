@@ -105,3 +105,10 @@ class Profile(models.Model):
         from django.utils import timezone
         return bool(self.telegram_link_code and self.telegram_link_code_expira_en and self.telegram_link_code_expira_en > timezone.now())
 
+    @property
+    def telegram_link_url(self) -> str:
+        """Link directo de Telegram para vincular sin escribir el comando a mano (mejora de TR-73)."""
+        if not (self.telegram_link_code_vigente and settings.TELEGRAM_BOT_USERNAME):
+            return ""
+        return f"https://t.me/{settings.TELEGRAM_BOT_USERNAME}?start={self.telegram_link_code}"
+    

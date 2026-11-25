@@ -108,7 +108,12 @@
           <button type="button" class="small copiar" data-copiar="#telegram-code" hidden>Copiar código</button>
           <span class="copiado muted" role="status" aria-live="polite"></span>
         </div>
-        <p class="muted">Envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+        {% if me.profile.telegram_link_url %}
+          <p><a href="{{ me.profile.telegram_link_url }}" class="btn" target="_blank" rel="noopener">Vincular</a></p>
+          <p class="muted">O envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+        {% else %}
+          <p class="muted">Envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+        {% endif %}
       {% endif %}
       <form method="post" action="{% url 'telegram_generar_codigo' %}">
         {% csrf_token %}
