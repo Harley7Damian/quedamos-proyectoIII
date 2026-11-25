@@ -176,7 +176,7 @@ def telegram_desvincular(request):
 
 
 
-VINCULAR_RE = re.compile(r"^/vincular\s+([A-Za-z0-9]+)")
+VINCULAR_RE = re.compile(r"^/(?:vincular|start)\s+([A-Za-z0-9]+)")
 
 
 @csrf_exempt

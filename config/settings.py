@@ -90,6 +90,8 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 # Vigencia del código temporal para vincular Telegram (TR-73), en minutos.
 TELEGRAM_LINK_CODE_MINUTES = int(os.environ.get("TELEGRAM_LINK_CODE_MINUTES", "10"))
+# Nombre de usuario del bot de Telegram, para armar el link directo de vinculación (mejora de TR-73).
+TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 # Clave secreta para verificar que las peticiones al webhook vienen de Telegram (TR-77).
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 TAREAS_SECRET = os.environ.get("TAREAS_SECRET", "")

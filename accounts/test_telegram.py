@@ -47,6 +47,20 @@ class GenerarCodigoTests(TelegramBase):
         self.assertIsNotNone(p.telegram_link_code_expira_en)
         self.assertTrue(p.telegram_link_code_vigente)
         self.assertContains(r, p.telegram_link_code)
+    
+    @override_settings(TELEGRAM_BOT_USERNAME="QuedamosRemindersBot")
+    def test_el_link_directo_incluye_el_codigo_vigente(self):
+        self.login()
+        self.client.post(reverse("telegram_generar_codigo"))
+        p = self.profile()
+        self.assertEqual(p.telegram_link_url, f"https://t.me/QuedamosRemindersBot?start={p.telegram_link_code}")
+
+    @override_settings(TELEGRAM_BOT_USERNAME="")
+    def test_sin_username_configurado_no_hay_link(self):
+        self.login()
+        self.client.post(reverse("telegram_generar_codigo"))
+        p = self.profile()
+        self.assertEqual(p.telegram_link_url, "")
 
 
 @override_settings(TELEGRAM_WEBHOOK_SECRET="")
@@ -71,6 +85,21 @@ class WebhookTests(TelegramBase):
         self.assertIsNone(p.telegram_link_code)
         enviar_mock.assert_called_once()
         self.assertEqual(enviar_mock.call_args[0][0], "999888777")
+
+    @mock.patch("accounts.views.enviar_mensaje_telegram")
+    def test_un_start_con_codigo_valido_vincula_igual_que_vincular(self, enviar_mock):
+        """Mejora de TR-73: el link directo de Telegram manda /start CODIGO, debe vincular igual."""
+        p = self.profile()
+        p.telegram_link_code = "ABC123"
+        p.telegram_link_code_expira_en = timezone.now() + timedelta(minutes=5)
+        p.save()
+
+        r = self.post_mensaje(999888777, "/start ABC123")
+
+        self.assertEqual(r.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.telegram_chat_id, "999888777")
+        self.assertIsNotNone(p.telegram_vinculado_en)
 
     @mock.patch("accounts.views.enviar_mensaje_telegram")
     def test_un_codigo_ya_usado_no_vuelve_a_funcionar(self, enviar_mock):
