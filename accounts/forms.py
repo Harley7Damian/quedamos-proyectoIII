@@ -75,6 +75,14 @@ class WorkHoursForm(forms.ModelForm):
             raise forms.ValidationError("La jornada debe terminar después de empezar.")
         return data
 
+class PhoneForm(forms.ModelForm):
+    """Teléfono para la llamada de escalamiento de recordatorios (TR-85)."""
+
+    class Meta:
+        model = Profile
+        fields = ["telefono"]
+        widgets = {"telefono": forms.TextInput(attrs={"placeholder": "+51 999 999 999"})}
+
 
 # Horarios a proteger que se ofrecen en el paso 3: (clave, titulo, detalle, reglas como (dia, desde, hasta)).
 PROTECT_PRESETS = [

@@ -95,6 +95,10 @@ TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 # Clave secreta para verificar que las peticiones al webhook vienen de Telegram (TR-77).
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 TAREAS_SECRET = os.environ.get("TAREAS_SECRET", "")
+# Credenciales de Twilio para la llamada de escalamiento (TR-85).
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
 
 # IA (TR-80). Gemini en su nivel gratuito: el cupo es del proyecto, por eso cada usuario tiene un tope diario.
 # El modelo se elige por variable de entorno para poder cambiarlo sin tocar codigo si Google lo retira.

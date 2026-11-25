@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
+from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -14,11 +15,13 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from meetings.forms import LinkForm
-from meetings.models import AssistantLink
-from scheduling.mock import MOCK_PROPOSAL
 
-from .forms import AreaForm, ProtectHoursForm, SignupForm, WorkHoursForm
+from meetings.forms import LinkForm
+from meetings.models import AssistantLink, MeetingRequest
+from scheduling.mock import MOCK_PROPOSAL
+from xml.sax.saxutils import escape as _escape_xml
+
+from .forms import AreaForm, ProtectHoursForm, SignupForm, WorkHoursForm, PhoneForm
 from .models import Profile, User, generate_link_code
 from .telegram import enviar_mensaje_telegram
 
@@ -174,10 +177,49 @@ def telegram_desvincular(request):
     messages.info(request, "Desvinculaste tu cuenta de Telegram.")
     return redirect("panel")
 
-
+@login_required
+@require_POST
+def guardar_telefono(request):
+    profile = _profile(request.user)
+    form = PhoneForm(request.POST, instance=profile)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Guardamos tu teléfono para las llamadas de recordatorio.")
+    else:
+        messages.error(request, "Revisa el número que escribiste.")
+    return redirect("panel")
 
 VINCULAR_RE = re.compile(r"^/(?:vincular|start)\s+([A-Za-z0-9]+)")
 
+VISTO_RE = re.compile(r"^/visto\b", re.IGNORECASE)
+
+
+def _confirmar_visto(chat_id):
+    """TR-85: marca la reunión más próxima sin confirmar como vista por esta persona."""
+    profile = Profile.objects.filter(telegram_chat_id=str(chat_id)).first()
+    if profile is None:
+        enviar_mensaje_telegram(str(chat_id), "No encontramos tu cuenta vinculada a Quedamos.")
+        return
+
+    user_id = profile.user_id
+    linked_execs = AssistantLink.objects.filter(assistant_id=user_id).values("executive_id")
+    solicitud = (
+        MeetingRequest.objects.filter(
+            Q(executive_id=user_id) | Q(executive_id__in=linked_execs) | Q(created_by_id=user_id),
+            status=MeetingRequest.Status.APROBADA,
+            confirmado_en__isnull=True,
+            approved_start__gt=timezone.now() - timedelta(minutes=5),
+        )
+        .order_by("approved_start")
+        .first()
+    )
+    if solicitud is None:
+        enviar_mensaje_telegram(str(chat_id), "No encontramos una reunión pendiente de confirmar.")
+        return
+
+    solicitud.confirmado_en = timezone.now()
+    solicitud.save(update_fields=["confirmado_en"])
+    enviar_mensaje_telegram(str(chat_id), "¡Gracias! Quedó confirmado que ya lo viste.")
 
 @csrf_exempt
 @require_POST
@@ -200,8 +242,11 @@ def telegram_webhook(request):
     if chat_id is None or not texto:
         return HttpResponse(status=200)
 
-    match = VINCULAR_RE.match(texto.strip())
+    texto_limpio = texto.strip()
+    match = VINCULAR_RE.match(texto_limpio)
     if not match:
+        if VISTO_RE.match(texto_limpio):
+            _confirmar_visto(chat_id)
         return HttpResponse(status=200)
 
     code = match.group(1).upper()
@@ -222,6 +267,13 @@ def telegram_webhook(request):
 
     enviar_mensaje_telegram(str(chat_id), "¡Listo! Tu cuenta de Quedamos quedó vinculada a Telegram. Te avisaremos antes de tus reuniones.")
     return HttpResponse(status=200)
+
+@csrf_exempt
+def llamada_twiml(request):
+    """Twilio llama a esta URL (TR-85) para obtener qué decir en la llamada."""
+    texto = request.GET.get("texto", "Tienes un recordatorio pendiente en Quedamos.")
+    twiml = f'<Response><Say language="es-MX">{_escape_xml(texto)}</Say></Response>'
+    return HttpResponse(twiml, content_type="text/xml")
 
 def ejecutar_recordatorios(request):
     secreto = request.GET.get("secreto", "")

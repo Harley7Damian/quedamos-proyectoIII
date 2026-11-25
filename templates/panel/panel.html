@@ -122,5 +122,15 @@
       </form>
     {% endif %}
   </div>
+
+  <h3>Teléfono para llamadas de recordatorio</h3>
+  <div class="card">
+    <p class="muted">Si no confirmas el recordatorio de 5 minutos, te llamamos a este número.</p>
+    <form method="post" action="{% url 'guardar_telefono' %}">
+      {% csrf_token %}
+      <input type="text" name="telefono" value="{{ me.profile.telefono }}" placeholder="+51 999 999 999">
+      <button type="submit">Guardar</button>
+    </form>
+  </div>
 </section>
 {% endblock %}

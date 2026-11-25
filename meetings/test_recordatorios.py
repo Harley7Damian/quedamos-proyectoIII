@@ -116,3 +116,53 @@ class EnviarRecordatoriosTests(TestCase):
         self.correr_comando()
         otra.refresh_from_db()
         self.assertIsNotNone(otra.recordatorio_30_enviado_en)
+
+class EscalamientoPorLlamadaTests(TestCase):
+    """TR-85: si no confirmaron /visto, además de Telegram se hace una llamada real."""
+
+    def setUp(self):
+        self.ejec = mk("carla_llamada@x.com", "Carla Llamada", "ejecutivo")
+        self.asis = mk("ana_llamada@x.com", "Ana Llamada", "asistente")
+        self.perfil_ejec = Profile.objects.create(user=self.ejec, telegram_chat_id="111", telefono="+51999999999")
+        Profile.objects.create(user=self.asis, telegram_chat_id="222")
+        self.ahora = datetime(2026, 11, 20, 10, 0, tzinfo=LIMA)
+
+    def crear_solicitud(self, minutos_para_empezar, confirmado_en=None):
+        inicio = self.ahora + timedelta(minutes=minutos_para_empezar)
+        return MeetingRequest.objects.create(
+            executive=self.ejec, created_by=self.asis, title="Revisión", counterpart_name="Pedro Gómez",
+            duration_min=30, week_start=date(2026, 11, 23), status=MeetingRequest.Status.APROBADA,
+            approved_start=inicio, approved_end=inicio + timedelta(minutes=30),
+            confirmado_en=confirmado_en,
+        )
+
+    def correr_comando(self):
+        patcher = mock.patch("django.utils.timezone.now", return_value=self.ahora)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        call_command("enviar_recordatorios")
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.hacer_llamada_recordatorio")
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_llama_si_no_confirmo_y_tiene_telefono(self, enviar_mock, llamada_mock):
+        self.crear_solicitud(minutos_para_empezar=3, confirmado_en=None)
+        self.correr_comando()
+        llamada_mock.assert_called_once()
+        args, kwargs = llamada_mock.call_args
+        self.assertEqual(args[0], "+51999999999")
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.hacer_llamada_recordatorio")
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_no_llama_si_ya_confirmo_con_visto(self, enviar_mock, llamada_mock):
+        self.crear_solicitud(minutos_para_empezar=3, confirmado_en=self.ahora)
+        self.correr_comando()
+        llamada_mock.assert_not_called()
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.hacer_llamada_recordatorio")
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_no_llama_si_no_tiene_telefono(self, enviar_mock, llamada_mock):
+        self.perfil_ejec.telefono = ""
+        self.perfil_ejec.save(update_fields=["telefono"])
+        self.crear_solicitud(minutos_para_empezar=3, confirmado_en=None)
+        self.correr_comando()
+        llamada_mock.assert_not_called()
