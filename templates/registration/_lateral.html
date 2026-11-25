@@ -1,0 +1,21 @@
+{% load static %}
+{# Panel lateral de ingreso y registro: presenta el valor del producto con la marca. Solo se muestra en pantallas anchas. #}
+<aside class="acceso-lateral" aria-label="Qué hace Quedamos">
+  <span class="lateral-logo" aria-hidden="true"><img src="{% static 'img/LOGO_MARK.png' %}" alt=""></span>
+  <p class="lateral-titulo">Menos mensajes, una <em>reunión confirmada.</em></p>
+  <ul class="lateral-puntos">
+    <li>
+      <span class="lateral-icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><strong>Enlaces firmados</strong>Cada enlace lleva firma y fecha de vencimiento.</span>
+    </li>
+    <li>
+      <span class="lateral-icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><strong>Horarios protegidos</strong>Ninguna propuesta incumple las reglas del ejecutivo.</span>
+    </li>
+    <li>
+      <span class="lateral-icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.7 2.7L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><strong>Aprobación en un toque</strong>El ejecutivo elige un horario sin iniciar sesión.</span>
+    </li>
+  </ul>
+  <p class="lateral-nota">Piloto en validación. Sin tarjetas ni cobros.</p>
+</aside>
