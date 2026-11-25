@@ -284,7 +284,7 @@ def _validar_firma_twilio(request):
     if not token:
         return True  # sin token configurado (dev/test) no se puede validar
     validator = RequestValidator(token)
-    url = request.build_absolute_uri()
+    url = f"{settings.SITE_URL}{request.get_full_path()}"
     firma = request.META.get("HTTP_X_TWILIO_SIGNATURE", "")
     params = request.POST.dict() if request.method == "POST" else {}
     return validator.validate(url, params, firma)
