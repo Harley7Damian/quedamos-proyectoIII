@@ -18,7 +18,7 @@ def hacer_llamada_recordatorio(telefono, texto):
     try:
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         url = f"{settings.SITE_URL}/telegram/llamada-twiml/?texto={quote(texto)}"
-        client.calls.create(to=telefono, from_=settings.TWILIO_FROM_NUMBER, url=url, method="GET")
+        client.calls.create(to=telefono, from_=settings.TWILIO_FROM_NUMBER, url=url)
         return True
     except Exception as exc:
         logger.warning("No se pudo llamar a %s: %s", telefono, type(exc).__name__)
