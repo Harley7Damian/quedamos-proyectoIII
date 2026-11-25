@@ -69,6 +69,7 @@ class Profile(models.Model):
     area = models.CharField("área", max_length=20, choices=Area.choices, blank=True)
     work_start = models.PositiveSmallIntegerField("inicio de la jornada", default=9)
     work_end = models.PositiveSmallIntegerField("fin de la jornada", default=18)
+    telefono = models.CharField("teléfono", max_length=20, blank=True, default="")
     onboarding_completed_at = models.DateTimeField("onboarding completado", null=True, blank=True)
     onboarding_skipped_at = models.DateTimeField("onboarding omitido", null=True, blank=True)
     telegram_chat_id = models.CharField(

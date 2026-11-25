@@ -213,3 +213,51 @@ class EnviarMensajeTelegramTests(TestCase):
         with self.settings(TELEGRAM_BOT_TOKEN="token-de-prueba"):
             ok = enviar_mensaje_telegram("chat_id_invalido", "hola")
         self.assertFalse(ok)
+
+class LlamadaTwimlTests(TestCase):
+    def test_devuelve_twiml_con_el_texto_escapado(self):
+        r = self.client.get(reverse("llamada_twiml"), {"texto": "Hola <mundo> & cia"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"<Say", r.content)
+        self.assertIn(b"Hola &lt;mundo&gt; &amp; cia", r.content)
+
+    def test_sin_texto_usa_un_mensaje_por_defecto(self):
+        r = self.client.get(reverse("llamada_twiml"))
+        self.assertIn(b"recordatorio pendiente", r.content)
+
+@override_settings(TELEGRAM_WEBHOOK_SECRET="")
+class VistoConfirmaReunionTests(TestCase):
+    def setUp(self):
+        self.ejecutivo = mk("visto@x.com", "Ejecutivo Visto", "ejecutivo")
+        self.profile = Profile.objects.create(user=self.ejecutivo, telegram_chat_id="555555")
+
+    def _crear_reunion(self, minutos_para_la_reunion=3, confirmado_en=None):
+        from meetings.models import MeetingRequest
+        return MeetingRequest.objects.create(
+            executive=self.ejecutivo,
+            created_by=self.ejecutivo,
+            status=MeetingRequest.Status.APROBADA,
+            approved_start=timezone.now() + timedelta(minutes=minutos_para_la_reunion),
+            approved_end=timezone.now() + timedelta(minutes=minutos_para_la_reunion + 30),
+            confirmado_en=confirmado_en,
+        )
+
+    def _post_update(self, payload):
+        return self.client.post(
+            reverse("telegram_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+    @mock.patch("accounts.views.enviar_mensaje_telegram")
+    def test_visto_confirma_la_reunion_mas_proxima_sin_confirmar(self, enviar_mock):
+        solicitud = self._crear_reunion()
+        r = self._post_update({"message": {"chat": {"id": 555555}, "text": "/visto"}})
+        self.assertEqual(r.status_code, 200)
+        solicitud.refresh_from_db()
+        self.assertIsNotNone(solicitud.confirmado_en)
+
+    @mock.patch("accounts.views.enviar_mensaje_telegram")
+    def test_visto_sin_chat_vinculado_no_rompe(self, enviar_mock):
+        r = self._post_update({"message": {"chat": {"id": 999999999}, "text": "/visto"}})
+        self.assertEqual(r.status_code, 200)

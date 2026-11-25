@@ -15,4 +15,6 @@ urlpatterns = [
     path("telegram/desvincular/", views.telegram_desvincular, name="telegram_desvincular"),
     path("telegram/webhook/", views.telegram_webhook, name="telegram_webhook"),
     path("tareas/enviar-recordatorios/", views.ejecutar_recordatorios, name="ejecutar_recordatorios"),
+    path("telegram/llamada-twiml/", views.llamada_twiml, name="llamada_twiml"),
+    path("telefono/", views.guardar_telefono, name="guardar_telefono"),
 ]
