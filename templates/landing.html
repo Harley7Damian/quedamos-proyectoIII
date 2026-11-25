@@ -5,7 +5,9 @@
 {% block mainclass %}landing{% endblock %}
 {% block navanon %}
   <a class="enlace-nav" href="#funciones">Funciones</a>
+  <a class="enlace-nav" href="#comparacion">Comparación</a>
   <a class="enlace-nav" href="#planes">Planes</a>
+  <a class="enlace-nav" href="#preguntas">Preguntas</a>
   <a href="{% url 'login' %}">Ingresar</a>
   <a class="btn small-btn" href="{% url 'signup' %}">Crear cuenta</a>
 {% endblock %}
@@ -37,7 +39,7 @@
         {% for slot in proposal.slots %}
           <div class="mock-opcion" style="--n:{{ forloop.counter0 }}">
             <span class="pill">Opción {{ slot.rank }}</span>
-            <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+            <p><strong>{{ slot.start|fecha_larga|capfirst }}</strong> · {{ slot|rango_horario }}</p>
             <p class="muted">{{ slot.reason }}</p>
             {% if forloop.first %}<span class="btn boton-demo" aria-hidden="true">Aprobar esta opción</span>{% endif %}
           </div>
@@ -45,6 +47,16 @@
         <figcaption class="muted">Ejemplo con datos ficticios. <a href="{% url 'demo_card' %}">Probar la demostración</a></figcaption>
       </div>
     </figure>
+  </div>
+</section>
+
+<section class="datos" aria-label="Quedamos en tres datos">
+  <div class="contenedor">
+    <ul class="datos-lista">
+      <li data-reveal style="--n:0"><span class="icono-dato" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>3 horarios propuestos</strong><span>Cada uno con el motivo de su orden.</span></li>
+      <li data-reveal style="--n:1"><span class="icono-dato" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M9 11l3 3 8-8 M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>Aprobación en 1 toque</strong><span>El ejecutivo aprueba sin iniciar sesión.</span></li>
+      <li data-reveal style="--n:2"><span class="icono-dato" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-4A3.5 3.5 0 0 0 5 17.5V19 M10.5 10.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M17 8l4 4 M21 8l-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>0 cuentas para la contraparte</strong><span>Entra con un enlace firmado, sin registrarse.</span></li>
+    </ul>
   </div>
 </section>
 
@@ -125,7 +137,7 @@
             {% for slot in proposal.slots %}
               <div class="mock-opcion fija">
                 <span class="pill">Opción {{ slot.rank }}</span>
-                <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+                <p><strong>{{ slot.start|fecha_larga|capfirst }}</strong> · {{ slot|rango_horario }}</p>
                 <p class="muted">{{ slot.reason }}</p>
               </div>
             {% endfor %}
@@ -144,7 +156,7 @@
               {% with slot=proposal.slots.0 %}
                 <div class="mock-opcion fija">
                   <span class="pill">Opción {{ slot.rank }}</span>
-                  <p><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</p>
+                  <p><strong>{{ slot.start|fecha_larga|capfirst }}</strong> · {{ slot|rango_horario }}</p>
                 </div>
               {% endwith %}
               <span class="btn boton-demo">Aprobar esta opción</span>
@@ -164,17 +176,17 @@
       <h2 id="pasos-titulo">Cómo funciona en tres pasos</h2>
     </header>
     <ol class="pasos">
-      <li class="card" data-reveal style="--n:0">
+      <li class="card tarjeta tono-brand" data-reveal style="--n:0">
         <span class="num" aria-hidden="true">1</span>
         <h3>Se registra la solicitud</h3>
         <p>La asistente marca cuándo puede reunirse el ejecutivo y comparte un enlace con la contraparte, que marca la suya sin crear una cuenta.</p>
       </li>
-      <li class="card" data-reveal style="--n:1">
+      <li class="card tarjeta tono-accent" data-reveal style="--n:1">
         <span class="num" aria-hidden="true">2</span>
         <h3>Quedamos propone tres horarios</h3>
         <p>Cruza ambas agendas, respeta los horarios protegidos del ejecutivo y explica en una frase por qué propone cada opción.</p>
       </li>
-      <li class="card" data-reveal style="--n:2">
+      <li class="card tarjeta tono-amber" data-reveal style="--n:2">
         <span class="num" aria-hidden="true">3</span>
         <h3>El ejecutivo aprueba con un toque</h3>
         <p>Abre un enlace firmado desde su celular y elige una opción, o pide otras sin escribir un mensaje. La asistente lo ve reflejado de inmediato.</p>
@@ -189,10 +201,90 @@
       <h2 id="confianza-titulo">Pensado para el entorno corporativo</h2>
     </header>
     <ul class="confianza">
-      <li class="card" data-reveal style="--n:0"><h3>Enlaces firmados</h3><p>Cada enlace lleva una firma y una fecha de vencimiento. Si se altera o vence, deja de funcionar.</p></li>
-      <li class="card" data-reveal style="--n:1"><h3>Horarios protegidos</h3><p>El ejecutivo define reglas, como no reunirse antes de las 10:00, y ninguna propuesta las incumple.</p></li>
-      <li class="card" data-reveal style="--n:2"><h3>Cada persona ve lo suyo</h3><p>Una asistente solo accede a las solicitudes de los ejecutivos con los que está vinculada.</p></li>
+      <li class="card tarjeta tono-brand" data-reveal style="--n:0">
+        <span class="icono-tarjeta" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>Enlaces firmados</h3>
+        <p>Cada enlace lleva una firma y una fecha de vencimiento. Si se altera o vence, deja de funcionar.</p>
+      </li>
+      <li class="card tarjeta tono-accent" data-reveal style="--n:1">
+        <span class="icono-tarjeta" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>Horarios protegidos</h3>
+        <p>El ejecutivo define reglas, como no reunirse antes de las 10:00, y ninguna propuesta las incumple.</p>
+      </li>
+      <li class="card tarjeta tono-rose" data-reveal style="--n:2">
+        <span class="icono-tarjeta" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-4A3.5 3.5 0 0 0 5 17.5V19 M10.5 10.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 19v-1.2a3 3 0 0 0-2-2.8 M15.5 4.7a3 3 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>Cada persona ve lo suyo</h3>
+        <p>Una asistente solo accede a las solicitudes de los ejecutivos con los que está vinculada.</p>
+      </li>
     </ul>
+  </div>
+</section>
+
+<section id="comparacion" class="seccion" aria-labelledby="comparacion-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="comparacion-titulo">Quedamos frente a otras formas de coordinar</h2>
+      <p class="sub">Lo que resuelve cada manera de agendar una reunión entre dos agendas ocupadas.</p>
+    </header>
+    <div class="comparativa" data-reveal tabindex="0" role="region" aria-label="Tabla comparativa; se desplaza horizontalmente en pantallas pequeñas">
+      <table>
+        <caption class="solo-lectores">Comparación entre coordinar por correo, usar una encuesta de horarios, usar un enlace de reservas y usar Quedamos</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="solo-lectores">Característica</span></th>
+            <th scope="col">Correos de ida y vuelta</th>
+            <th scope="col">Encuesta de horarios</th>
+            <th scope="col">Enlace de reservas</th>
+            <th scope="col" class="col-quedamos"><span class="rotulo-recomendado">Esta propuesta</span>Quedamos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Cruza la disponibilidad de ambas partes</th>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span><small>A mano</small></td>
+            <td><span class="v-parcial"><span aria-hidden="true">~</span><span class="solo-lectores">Parcial</span></span><small>Se vota entre opciones ya propuestas</small></td>
+            <td><span class="v-parcial"><span aria-hidden="true">~</span><span class="solo-lectores">Parcial</span></span><small>Solo muestra la agenda de una parte</small></td>
+            <td class="col-quedamos"><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span><small>Ambas partes marcan cuándo pueden</small></td>
+          </tr>
+          <tr>
+            <th scope="row">Propone horarios y explica el motivo de cada uno</th>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td class="col-quedamos"><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span><small>Tres opciones con su motivo</small></td>
+          </tr>
+          <tr>
+            <th scope="row">Respeta los horarios protegidos del ejecutivo</th>
+            <td><span class="v-parcial"><span aria-hidden="true">~</span><span class="solo-lectores">Parcial</span></span><small>Depende de quien responda</small></td>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span></td>
+            <td class="col-quedamos"><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span><small>Ninguna propuesta las incumple</small></td>
+          </tr>
+          <tr>
+            <th scope="row">La contraparte no necesita crear una cuenta</th>
+            <td><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span></td>
+            <td><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span></td>
+            <td><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span></td>
+            <td class="col-quedamos"><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span><small>Entra con un enlace firmado</small></td>
+          </tr>
+          <tr>
+            <th scope="row">El ejecutivo aprueba con un toque, sin iniciar sesión</th>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span><small>Responde con un mensaje</small></td>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">No</span></span></td>
+            <td class="col-quedamos"><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span><small>Desde su celular</small></td>
+          </tr>
+          <tr>
+            <th scope="row">Conexión con Google Calendar u Outlook</th>
+            <td><span class="v-na"><span aria-hidden="true">—</span><span class="solo-lectores">No aplica</span></span></td>
+            <td><span class="v-parcial"><span aria-hidden="true">~</span><span class="solo-lectores">Depende</span></span><small>Según la herramienta</small></td>
+            <td><span class="v-si"><span aria-hidden="true">✓</span><span class="solo-lectores">Sí</span></span></td>
+            <td class="col-quedamos"><span class="v-no"><span aria-hidden="true">✕</span><span class="solo-lectores">Todavía no</span></span><small>Importa archivos .ics</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted nota-comparativa">Comparación entre maneras de coordinar, no entre marcas: cada herramienta tiene variantes y planes distintos. Quedamos aún no se conecta con calendarios externos y lo declaramos aquí.</p>
   </div>
 </section>
 
@@ -247,6 +339,41 @@
   </div>
 </section>
 
+<section id="preguntas" class="seccion alterna" aria-labelledby="preguntas-titulo">
+  <div class="contenedor">
+    <header class="seccion-cabecera" data-reveal>
+      <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
+      <p class="sub">Lo que suelen preguntar las asistentes antes de probar Quedamos.</p>
+    </header>
+    <div class="faq" data-reveal>
+      <details>
+        <summary>¿La contraparte necesita crear una cuenta?</summary>
+        <p>No. Recibe un enlace propio, marca cuándo puede reunirse y listo. No se registra ni instala nada.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si alguien más recibe un enlace?</summary>
+        <p>Cada enlace sirve únicamente para su solicitud, lleva una firma y vence a los pocos días. Si se altera o vence, deja de funcionar.</p>
+      </details>
+      <details>
+        <summary>¿Se conecta con Google Calendar u Outlook?</summary>
+        <p>Todavía no. Hoy la disponibilidad se marca en una cuadrícula semanal o se importa desde un archivo de calendario (.ics).</p>
+      </details>
+      <details>
+        <summary>¿Recibo recordatorios de las reuniones?</summary>
+        <p>Sí, por Telegram, 30 y 5 minutos antes de cada reunión confirmada, si vinculas tu cuenta desde el panel.</p>
+      </details>
+      <details>
+        <summary>¿Qué datos guarda Quedamos?</summary>
+        <p>El nombre y el correo de cada cuenta, las solicitudes de reunión y las disponibilidades y reglas que se registran. Cada asistente solo ve a los ejecutivos con los que está vinculada.</p>
+      </details>
+      <details>
+        <summary>¿Cuánto cuesta?</summary>
+        <p>Durante el piloto todas las funciones están habilitadas y no se realiza ningún cobro. El plan Profesional previsto es de S/ 52 por ejecutivo al mes, sin IGV, y está en validación.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <section class="seccion" aria-labelledby="cta-titulo">
   <div class="contenedor">
     <div class="cta" data-reveal>
@@ -258,6 +385,48 @@
 </section>
 
 <footer class="pie-landing">
-  <div class="contenedor"><p class="muted">Quedamos · Proyecto en validación con el piloto.</p></div>
+  <div class="contenedor pie-superior">
+    <div class="pie-marca">
+      <a class="brand" href="{% url 'landing' %}"><span class="marca" aria-hidden="true"><img src="{% static 'img/LOGO_MARK.png' %}" alt=""></span><span class="marca-nombre">Quedamos</span></a>
+      <p class="muted">Coordinación de reuniones para asistentes ejecutivas y ejecutivos: cruza las agendas, respeta los horarios protegidos y propone tres opciones.</p>
+      <p class="pie-estado"><span class="punto-estado" aria-hidden="true"></span>Piloto en validación</p>
+    </div>
+    <div class="pie-redes">
+      <h3>Código</h3>
+      <ul class="redes" aria-label="Enlaces de Quedamos">
+        <li><a href="https://github.com/Harley7Damian/quedamos-proyectoIII" target="_blank" rel="noopener" aria-label="Código de Quedamos en GitHub" title="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="contenedor pie-grid">
+    <nav aria-label="Producto">
+      <h3>Producto</h3>
+      <ul>
+        <li><a href="#funciones">Funciones</a></li>
+        <li><a href="#como-funciona">Cómo funciona</a></li>
+        <li><a href="#planes">Planes</a></li>
+        <li><a href="{% url 'demo_card' %}">Probar la demostración</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Comparar">
+      <h3>Comparar</h3>
+      <ul>
+        <li><a href="#comparacion">Frente a los correos de ida y vuelta</a></li>
+        <li><a href="#comparacion">Frente a una encuesta de horarios</a></li>
+        <li><a href="#comparacion">Frente a un enlace de reservas</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Tu cuenta">
+      <h3>Tu cuenta</h3>
+      <ul>
+        <li><a href="{% url 'login' %}">Ingresar</a></li>
+        <li><a href="#preguntas">Preguntas frecuentes</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="contenedor pie-base">
+    <p class="muted">© {% now "Y" %} Quedamos. Hecho en Lima, Perú.</p>
+    <a class="pie-servicio" href="{% url 'health' %}"><span class="punto-estado" aria-hidden="true"></span>Estado del servicio</a>
+  </div>
 </footer>
 {% endblock %}

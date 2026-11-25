@@ -84,9 +84,38 @@ class LandingTests(TestCase):
         self.assertContains(r, f'href="{reverse("signup")}"', count=6)  # cabecera + los cinco botones
         self.assertContains(r, f'href="{reverse("login")}"')
 
+    def test_tiene_preguntas_frecuentes_y_un_pie_de_pagina_con_enlaces(self):
+        r = self.client.get(self.url)
+        self.assertContains(r, 'id="preguntas"')
+        self.assertContains(r, "¿La contraparte necesita crear una cuenta?")
+        for etiqueta in ("Producto", "Comparar", "Tu cuenta"):
+            self.assertContains(r, f'<nav aria-label="{etiqueta}">')
+        self.assertContains(r, reverse("health"))
+        self.assertNotContains(r, '<nav aria-label="Recursos">')
+
+    def test_el_pie_enlaza_el_repositorio_y_no_tiene_enlaces_vacios(self):
+        r = self.client.get(self.url)
+        self.assertContains(r, 'aria-label="Enlaces de Quedamos"')
+        self.assertContains(r, "https://github.com/Harley7Damian/quedamos-proyectoIII")
+        self.assertNotContains(r, 'href="#"')
+
+    def test_la_comparativa_es_una_tabla_accesible_y_declara_lo_que_falta(self):
+        r = self.client.get(self.url)
+        self.assertContains(r, 'id="comparacion"')
+        self.assertContains(r, '<th scope="col" class="col-quedamos">', html=False)
+        for fila in ("Cruza la disponibilidad de ambas partes", "Propone horarios y explica el motivo de cada uno", "Conexión con Google Calendar u Outlook"):
+            self.assertContains(r, fila)
+        self.assertContains(r, "Todavía no")
+        self.assertContains(r, "no entre marcas")
+
+    def test_las_tarjetas_de_confianza_y_pasos_tienen_icono_o_numero(self):
+        html = self.html()
+        self.assertEqual(html.count('class="icono-tarjeta"'), 3)
+        self.assertGreaterEqual(html.count('class="card tarjeta'), 6)
+
     def test_la_cabecera_enlaza_las_secciones(self):
         html = self.html()
-        for ancla in ("#funciones", "#planes"):
+        for ancla in ("#funciones", "#comparacion", "#planes"):
             self.assertIn(f'href="{ancla}"', html)
         for identificador in ("funciones", "planes", "como-funciona"):
             self.assertIn(f'id="{identificador}"', html)
@@ -150,7 +179,8 @@ class RecursosYMovimientoTests(TestCase):
         self.assertIn("js/landing.js", self.html)
 
     def test_no_depende_de_recursos_externos(self):
-        self.assertIsNone(re.search(r'(?:src|href)="(?:https?:)?//', self.html))
+        # Ningun recurso (scripts, estilos, imagenes) se carga desde otro sitio; los enlaces de navegacion, como el del repositorio, si pueden salir.
+        self.assertIsNone(re.search(r'(?:src="|<link[^>]*href=")(?:https?:)?//', self.html))
         self.assertNotIn("<iframe", self.html)
 
     def test_no_hay_scripts_en_linea(self):
