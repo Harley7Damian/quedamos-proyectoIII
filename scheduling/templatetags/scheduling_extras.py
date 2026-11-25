@@ -66,3 +66,10 @@ def horario_aprobado(solicitud):
     if solicitud.status != "aprobada" or not solicitud.approved_start or not solicitud.approved_end:
         return None
     return SimpleNamespace(start=timezone.localtime(solicitud.approved_start), end=timezone.localtime(solicitud.approved_end))
+
+
+@register.filter
+def primer_nombre(nombre):
+    """Primer nombre de una persona, para saludarla ("Ana Torres" -> "Ana")."""
+    partes = (nombre or "").split()
+    return partes[0] if partes else ""

@@ -1,12 +1,13 @@
 {% extends "panel/base_panel.html" %}
-{% load ia_extras %}
+{% load ia_extras scheduling_extras %}
 {% block title %}Panel · Quedamos{% endblock %}
 {% block content %}
 <section id="solicitudes" aria-labelledby="titulo-solicitudes">
   <div class="encabezado">
     <div>
+      <p class="saludo">Hola, {{ me.full_name|primer_nombre }}</p>
       <h1 id="titulo-solicitudes">Solicitudes de reunión</h1>
-      <p class="muted">Se actualiza sola cada pocos segundos.</p>
+      <p class="muted"><span class="en-vivo" aria-hidden="true"></span>Se actualiza sola cada pocos segundos.</p>
       <p><span class="rol rol-{{ me.role }}">{% if me.is_executive %}Vista de ejecutivo{% else %}Vista de asistente{% endif %}</span></p>
     </div>
   </div>
