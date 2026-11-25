@@ -274,7 +274,7 @@ def llamada_twiml(request):
     """Twilio llama a esta URL (TR-85) para obtener qué decir en la llamada."""
     if not _validar_firma_twilio(request):
         return HttpResponse(status=403)
-    texto = request.GET.get("texto", "Tienes un recordatorio pendiente en Quedamos.")
+    texto = request.GET.get("texto") or request.POST.get("texto") or "Tienes un recordatorio pendiente en Quedamos."
     twiml = f'<Response><Say language="es-MX">{_escape_xml(texto)}</Say></Response>'
     return HttpResponse(twiml, content_type="text/xml")
 
