@@ -349,3 +349,36 @@ table.metricas td.num, table.metricas th.num { text-align:right; }
 .rule-cabecera { display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem; }
 .dia-badge { font-size:.75rem; font-weight:600; padding:.1rem .6rem; border-radius:999px; background:var(--accent-soft); color:var(--brand); border:1px solid var(--accent); }
 .rule .status { float:none; }
+
+/* Panel pulido: saludo, resumen, tarjetas clicables y botones con icono */
+.saludo { margin:0 0 .15rem; font-size:.95rem; font-weight:600; color:var(--accent-ink); }
+.en-vivo { display:inline-block; width:.5rem; height:.5rem; margin-right:.45rem; border-radius:50%; background:var(--accent); box-shadow:0 0 0 0 rgba(14,159,142,.5); animation:latido 2.4s ease-out infinite; vertical-align:middle; }
+@keyframes latido { 0% { box-shadow:0 0 0 0 rgba(14,159,142,.45); } 70%, 100% { box-shadow:0 0 0 .5rem rgba(14,159,142,0); } }
+.resumen { list-style:none; margin:1rem 0 .25rem; padding:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:.75rem; }
+.resumen li { display:flex; flex-direction:column; gap:.1rem; padding:.85rem 1rem; background:var(--surface); border:1px solid var(--line); border-radius:.9rem; border-top:3px solid var(--line); }
+.resumen strong { font-size:1.75rem; font-weight:800; line-height:1.1; letter-spacing:-.02em; }
+.resumen span { font-size:.85rem; color:var(--muted); }
+.resumen-por-coordinar { border-top-color:var(--amber-ink) !important; }
+.resumen-propuestas { border-top-color:var(--brand) !important; }
+.resumen-confirmadas { border-top-color:var(--ok-ink) !important; }
+.card-solicitud { position:relative; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.card-solicitud:hover { transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--brand); }
+.enlace-tarjeta { color:inherit; text-decoration:none; }
+.enlace-tarjeta::after { content:""; position:absolute; inset:0; border-radius:inherit; }
+.enlace-tarjeta:focus-visible { outline:none; }
+.enlace-tarjeta:focus-visible::after { outline:3px solid var(--focus); outline-offset:2px; }
+.card-solicitud .titulo-solicitud { font-size:1.05rem; }
+.accion-flecha { position:relative; z-index:1; display:inline-flex; align-items:center; gap:.4rem; margin-top:.25rem; font-weight:600; color:var(--link); text-decoration:none; }
+.accion-flecha::after { content:""; width:.5rem; height:.5rem; border-right:2px solid currentColor; border-top:2px solid currentColor; transform:rotate(45deg); transition:transform .15s ease; }
+.card-solicitud:hover .accion-flecha::after { transform:translateX(3px) rotate(45deg); }
+.btn.accion-flecha { color:var(--brand-ink); }
+.boton-volver { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .8rem .3rem .45rem; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); font-weight:600; font-size:.9rem; text-decoration:none; transition:background .15s ease, transform .15s ease; }
+.boton-volver:hover { background:var(--surface-2); transform:translateX(-2px); }
+.boton-volver:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+details.plegable#nueva-solicitud { border:2px dashed var(--brand); background:var(--brand-soft); transition:background .15s ease, box-shadow .15s ease; }
+details.plegable#nueva-solicitud:hover { box-shadow:var(--shadow); }
+details.plegable#nueva-solicitud > summary { display:flex; align-items:center; gap:.5rem; padding:.2rem 0; font-size:1.02rem; }
+details.plegable#nueva-solicitud > summary > span[aria-hidden] { display:inline-grid; place-items:center; width:1.5rem; height:1.5rem; border-radius:50%; background:var(--brand); color:var(--brand-ink); font-weight:800; line-height:1; }
+details.plegable#nueva-solicitud[open] { border-style:solid; background:var(--surface); }
+@media (max-width:560px) { .resumen { gap:.5rem; } .resumen li { padding:.6rem .7rem; } .resumen strong { font-size:1.4rem; } .resumen span { font-size:.75rem; } }
+@media (prefers-reduced-motion: reduce) { .en-vivo { animation:none; } .card-solicitud, .accion-flecha::after, .boton-volver { transition:none; } .card-solicitud:hover, .boton-volver:hover { transform:none; } }

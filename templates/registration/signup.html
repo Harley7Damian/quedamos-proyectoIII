@@ -3,24 +3,50 @@
 {% block bodyclass %}acceso{% endblock %}
 {% block mainclass %}narrow{% endblock %}
 {% block content %}
-<div class="card acceso-card">
-  <h1>Crear cuenta</h1>
-  <p class="muted">Empieza a coordinar reuniones entre asistentes y ejecutivos.</p>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.full_name.label_tag }}{{ form.full_name }}{{ form.full_name.errors }}
-    {{ form.email.label_tag }}{{ form.email }}{{ form.email.errors }}
-    <label>{{ form.role.label }}</label>
-    <div class="roles">{{ form.role }}</div>{{ form.role.errors }}
-    {{ form.password1.label_tag }}{% include "partials/_clave.html" with campo=form.password1 %}{{ form.password1.errors }}
-    <ul class="requisitos" id="requisitos-clave" data-requisitos aria-live="polite" aria-label="Requisitos de la contraseña">
-      <li data-req="largo" data-ok="false">Mínimo 8 caracteres<span class="estado oculto"> (pendiente)</span></li>
-      <li data-req="numerica" data-ok="false">No puede ser solo números<span class="estado oculto"> (pendiente)</span></li>
-      <li data-req="coincide" data-ok="false">Coincide con la confirmación<span class="estado oculto"> (pendiente)</span></li>
-    </ul>
-    {{ form.password2.label_tag }}{% include "partials/_clave.html" with campo=form.password2 %}{{ form.password2.errors }}
-    <p><button type="submit">Crear cuenta</button></p>
-  </form>
-  <p class="acceso-pie">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresar <span aria-hidden="true">→</span></a></p>
+<div class="acceso-grid">
+  {% include "registration/_lateral.html" %}
+  <div class="acceso-columna">
+    <div class="card acceso-card">
+      <h1>Crear cuenta</h1>
+      <p class="muted">Empieza a coordinar reuniones entre asistentes y ejecutivos.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+        <div class="campo-icono">
+          <svg class="icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          {{ form.full_name }}
+        </div>
+        {{ form.full_name.errors }}
+        <label for="{{ form.email.id_for_label }}">Correo electrónico</label>
+        <div class="campo-icono">
+          <svg class="icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 7.5l8.5 6 8.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {{ form.email }}
+        </div>
+        {{ form.email.errors }}
+        <label>{{ form.role.label }}</label>
+        <div class="roles">{{ form.role }}</div>{{ form.role.errors }}
+        <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+        <div class="campo-icono">
+          <svg class="icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          {% include "partials/_clave.html" with campo=form.password1 %}
+        </div>
+        {{ form.password1.errors }}
+        <ul class="requisitos" id="requisitos-clave" data-requisitos aria-live="polite" aria-label="Requisitos de la contraseña">
+          <li data-req="largo" data-ok="false">Mínimo 8 caracteres<span class="estado oculto"> (pendiente)</span></li>
+          <li data-req="numerica" data-ok="false">No puede ser solo números<span class="estado oculto"> (pendiente)</span></li>
+          <li data-req="coincide" data-ok="false">Coincide con la confirmación<span class="estado oculto"> (pendiente)</span></li>
+        </ul>
+        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+        <div class="campo-icono">
+          <svg class="icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          {% include "partials/_clave.html" with campo=form.password2 %}
+        </div>
+        {{ form.password2.errors }}
+        <p><button type="submit">Crear cuenta</button></p>
+      </form>
+      <p class="acceso-pie">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresar <span aria-hidden="true">→</span></a></p>
+    </div>
+    <p class="volver-inicio"><a href="{% url 'landing' %}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver al inicio</a></p>
+  </div>
 </div>
 {% endblock %}

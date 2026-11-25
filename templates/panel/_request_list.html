@@ -1,8 +1,14 @@
-{% load scheduling_extras %}{% for r in requests %}
+{% load scheduling_extras %}{% if resumen.total %}
+<ul class="resumen" aria-label="Resumen de solicitudes">
+  <li class="resumen-por-coordinar"><strong>{{ resumen.por_coordinar }}</strong><span>Por coordinar</span></li>
+  <li class="resumen-propuestas"><strong>{{ resumen.propuestas }}</strong><span>Esperando aprobación</span></li>
+  <li class="resumen-confirmadas"><strong>{{ resumen.confirmadas }}</strong><span>Confirmadas</span></li>
+</ul>
+{% endif %}{% for r in requests %}
   {% with slot=r|horario_aprobado %}
-  <div class="card{% if slot %} card-confirmada{% endif %}">
+  <div class="card card-solicitud{% if slot %} card-confirmada{% endif %}">
     {% include "partials/_estado.html" %}
-    <strong>{{ r.title }}</strong>
+    <strong class="titulo-solicitud"><a class="enlace-tarjeta" href="{% url 'request_detail' r.pk %}">{{ r.title }}</a></strong>
     <div>Con {{ r.counterpart_name }}{% if r.counterpart_email %} ({{ r.counterpart_email }}){% endif %} · {{ r.duration_min }} min</div>
     <div class="muted">Ejecutivo: {{ r.executive.full_name }} · creada por {{ r.created_by.full_name }} · {{ r.created_at|date:"d/m/Y H:i" }}</div>
     {% if r.notes %}<div>{{ r.notes }}</div>{% endif %}
@@ -10,7 +16,7 @@
       <div class="confirmada-horario"><strong>{{ slot.start|fecha_larga }}</strong> · {{ slot|rango_horario }}</div>
       <div class="acciones"><a class="btn" href="{% url 'request_detail' r.pk %}">Ver resultado</a></div>
     {% else %}
-      <div class="acciones"><a href="{% url 'request_detail' r.pk %}">{% if user.is_executive %}Ver detalle{% else %}Ver detalle y coordinar{% endif %}</a></div>
+      <div class="acciones"><a class="accion-flecha" href="{% url 'request_detail' r.pk %}">{% if user.is_executive %}Ver detalle{% else %}Ver detalle y coordinar{% endif %}</a></div>
     {% endif %}
   </div>
   {% endwith %}

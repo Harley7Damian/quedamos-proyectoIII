@@ -1,0 +1,50 @@
+/* Identidad de marca y acceso (ingreso y registro).
+   Nombre de la marca en cursiva con Instrument Serif, autoalojada: se sirve desde la propia aplicacion y no pide nada a dominios externos.
+   Subconjunto latino. Licencia: static/fonts/LICENSE-InstrumentSerif.txt */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/instrument-serif-latin-400-italic.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+.marca-nombre { font-family:"Instrument Serif", Georgia, "Times New Roman", serif; font-style:italic; font-weight:400; font-size:1.5em; letter-spacing:.005em; line-height:1; }
+.marca { border-radius:.6rem; box-shadow:0 0 0 1px rgba(255,255,255,.55), 0 6px 14px -6px rgba(79,99,210,.6); }
+
+/* Ingreso y registro: panel de marca a la izquierda y formulario a la derecha en pantallas anchas */
+body.acceso main.narrow { max-width:64rem; padding:2rem 1rem 3rem; }
+.acceso-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1.5rem; max-width:28rem; margin:0 auto; }
+.acceso-columna { min-width:0; }
+.acceso-lateral { display:none; }
+.acceso-card { padding:2rem; border-radius:1.4rem; margin:0; box-shadow:0 30px 60px -32px rgba(31,36,70,.5), 0 2px 8px rgba(31,36,70,.08); }
+.acceso-card h1 { font-size:1.6rem; letter-spacing:-.02em; margin:0 0 .35rem; }
+.campo-icono { position:relative; }
+.campo-icono > .icono { position:absolute; left:.9rem; top:.875rem; color:var(--muted); pointer-events:none; z-index:1; }
+.campo-icono input { padding-top:.72rem; padding-bottom:.72rem; padding-left:2.8rem; }
+.campo-icono:focus-within > .icono { color:var(--brand); }
+.volver-inicio { margin:1.1rem 0 0; text-align:center; font-size:.9rem; }
+.volver-inicio a { display:inline-flex; align-items:center; gap:.25rem; color:var(--muted); text-decoration:none; font-weight:500; }
+.volver-inicio a:hover { color:var(--ink); text-decoration:underline; }
+
+@media (min-width:900px) {
+  .acceso-grid { grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:2.25rem; max-width:60rem; align-items:start; }
+  .acceso-lateral { position:sticky; top:1.5rem; }
+  body.acceso header.top .in { max-width:60rem; }
+  .acceso-lateral { overflow:hidden; display:flex; flex-direction:column; gap:1.4rem; padding:2.6rem 2.4rem; border-radius:1.6rem; color:#fff; background:linear-gradient(150deg, #3A4AB0 0%, #4F63D2 48%, #0B8577 100%); box-shadow:0 30px 60px -32px rgba(31,36,70,.6); }
+  .acceso-lateral::before, .acceso-lateral::after { content:""; position:absolute; border-radius:50%; pointer-events:none; background:radial-gradient(circle, rgba(255,255,255,.2), transparent 70%); }
+  .acceso-lateral::before { width:18rem; height:18rem; right:-6rem; top:-6rem; }
+  .acceso-lateral::after { width:14rem; height:14rem; left:-5rem; bottom:-5rem; }
+  .acceso-lateral > * { position:relative; z-index:1; }
+}
+.lateral-logo { display:inline-block; width:3.6rem; height:3.6rem; border-radius:1rem; overflow:hidden; box-shadow:0 0 0 2px rgba(255,255,255,.55), 0 14px 26px -10px rgba(0,0,0,.45); }
+.lateral-logo img { width:100%; height:100%; display:block; object-fit:cover; }
+.lateral-titulo { margin:0; font-family:"Instrument Serif", Georgia, "Times New Roman", serif; font-size:2.6rem; line-height:1.08; font-weight:400; letter-spacing:-.005em; }
+.lateral-titulo em { font-style:italic; color:#CFF6EE; }
+.lateral-puntos { list-style:none; margin:0; padding:0; display:grid; gap:1rem; }
+.lateral-puntos li { display:flex; gap:.85rem; align-items:flex-start; font-size:.95rem; line-height:1.4; color:rgba(255,255,255,.92); }
+.lateral-puntos strong { display:block; color:#fff; font-size:1rem; margin-bottom:.1rem; }
+.lateral-icono { flex:none; display:inline-grid; place-items:center; width:2.4rem; height:2.4rem; border-radius:.75rem; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); }
+.lateral-nota { margin:.4rem 0 0; padding-top:1.1rem; border-top:1px solid rgba(255,255,255,.28); font-size:.85rem; color:rgba(255,255,255,.85); }
+@media (max-width:480px) { .acceso-card { padding:1.5rem 1.1rem; } body.acceso main.narrow { padding-top:1rem; } }
+@media (prefers-reduced-motion: reduce) { .campo-icono > .icono { transition:none; } }

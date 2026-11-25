@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Exists, F, OuterRef
+from django.db.models import Count, Exists, F, OuterRef, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -61,7 +61,13 @@ def _requests_context(user):
             )
         )
     )
-    return {"requests": solicitudes}
+    resumen = MeetingRequest.objects.visible_to(user).aggregate(
+        total=Count("pk"),
+        por_coordinar=Count("pk", filter=Q(status=MeetingRequest.Status.PENDIENTE)),
+        propuestas=Count("pk", filter=Q(status=MeetingRequest.Status.PROPUESTA)),
+        confirmadas=Count("pk", filter=Q(status=MeetingRequest.Status.APROBADA)),
+    )
+    return {"requests": solicitudes, "resumen": resumen}
 
 
 @login_required
