@@ -19,6 +19,7 @@ from django.views.decorators.http import require_POST
 from meetings.forms import LinkForm
 from meetings.models import AssistantLink, MeetingRequest
 from scheduling.mock import MOCK_PROPOSAL
+from twilio.request_validator import RequestValidator
 from xml.sax.saxutils import escape as _escape_xml
 
 from .forms import AreaForm, ProtectHoursForm, SignupForm, WorkHoursForm, PhoneForm
@@ -271,9 +272,22 @@ def telegram_webhook(request):
 @csrf_exempt
 def llamada_twiml(request):
     """Twilio llama a esta URL (TR-85) para obtener qué decir en la llamada."""
+    if not _validar_firma_twilio(request):
+        return HttpResponse(status=403)
     texto = request.GET.get("texto", "Tienes un recordatorio pendiente en Quedamos.")
     twiml = f'<Response><Say language="es-MX">{_escape_xml(texto)}</Say></Response>'
     return HttpResponse(twiml, content_type="text/xml")
+
+def _validar_firma_twilio(request):
+    """TR-85: solo Twilio deberia poder llamar a esta URL."""
+    token = settings.TWILIO_AUTH_TOKEN
+    if not token:
+        return True  # sin token configurado (dev/test) no se puede validar
+    validator = RequestValidator(token)
+    url = request.build_absolute_uri()
+    firma = request.META.get("HTTP_X_TWILIO_SIGNATURE", "")
+    params = request.POST.dict() if request.method == "POST" else {}
+    return validator.validate(url, params, firma)
 
 def ejecutar_recordatorios(request):
     secreto = request.GET.get("secreto", "")

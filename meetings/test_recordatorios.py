@@ -166,3 +166,14 @@ class EscalamientoPorLlamadaTests(TestCase):
         self.crear_solicitud(minutos_para_empezar=3, confirmado_en=None)
         self.correr_comando()
         llamada_mock.assert_not_called()
+
+    @mock.patch("meetings.management.commands.enviar_recordatorios.hacer_llamada_recordatorio")
+    @mock.patch("meetings.management.commands.enviar_recordatorios.enviar_mensaje_telegram")
+    def test_llama_con_un_texto_limpio_pensado_para_voz(self, enviar_mock, llamada_mock):
+        self.crear_solicitud(minutos_para_empezar=3, confirmado_en=None)
+        self.correr_comando()
+        llamada_mock.assert_called_once()
+        args, kwargs = llamada_mock.call_args
+        texto_voz = args[1]
+        self.assertNotIn("/visto", texto_voz)
+        self.assertNotIn("http", texto_voz)

@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from accounts.llamadas import hacer_llamada_recordatorio
 from accounts.models import Profile
-from accounts.recordatorios import mensaje_recordatorio_5, mensaje_recordatorio_30
+from accounts.recordatorios import mensaje_recordatorio_5, mensaje_recordatorio_30, texto_llamada_recordatorio
 from accounts.telegram import enviar_mensaje_telegram
 
 from meetings.models import MeetingRequest
@@ -59,6 +59,7 @@ class Command(BaseCommand):
         for solicitud in pendientes:
             try:
                 texto = mensaje_recordatorio_5(solicitud)
+                texto_voz = texto_llamada_recordatorio(solicitud)
                 perfiles = list(self._perfiles(solicitud))
                 for perfil in perfiles:
                     if perfil.telegram_chat_id:
@@ -66,7 +67,7 @@ class Command(BaseCommand):
                 if solicitud.confirmado_en is None:
                     for perfil in perfiles:
                         if perfil.telefono:
-                            hacer_llamada_recordatorio(perfil.telefono, texto)
+                            hacer_llamada_recordatorio(perfil.telefono, texto_voz)
                 solicitud.recordatorio_5_enviado_en = ahora
                 solicitud.save(update_fields=["recordatorio_5_enviado_en"])
                 self.stdout.write(f"Recordatorio (5 min) enviado para la solicitud {solicitud.pk}.")
