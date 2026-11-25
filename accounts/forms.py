@@ -1,5 +1,8 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.core.exceptions import ValidationError
 
 from meetings.models import SchedulingRule
 from scheduling.matching import format_span, hour_choices
@@ -7,6 +10,7 @@ from scheduling.rules import validate_rule
 
 from .models import Profile, User
 
+TELEFONO_RE = re.compile(r"^\+\d{8,15}$")
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(label="Correo", max_length=150)
@@ -77,11 +81,16 @@ class WorkHoursForm(forms.ModelForm):
 
 class PhoneForm(forms.ModelForm):
     """Teléfono para la llamada de escalamiento de recordatorios (TR-85)."""
-
     class Meta:
         model = Profile
         fields = ["telefono"]
-        widgets = {"telefono": forms.TextInput(attrs={"placeholder": "+51 999 999 999"})}
+        widgets = {"telefono": forms.TextInput(attrs={"placeholder": "+51999999999"})}
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data["telefono"].strip().replace(" ", "")
+        if telefono and not TELEFONO_RE.match(telefono):
+            raise ValidationError("Escribe el número con el código de país, sin espacios, ej: +51999999999.")
+        return telefono
 
 
 # Horarios a proteger que se ofrecen en el paso 3: (clave, titulo, detalle, reglas como (dia, desde, hasta)).

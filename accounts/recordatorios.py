@@ -30,3 +30,11 @@ def mensaje_recordatorio_5(meeting_request) -> str:
         "Responde /visto si todavía no lo hiciste.\n"
         f"Ver en Quedamos: {_enlace_panel()}"
     )
+
+def texto_llamada_recordatorio(meeting_request) -> str:
+    """Texto pensado para ser leido en voz por la llamada de Twilio (TR-85).
+    Sin emojis, sin instrucciones de Telegram ni enlaces: solo lo esencial."""
+    return (
+        f"Hola. Te recordamos que en cinco minutos tienes una reunión en Quedamos "
+        f"con {meeting_request.counterpart_name}, a las {_hora(meeting_request.approved_start)}."
+    )

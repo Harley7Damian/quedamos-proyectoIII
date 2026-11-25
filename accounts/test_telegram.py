@@ -214,6 +214,7 @@ class EnviarMensajeTelegramTests(TestCase):
             ok = enviar_mensaje_telegram("chat_id_invalido", "hola")
         self.assertFalse(ok)
 
+@override_settings(TWILIO_AUTH_TOKEN="")
 class LlamadaTwimlTests(TestCase):
     def test_devuelve_twiml_con_el_texto_escapado(self):
         r = self.client.get(reverse("llamada_twiml"), {"texto": "Hola <mundo> & cia"})
@@ -260,4 +261,20 @@ class VistoConfirmaReunionTests(TestCase):
     @mock.patch("accounts.views.enviar_mensaje_telegram")
     def test_visto_sin_chat_vinculado_no_rompe(self, enviar_mock):
         r = self._post_update({"message": {"chat": {"id": 999999999}, "text": "/visto"}})
+        self.assertEqual(r.status_code, 200)
+
+class LlamadaTwimlFirmaTests(TestCase):
+    @override_settings(TWILIO_AUTH_TOKEN="token-secreto")
+    def test_sin_firma_valida_devuelve_403(self):
+        r = self.client.get(reverse("llamada_twiml"), {"texto": "hola"})
+        self.assertEqual(r.status_code, 403)
+
+    @override_settings(TWILIO_AUTH_TOKEN="token-secreto")
+    @mock.patch("accounts.views.RequestValidator")
+    def test_con_firma_valida_devuelve_200(self, validator_cls):
+        validator_cls.return_value.validate.return_value = True
+        r = self.client.get(
+            reverse("llamada_twiml"), {"texto": "hola"},
+            HTTP_X_TWILIO_SIGNATURE="firma-cualquiera",
+        )
         self.assertEqual(r.status_code, 200)
