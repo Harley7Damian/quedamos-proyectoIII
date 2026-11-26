@@ -3,6 +3,7 @@ from datetime import date
 from django import forms
 from django.utils import timezone
 
+from accounts.correo import validar_correo
 from accounts.models import User, normalize_code
 
 from scheduling.matching import hour_choices
@@ -55,6 +56,10 @@ class MeetingRequestForm(forms.ModelForm):
         if len(value) < 2:
             raise forms.ValidationError("Escribe el nombre de la contraparte.")
         return value
+
+    def clean_counterpart_email(self):
+        # Opcional, pero si se escribe debe ser un correo utilizable (con aviso de errores de tipeo).
+        return validar_correo(self.cleaned_data.get("counterpart_email", ""))
 
     def clean_week(self):
         value = self.cleaned_data.get("week")

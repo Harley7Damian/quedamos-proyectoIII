@@ -7,6 +7,7 @@ from meetings.models import SchedulingRule
 from scheduling.matching import format_span, hour_choices
 from scheduling.rules import validate_rule
 
+from .correo import validar_correo
 from .models import Profile, User
 from .recordatorios import ANTELACIONES, normalizar_antelaciones
 
@@ -25,7 +26,7 @@ class SignupForm(UserCreationForm):
         self.fields["password1"].widget.attrs["aria-describedby"] = "requisitos-clave"
 
     def clean_email(self):
-        email = self.cleaned_data["email"].strip().lower()
+        email = validar_correo(self.cleaned_data["email"])
         if User.objects.filter(username=email).exists():
             raise forms.ValidationError("Ya existe una cuenta con ese correo. Prueba ingresar.")
         return email
