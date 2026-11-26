@@ -200,7 +200,8 @@ class ProtectHoursForm(forms.Form):
         for weekday, start, end in wanted:
             if validate_rule(weekday, start, end):
                 continue
-            same = SchedulingRule.objects.filter(executive=executive, weekday=weekday, start_hour=start, end_hour=end)
+            same = SchedulingRule.objects.filter(executive=executive, weekday=weekday, start_hour=start, end_hour=end,
+                                                 start_minute=0, end_minute=0)
             if same.exists():
                 continue  # ya existe (activa o desactivada): no se duplica ni se reactiva
             SchedulingRule.objects.create(executive=executive, created_by=self.user,

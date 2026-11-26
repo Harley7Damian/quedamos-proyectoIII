@@ -7,26 +7,40 @@ pasó, evita opciones que se pisen y redacta el motivo de cada opción.
 """
 from __future__ import annotations
 
-import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, tzinfo
 
 from .contracts import Proposal, ProposedSlot
-from .matching import END_HOUR, HIGH_PREF, HOURS, Member, block_key, compute_block_scores
+from .matching import END_HOUR, HIGH_PREF, START_HOUR, STEP_MIN, Member, block_key, compute_block_scores
 from .rules import RuleSpec
 
 MAX_OPTIONS = 3
+# Dos opciones del mismo día se separan al menos esto, para que no queden pegadas ni se parezcan.
+MIN_GAP_MIN = 60
 
 
 @dataclass(frozen=True)
 class _Candidate:
     day: int
-    hour: int  # hora de inicio
-    blocks: int  # cuantos bloques de una hora ocupa
+    start_min: int  # minutos desde las 00:00 en que empieza; puede caer en :00, :15, :30 o :45
+    hours: tuple[int, ...]  # horas completas (bloques de la cuadrícula) que toca la reunión
     start: datetime
     end: datetime
-    pref: int  # suma de preferencias altas de ambas partes en sus bloques
+    pref: int  # suma de preferencias altas de ambas partes en los bloques que toca
+
+    @property
+    def hour(self) -> int:
+        return self.start_min // 60
+
+    @property
+    def minute(self) -> int:
+        return self.start_min % 60
+
+    @property
+    def slot_id(self) -> str:
+        """'2-10' para las 10:00 del miércoles (como siempre) y '2-10-30' para las 10:30."""
+        return f"{self.day}-{self.hour}" if self.minute == 0 else f"{self.day}-{self.hour}-{self.minute}"
 
     def overlaps(self, other: "_Candidate") -> bool:
         return self.start < other.end and other.start < self.end
@@ -43,17 +57,23 @@ def _candidates(
     *, executive_blocks, counterpart_blocks, duration_min, week_start: date, tz: tzinfo, now: datetime,
     rules: Sequence[RuleSpec] = (),
 ) -> list[_Candidate]:
-    needed = max(1, math.ceil(duration_min / 60))
+    """Inicios posibles cada 15 minutos dentro de las horas en que ambos coinciden.
+
+    La disponibilidad se marca por hora, pero la reunión puede empezar en :15, :30 o :45 si todas las horas
+    que toca están libres para las dos partes y ninguna regla protegida la bloquea."""
     scores = {s.key: s for s in compute_block_scores(_members(executive_blocks, counterpart_blocks))}
     out: list[_Candidate] = []
     for day in range(7):
-        for hour in HOURS:
-            if hour + needed > END_HOUR:
+        day_date = week_start + timedelta(days=day)
+        for start_min in range(START_HOUR * 60, END_HOUR * 60, STEP_MIN):
+            end_min = start_min + duration_min
+            if end_min > END_HOUR * 60:
                 break
-            keys = [block_key(day, hour + i) for i in range(needed)]
+            hours = tuple(range(start_min // 60, (end_min - 1) // 60 + 1))
+            keys = [block_key(day, h) for h in hours]
             if not all(k in scores and scores[k].is_full_match for k in keys):
                 continue
-            start = datetime(*(week_start + timedelta(days=day)).timetuple()[:3], hour, tzinfo=tz)
+            start = datetime(day_date.year, day_date.month, day_date.day, start_min // 60, start_min % 60, tzinfo=tz)
             if start <= now:
                 continue  # no se propone algo que ya pasó
             end = start + timedelta(minutes=duration_min)
@@ -61,8 +81,7 @@ def _candidates(
                 continue  # viola una regla protegida del ejecutivo
             out.append(
                 _Candidate(
-                    day=day, hour=hour, blocks=needed, start=start,
-                    end=end,
+                    day=day, start_min=start_min, hours=hours, start=start, end=end,
                     pref=sum(scores[k].high_pref_count for k in keys),
                 )
             )
@@ -70,7 +89,9 @@ def _candidates(
 
 
 def _choose(candidates: list[_Candidate]) -> list[_Candidate]:
-    """Hasta tres opciones: primero la mejor de cada día distinto, luego se completa sin pisar las ya elegidas."""
+    """Hasta tres opciones: primero la mejor de cada día distinto, luego se completa con las que no pisen ni
+    queden pegadas a las ya elegidas, y por último con cualquiera que no se pise. A igual preferencia gana
+    la que empieza antes."""
     ordered = sorted(candidates, key=lambda c: (-c.pref, c.start))
     chosen: list[_Candidate] = []
     for c in ordered:
@@ -78,16 +99,17 @@ def _choose(candidates: list[_Candidate]) -> list[_Candidate]:
             break
         if all(c.day != x.day for x in chosen):
             chosen.append(c)
-    for c in ordered:
-        if len(chosen) == MAX_OPTIONS:
-            break
-        if c not in chosen and not any(c.overlaps(x) for x in chosen):
-            chosen.append(c)
+    for margin in (timedelta(minutes=MIN_GAP_MIN), timedelta(0)):
+        for c in ordered:
+            if len(chosen) == MAX_OPTIONS:
+                break
+            if c not in chosen and not any(c.start < x.end + margin and x.start < c.end + margin for x in chosen):
+                chosen.append(c)
     return sorted(chosen, key=lambda c: (-c.pref, c.start))
 
 
 def _states(blocks: dict[str, int], c: _Candidate) -> list[int]:
-    return [blocks.get(block_key(c.day, c.hour + i), 0) for i in range(c.blocks)]
+    return [blocks.get(block_key(c.day, h), 0) for h in c.hours]
 
 
 def explain(
@@ -142,7 +164,7 @@ def build_proposal(
     )
     slots = [
         ProposedSlot(
-            id=f"{c.day}-{c.hour}", start=c.start, end=c.end, rank=rank,
+            id=c.slot_id, start=c.start, end=c.end, rank=rank,
             reason=explain(c, executive_blocks, counterpart_blocks, executive_name, counterpart_name, rules),
         )
         for rank, c in enumerate(_choose(candidates), start=1)

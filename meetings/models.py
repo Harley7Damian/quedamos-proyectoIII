@@ -140,20 +140,28 @@ class SchedulingRule(models.Model):
     weekday = models.PositiveSmallIntegerField("día", choices=WEEKDAYS, null=True, blank=True)
     start_hour = models.PositiveSmallIntegerField("desde")
     end_hour = models.PositiveSmallIntegerField("hasta")
+    # Minutos de la franja (0, 15, 30 o 45). Con 0 en ambos queda la franja por horas completas de siempre.
+    start_minute = models.PositiveSmallIntegerField("minuto de inicio", default=0)
+    end_minute = models.PositiveSmallIntegerField("minuto de fin", default=0)
     active = models.BooleanField("activa", default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["executive", "weekday", "start_hour"]
+        ordering = ["executive", "weekday", "start_hour", "start_minute"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(start_hour__gte=0, start_hour__lte=23, end_hour__gte=1, end_hour__lte=24, start_hour__lt=models.F("end_hour")),
+                condition=Q(start_hour__gte=0, start_hour__lte=23, end_hour__gte=1, end_hour__lte=24)
+                & Q(start_minute__in=[0, 15, 30, 45], end_minute__in=[0, 15, 30, 45])
+                & (Q(start_hour__lt=models.F("end_hour"))
+                   | Q(start_hour=models.F("end_hour"), start_minute__lt=models.F("end_minute")))
+                & (~Q(end_hour=24) | Q(end_minute=0)),
                 name="rule_hours_valid",
             ),
         ]
 
     def spec(self) -> RuleSpec:
-        return RuleSpec(weekday=self.weekday, start_hour=self.start_hour, end_hour=self.end_hour)
+        return RuleSpec(weekday=self.weekday, start_hour=self.start_hour, end_hour=self.end_hour,
+                        start_minute=self.start_minute, end_minute=self.end_minute)
 
     @property
     def label(self) -> str:

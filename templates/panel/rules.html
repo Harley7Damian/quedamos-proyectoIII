@@ -32,8 +32,8 @@
   {% if form.executive %}{{ form.executive.label_tag }}{{ form.executive }}{{ form.executive.errors }}{% endif %}
   {{ form.weekday.label_tag }}{{ form.weekday }}{{ form.weekday.errors }}
   <div class="grid2">
-    <div>{{ form.start_hour.label_tag }}{{ form.start_hour }}{{ form.start_hour.errors }}</div>
-    <div>{{ form.end_hour.label_tag }}{{ form.end_hour }}{{ form.end_hour.errors }}</div>
+    <div class="hora-minuto">{{ form.start_hour.label_tag }}<div class="hm">{{ form.start_hour }}<span aria-hidden="true">:</span>{{ form.start_minute }}</div>{{ form.start_hour.errors }}{{ form.start_minute.errors }}</div>
+    <div class="hora-minuto">{{ form.end_hour.label_tag }}<div class="hm">{{ form.end_hour }}<span aria-hidden="true">:</span>{{ form.end_minute }}</div>{{ form.end_hour.errors }}{{ form.end_minute.errors }}</div>
   </div>
   <p class="muted">Para bloquear un día completo elige el día y el rango desde 00:00 hasta Fin del día.</p>
   <p><button type="submit">Guardar regla</button></p>

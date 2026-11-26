@@ -49,6 +49,15 @@ def format_hour(hour: int) -> str:
 
 END_OF_DAY = "Fin del día"
 
+# Las reglas y las propuestas se mueven de 15 en 15 minutos; la disponibilidad que marca cada parte sigue siendo por hora.
+STEP_MIN = 15
+MINUTE_CHOICES = [(m, f"{m:02d}") for m in range(0, 60, STEP_MIN)]
+
+
+def format_time(hour: int, minute: int = 0) -> str:
+    """'09:30'. La hora 24 con 0 minutos es el cierre del día y se escribe '24:00' solo internamente."""
+    return f"{hour:02d}:{minute:02d}"
+
 
 def hour_choices(first: int, last: int) -> list[tuple[int, str]]:
     """Opciones (hora, texto) de un selector, de first a last incluidas.

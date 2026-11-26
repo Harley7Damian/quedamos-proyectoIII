@@ -18,5 +18,5 @@ class AvailabilityAdmin(admin.ModelAdmin):
 
 @admin.register(SchedulingRule)
 class SchedulingRuleAdmin(admin.ModelAdmin):
-    list_display = ("executive", "weekday", "start_hour", "end_hour", "active")
+    list_display = ("executive", "weekday", "start_hour", "start_minute", "end_hour", "end_minute", "active")
     list_filter = ("active",)

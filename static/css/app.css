@@ -398,5 +398,16 @@ details.plegable#nueva-solicitud[open] { border-style:solid; background:var(--su
 .usuario-perfil { display:block; padding:.3rem 0; font-weight:600; }
 @media (max-width:420px) { .opciones-avisos { grid-template-columns:1fr; } }
 
+/* Hora y minutos de una regla: dos selectores juntos */
+.hm { display:flex; align-items:center; gap:.35rem; }
+.hm select { flex:1; min-width:0; }
 .perfil-col { display:flex; flex-direction:column; gap:.75rem; }
 
+/* Barra superior en pantallas angostas (onboarding): el nombre se oculta para que rol y "Salir" quepan */
+@media (max-width:480px) {
+  header.top .in { gap:.5rem; }
+  header.top nav { gap:.5rem; min-width:0; }
+  header.top nav > .muted { display:none; }
+}
+/* Cuadrículas de opciones: si queda una opción sola en la última fila, ocupa todo el ancho */
+.opciones > label.opcion:last-child:nth-child(odd) { grid-column:1 / -1; }
