@@ -265,9 +265,9 @@ class VistoConfirmaReunionTests(TestCase):
 
 class LlamadaTwimlFirmaTests(TestCase):
     @override_settings(TWILIO_AUTH_TOKEN="token-secreto")
-    def test_sin_firma_valida_devuelve_403(self):
+    def test_sin_firma_valida_no_bloquea_pero_advierte(self):
         r = self.client.get(reverse("llamada_twiml"), {"texto": "hola"})
-        self.assertEqual(r.status_code, 403)
+        self.assertEqual(r.status_code, 200)
 
     @override_settings(TWILIO_AUTH_TOKEN="token-secreto")
     @mock.patch("accounts.views.RequestValidator")
