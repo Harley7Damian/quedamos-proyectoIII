@@ -24,7 +24,7 @@
   </fieldset>
   <div class="ob-nav">
     <a href="{% url 'onboarding_step' 2 %}">← Atrás</a>
-    <button type="submit">Terminar</button>
+    <button type="submit">{% include "partials/_icono.html" with n="check" s=18 %}Terminar</button>
   </div>
 </form>
 {% endblock %}

@@ -88,8 +88,10 @@ class SchedulingRuleForm(forms.ModelForm):
     start_hour = forms.TypedChoiceField(label="Desde", coerce=int, choices=hour_choices(0, 23))
     end_hour = forms.TypedChoiceField(label="Hasta", coerce=int, choices=hour_choices(1, 24))
     # Minutos opcionales: sin ellos la franja es por horas completas, como siempre.
-    start_minute = forms.TypedChoiceField(label="Minutos de inicio", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES)
-    end_minute = forms.TypedChoiceField(label="Minutos de fin", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES)
+    start_minute = forms.TypedChoiceField(label="Minutos de inicio", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES,
+                                          widget=forms.Select(attrs={"aria-label": "Minutos de inicio"}))
+    end_minute = forms.TypedChoiceField(label="Minutos de fin", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES,
+                                        widget=forms.Select(attrs={"aria-label": "Minutos de fin"}))
 
     class Meta:
         model = SchedulingRule

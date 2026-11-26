@@ -2,13 +2,20 @@
 {% load ia_extras scheduling_extras %}
 {% block title %}Panel · Quedamos{% endblock %}
 {% block content %}
-<section id="solicitudes" aria-labelledby="titulo-solicitudes">
+<div class="panel-cab">
+  <p class="saludo">Hola, {{ me.full_name|primer_nombre }}</p>
+  <span class="rol rol-{{ me.role }}">{% if me.is_executive %}Vista de ejecutivo{% else %}Vista de asistente{% endif %}</span>
+</div>
+<div class="pestanas" role="tablist" aria-label="Secciones del panel" data-pestanas data-inicial="{% if links %}solicitudes{% else %}vinculacion{% endif %}" hidden>
+  <button type="button" class="pestana" role="tab" id="pestana-solicitudes" aria-controls="solicitudes" aria-selected="true" data-destino="solicitudes">{% include "partials/_icono.html" with n="calendario" s=18 %}<span>Solicitudes</span></button>
+  <button type="button" class="pestana" role="tab" id="pestana-vinculacion" aria-controls="vinculacion" aria-selected="false" tabindex="-1" data-destino="vinculacion">{% include "partials/_icono.html" with n="enlace" s=18 %}<span>Vinculación y avisos</span></button>
+</div>
+
+<section id="solicitudes" role="tabpanel" aria-labelledby="titulo-solicitudes">
   <div class="encabezado">
     <div>
-      <p class="saludo">Hola, {{ me.full_name|primer_nombre }}</p>
       <h1 id="titulo-solicitudes">Solicitudes de reunión</h1>
       <p class="muted"><span class="en-vivo" aria-hidden="true"></span>Se actualiza sola cada pocos segundos.</p>
-      <p><span class="rol rol-{{ me.role }}">{% if me.is_executive %}Vista de ejecutivo{% else %}Vista de asistente{% endif %}</span></p>
     </div>
   </div>
 
@@ -33,11 +40,11 @@
             <div>{{ request_form.week.label_tag }}{{ request_form.week }}{{ request_form.week.errors }}</div>
           </div>
           {{ request_form.notes.label_tag }}{{ request_form.notes }}{{ request_form.notes.errors }}
-          <p><button type="submit">Crear solicitud</button></p>
+          <p><button type="submit">{% include "partials/_icono.html" with n="mas" s=18 %}Crear solicitud</button></p>
         </form>
       </details>
     {% else %}
-      <p class="card muted">Vincúlate con un ejecutivo para poder crear solicitudes.</p>
+      <p class="card muted">Vincúlate con un ejecutivo para poder crear solicitudes. <a href="#vinculacion">Ir a Vinculación y avisos</a>.</p>
     {% endif %}
   {% endif %}
 
@@ -46,86 +53,101 @@
   </div>
 </section>
 
-<section id="vinculacion" aria-labelledby="titulo-vinculacion">
+<section id="vinculacion" role="tabpanel" aria-labelledby="titulo-vinculacion">
+  <div class="encabezado">
+    <div>
+      <h1 id="titulo-vinculacion">Vinculación y avisos</h1>
+      <p class="muted">Conecta tu cuenta con tu equipo y elige cómo quieres recibir los recordatorios.</p>
+    </div>
+  </div>
+  <div class="config-grid">
 {% if me.is_executive %}
-  <h2 id="titulo-vinculacion">Vinculación</h2>
-  <div class="card">
-    <h3>Tu código de vinculación</h3>
-    <p class="muted">Compártelo con tu asistente para que pueda coordinar tus reuniones.</p>
-    <div class="code-fila">
-      <span class="code" id="mycode">{{ me.link_code }}</span>
-      <button type="button" class="small copiar" data-copiar="#mycode" hidden>Copiar código</button>
-      <span class="copiado muted" role="status" aria-live="polite"></span>
-    </div>
-  </div>
-  <h3>Mis asistentes</h3>
-  {% for l in links %}
-    <span class="pill">{{ l.assistant.full_name }}
-      <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo" aria-label="Quitar vínculo con {{ l.assistant.full_name }}">×</button></form>
-    </span>
-  {% empty %}<p class="muted">Aún nadie se vinculó. Comparte tu código.</p>{% endfor %}
-  <p><a href="{% url 'rules' %}">Mis horarios protegidos</a></p>
-{% else %}
-  <h2 id="titulo-vinculacion">Vinculación</h2>
-  <div class="card">
-    <h3>Vincularme con un ejecutivo</h3>
-    <p class="muted">Pide a tu ejecutivo el código de 6 caracteres que aparece en su panel.</p>
-    <form method="post" action="{% url 'link_executive' %}" class="en-linea">
-      {% csrf_token %}
-      <label for="codigo-vinculo" class="oculto">Código de vinculación</label>
-      <input type="text" id="codigo-vinculo" name="code" maxlength="12" placeholder="ABC123" required style="text-transform:uppercase;max-width:14rem">
-      <button type="submit">Vincular</button>
-    </form>
-  </div>
-  <h3>Mis ejecutivos</h3>
-  <div class="tarjetas-grid">
-  {% for l in links %}
-    <div class="card ejecutivo-card">
-      <span class="avatar" aria-hidden="true">{{ l.executive.full_name|first|upper }}</span>
-      <div class="ejecutivo-info">
-        <strong>{{ l.executive.full_name }}</strong>
-        {% if l.executive.profile.area %}<div class="muted">{{ l.executive.profile.get_area_display }}</div>{% endif %}
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono">{% include "partials/_icono.html" with n="llave" %}</span>Tu código de vinculación</h2>
+      <p class="muted">Compártelo con tu asistente para que pueda coordinar tus reuniones.</p>
+      <div class="code-fila">
+        <span class="code" id="mycode">{{ me.link_code }}</span>
+        <button type="button" class="small copiar" data-copiar="#mycode" hidden>{% include "partials/_icono.html" with n="copiar" s=16 %}Copiar código</button>
+        <span class="copiado muted" role="status" aria-live="polite"></span>
       </div>
-      <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo" aria-label="Quitar vínculo con {{ l.executive.full_name }}">×</button></form>
     </div>
-  {% empty %}<p class="muted">Todavía no estás vinculada con nadie.</p>{% endfor %}
-  </div>
-  {% if links %}<p><a href="{% url 'rules' %}">Horarios protegidos de mis ejecutivos</a></p>{% endif %}
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono chip-ok">{% include "partials/_icono.html" with n="usuarios" %}</span>Mis asistentes</h2>
+      <div class="pildoras">
+      {% for l in links %}
+        <span class="pill">{{ l.assistant.full_name }}
+          <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo" aria-label="Quitar vínculo con {{ l.assistant.full_name }}">×</button></form>
+        </span>
+      {% empty %}<p class="muted">Aún nadie se vinculó. Comparte tu código.</p>{% endfor %}
+      </div>
+      <p class="acciones"><a class="enlace-icono" href="{% url 'rules' %}">{% include "partials/_icono.html" with n="escudo" s=16 %}Mis horarios protegidos</a></p>
+    </div>
+{% else %}
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono">{% include "partials/_icono.html" with n="llave" %}</span>Vincularme con un ejecutivo</h2>
+      <p class="muted">Pide a tu ejecutivo el código de 6 caracteres que aparece en su panel.</p>
+      <form method="post" action="{% url 'link_executive' %}" class="en-linea" data-sin-recordar>
+        {% csrf_token %}
+        <label for="codigo-vinculo" class="oculto">Código de vinculación</label>
+        <input type="text" id="codigo-vinculo" name="code" maxlength="12" placeholder="ABC123" required style="text-transform:uppercase;max-width:14rem">
+        <button type="submit">{% include "partials/_icono.html" with n="enlace" s=18 %}Vincular</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono chip-ok">{% include "partials/_icono.html" with n="usuarios" %}</span>Mis ejecutivos</h2>
+      <div class="lista-ejecutivos">
+      {% for l in links %}
+        <div class="ejecutivo-fila">
+          <span class="avatar" aria-hidden="true">{{ l.executive.full_name|first|upper }}</span>
+          <div class="ejecutivo-info">
+            <strong>{{ l.executive.full_name }}</strong>
+            {% if l.executive.profile.area %}<div class="muted">{{ l.executive.profile.get_area_display }}</div>{% endif %}
+          </div>
+          <form method="post" action="{% url 'unlink' l.pk %}">{% csrf_token %}<button class="link" type="submit" title="Quitar vínculo" aria-label="Quitar vínculo con {{ l.executive.full_name }}">×</button></form>
+        </div>
+      {% empty %}<p class="muted">Todavía no estás vinculada con nadie.</p>{% endfor %}
+      </div>
+      {% if links %}<p class="acciones"><a class="enlace-icono" href="{% url 'rules' %}">{% include "partials/_icono.html" with n="escudo" s=16 %}Horarios protegidos de mis ejecutivos</a></p>{% endif %}
+    </div>
 {% endif %}
 
-  <h3>Recordatorios por Telegram</h3>
-  <div class="card">
-    {% if me.profile.telegram_chat_id %}
-      <p class="muted">Vinculado desde el {{ me.profile.telegram_vinculado_en|date:"d/m/Y H:i" }}.</p>
-      <form method="post" action="{% url 'telegram_desvincular' %}">
-        {% csrf_token %}
-        <button type="submit" class="small">Desvincular Telegram</button>
-      </form>
-    {% else %}
-      <p class="muted">Recibe avisos por Telegram antes de cada reunión. Elige cuánto antes en <a href="{% url 'perfil' %}">Mi perfil</a>.</p>
-      {% if me.profile.telegram_link_code_vigente %}
-        <div class="code-fila">
-          <span class="code" id="telegram-code">{{ me.profile.telegram_link_code }}</span>
-          <button type="button" class="small copiar" data-copiar="#telegram-code" hidden>Copiar código</button>
-          <span class="copiado muted" role="status" aria-live="polite"></span>
-        </div>
-        {% if me.profile.telegram_link_url %}
-          <p><a href="{{ me.profile.telegram_link_url }}" class="btn" target="_blank" rel="noopener">Vincular</a></p>
-          <p class="muted">O envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
-        {% else %}
-          <p class="muted">Envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono chip-accent">{% include "partials/_icono.html" with n="enviar" %}</span><span class="titulo-texto">Recordatorios por Telegram</span>
+        {% if me.profile.telegram_chat_id %}<span class="insignia insignia-ok">{% include "partials/_icono.html" with n="check" s=14 %}Vinculado</span>{% else %}<span class="insignia">Sin vincular</span>{% endif %}</h2>
+      {% if me.profile.telegram_chat_id %}
+        <p class="muted">Vinculado desde el {{ me.profile.telegram_vinculado_en|date:"d/m/Y H:i" }}.</p>
+        <form method="post" action="{% url 'telegram_desvincular' %}">
+          {% csrf_token %}
+          <button type="submit" class="small">Desvincular Telegram</button>
+        </form>
+      {% else %}
+        <p class="muted">Recibe avisos por Telegram antes de cada reunión. Elige cuánto antes en <a href="{% url 'perfil' %}">Mi perfil</a>.</p>
+        {% if me.profile.telegram_link_code_vigente %}
+          <div class="code-fila">
+            <span class="code" id="telegram-code">{{ me.profile.telegram_link_code }}</span>
+            <button type="button" class="small copiar" data-copiar="#telegram-code" hidden>{% include "partials/_icono.html" with n="copiar" s=16 %}Copiar código</button>
+            <span class="copiado muted" role="status" aria-live="polite"></span>
+          </div>
+          {% if me.profile.telegram_link_url %}
+            <p><a href="{{ me.profile.telegram_link_url }}" class="btn" target="_blank" rel="noopener">{% include "partials/_icono.html" with n="enviar" s=18 %}Vincular</a></p>
+            <p class="muted">O envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+          {% else %}
+            <p class="muted">Envíaselo al bot con <code>/vincular {{ me.profile.telegram_link_code }}</code>.</p>
+          {% endif %}
         {% endif %}
+        <form method="post" action="{% url 'telegram_generar_codigo' %}">
+          {% csrf_token %}
+          <button type="submit">{% if me.profile.telegram_link_code_vigente %}Generar otro código{% else %}Generar código para vincular Telegram{% endif %}</button>
+        </form>
       {% endif %}
-      <form method="post" action="{% url 'telegram_generar_codigo' %}">
-        {% csrf_token %}
-        <button type="submit">{% if me.profile.telegram_link_code_vigente %}Generar otro código{% else %}Generar código para vincular Telegram{% endif %}</button>
-      </form>
-    {% endif %}
-  </div>
+    </div>
 
-  <h3>Teléfono para llamadas de recordatorio</h3>
-  <div class="card">
-    <p class="muted">Si no confirmas el último aviso, te llamamos al número que guardes en <a href="{% url 'perfil' %}#avisos">Mi perfil</a>.{% if me.profile.telefono %} Número guardado: <strong>{{ me.profile.telefono }}</strong>.{% endif %}</p>
+    <div class="card">
+      <h2 class="titulo-icono"><span class="chip-icono chip-amber">{% include "partials/_icono.html" with n="telefono" %}</span><span class="titulo-texto">Teléfono para llamadas de recordatorio</span>
+        {% if me.profile.telefono %}<span class="insignia insignia-ok">{% include "partials/_icono.html" with n="check" s=14 %}Número guardado</span>{% else %}<span class="insignia">Sin número</span>{% endif %}</h2>
+      <p class="muted">Si no confirmas el último aviso, te llamamos al número que guardes en <a href="{% url 'perfil' %}#avisos">Mi perfil</a>.{% if me.profile.telefono %} Número guardado: <strong>{{ me.profile.telefono }}</strong>.{% endif %}</p>
+      <p class="acciones"><a class="btn small-link" href="{% url 'perfil' %}#avisos">{% include "partials/_icono.html" with n="editar" s=16 %}{% if me.profile.telefono %}Cambiar número{% else %}Agregar número{% endif %}</a></p>
+    </div>
   </div>
 </section>
 {% endblock %}

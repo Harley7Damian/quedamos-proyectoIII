@@ -3,7 +3,10 @@
   {% for message in messages %}
   <div class="aviso aviso-{{ message.level_tag|default:'info' }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}" data-aviso>
     <span class="aviso-icono" aria-hidden="true"></span>
-    <p class="aviso-texto">{{ message }}</p>
+    <div class="aviso-cuerpo">
+      <strong class="aviso-titulo">{% if message.level_tag == 'success' %}Listo{% elif message.level_tag == 'error' %}No se pudo completar{% elif message.level_tag == 'warning' %}Atención{% else %}Aviso{% endif %}</strong>
+      <p class="aviso-texto">{{ message }}</p>
+    </div>
     <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso" data-aviso-cerrar>&times;</button>
   </div>
   {% endfor %}

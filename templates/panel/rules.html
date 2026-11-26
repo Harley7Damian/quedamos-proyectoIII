@@ -1,10 +1,12 @@
 {% extends "panel/base_panel.html" %}
 {% block title %}Reglas del ejecutivo · Quedamos{% endblock %}
 {% block content %}
+<div class="encabezado"><div>
 <h1>Horarios protegidos</h1>
 <p class="muted">Las propuestas de horarios nunca caen dentro de una regla activa. Ejemplos: nada antes de las 10:00, el viernes protegido, sin reuniones de 13:00 a 14:00.</p>
+</div></div>
 
-<h2>Reglas registradas</h2>
+<h2 class="titulo-icono"><span class="chip-icono">{% include "partials/_icono.html" with n="escudo" s=18 %}</span>Reglas registradas</h2>
 <div class="tarjetas-grid">
 {% for rule in rules %}
   <div class="card rule {% if not rule.active %}off{% endif %}">
@@ -16,7 +18,7 @@
     <div>{{ rule.range_text }}</div>
     <div class="muted">Ejecutivo: {{ rule.executive.full_name }}</div>
     <div class="actions">
-      <a href="{% url 'edit_rule' rule.pk %}">Editar</a>
+      <a class="enlace-icono" href="{% url 'edit_rule' rule.pk %}">{% include "partials/_icono.html" with n="editar" s=16 %}Editar</a>
       <form method="post" action="{% url 'toggle_rule' rule.pk %}">{% csrf_token %}<button class="small" type="submit">{% if rule.active %}Desactivar{% else %}Activar{% endif %}</button></form>
     </div>
   </div>
@@ -25,7 +27,7 @@
 {% endfor %}
 </div>
 
-<h2>Nueva regla</h2>
+<h2 class="titulo-icono"><span class="chip-icono chip-accent">{% include "partials/_icono.html" with n="mas" s=18 %}</span>Nueva regla</h2>
 <form method="post" action="{% url 'create_rule' %}" class="card">
   {% csrf_token %}
   {{ form.non_field_errors }}
@@ -36,6 +38,6 @@
     <div class="hora-minuto">{{ form.end_hour.label_tag }}<div class="hm">{{ form.end_hour }}<span aria-hidden="true">:</span>{{ form.end_minute }}</div>{{ form.end_hour.errors }}{{ form.end_minute.errors }}</div>
   </div>
   <p class="muted">Para bloquear un día completo elige el día y el rango desde 00:00 hasta Fin del día.</p>
-  <p><button type="submit">Guardar regla</button></p>
+  <p><button type="submit">{% include "partials/_icono.html" with n="guardar" s=18 %}Guardar regla</button></p>
 </form>
 {% endblock %}

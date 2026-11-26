@@ -1,0 +1,211 @@
+/* Pulido visual (PFCIII2026-117): sistema de componentes para todas las vistas con sesion.
+   Se carga al final y reutiliza las variables de color de app.css (claro y oscuro). No agrega colores nuevos
+   fuera de variantes de las existentes, para no romper el contraste ya revisado. */
+
+:root {
+  --r-sm:.5rem; --r:.7rem; --r-lg:1rem;
+  --sombra-sm:0 1px 2px rgba(20,24,40,.06), 0 1px 3px rgba(20,24,40,.08);
+  --sombra-md:0 6px 16px -4px rgba(20,24,40,.14), 0 2px 6px rgba(20,24,40,.06);
+  --brand-hover:#4256C4; --brand-press:#3748AC;
+  --salto:.15s;
+}
+:root[data-theme="dark"] { --sombra-sm:0 1px 2px rgba(0,0,0,.4); --sombra-md:0 8px 20px -6px rgba(0,0,0,.6); --brand-hover:#5D70DC; --brand-press:#6C7EE4; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --sombra-sm:0 1px 2px rgba(0,0,0,.4); --sombra-md:0 8px 20px -6px rgba(0,0,0,.6); --brand-hover:#5D70DC; --brand-press:#6C7EE4; }
+}
+
+/* ---------- Tipografia ---------- */
+h1 { font-size:1.75rem; font-weight:700; letter-spacing:-.02em; line-height:1.2; }
+h2 { font-size:1.1rem; font-weight:650; letter-spacing:-.01em; }
+.muted { line-height:1.5; }
+main.contenido { padding-top:2rem; }
+main.contenido h1 + .muted { margin-top:.25rem; }
+.encabezado { align-items:flex-start; margin-bottom:1rem; }
+
+/* ---------- Botones: primario, secundario, discreto y peligro ---------- */
+button, .btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:2.6rem;
+  padding:.55rem 1.15rem; border:1px solid transparent; border-radius:var(--r); line-height:1.2;
+  background:var(--brand); color:var(--brand-ink); box-shadow:var(--sombra-sm);
+  transition:background var(--salto) ease, box-shadow var(--salto) ease, transform .1s ease, border-color var(--salto) ease;
+}
+button:hover, .btn:hover { background:var(--brand-hover); filter:none; box-shadow:var(--sombra-md); }
+button:active, .btn:active { background:var(--brand-press); transform:translateY(1px); box-shadow:var(--sombra-sm); }
+button:focus-visible, .btn:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+button:disabled, .btn[aria-disabled="true"] { opacity:.55; cursor:not-allowed; box-shadow:none; transform:none; }
+button .ico, .btn .ico { flex:none; }
+.btn.small-link { min-height:2.3rem; padding:.4rem .9rem; font-size:.92rem; }
+
+/* Secundario: contorno sobre fondo de la superficie */
+button.small, .btn.secundario {
+  background:var(--surface); color:var(--ink); border-color:var(--field-line); box-shadow:none;
+  min-height:2.3rem; padding:.4rem .9rem; font-size:.9rem;
+}
+.btn.secundario { min-height:2.6rem; padding:.55rem 1.15rem; font-size:1rem; }
+button.small:hover, .btn.secundario:hover { background:var(--surface-2); border-color:var(--brand); color:var(--ink); box-shadow:none; }
+button.small:active, .btn.secundario:active { background:var(--surface-2); }
+
+/* Discreto: solo texto */
+button.link { background:none; color:var(--ink); border-color:transparent; box-shadow:none; min-height:0; padding:.3rem .6rem; font-weight:500; opacity:.85; }
+button.link:hover { background:var(--surface-2); color:var(--ink); opacity:1; box-shadow:none; }
+header.top button.link { color:#fff; }
+header.top button.link:hover { background:rgba(255,255,255,.16); color:#fff; }
+
+/* Botones de icono, ojo de contrasena y cierre de avisos conservan su estilo propio */
+button.icono { min-height:2rem; box-shadow:none; background:none; color:var(--muted); border-color:var(--line); }
+button.icono:hover { background:var(--surface-2); color:var(--ink); box-shadow:none; }
+.barra-cabecera button.icono:hover { background:rgba(255,255,255,.28); color:#fff; }
+.campo-clave .ojo { min-height:0; box-shadow:none; border-color:transparent; }
+.campo-clave .ojo:hover { box-shadow:none; }
+.aviso-cerrar { min-height:0; box-shadow:none; background:none; border:0; }
+.aviso-cerrar:hover { background:none; box-shadow:none; }
+.barra-menu { min-height:2.2rem; box-shadow:none; }
+.barra-menu:hover { background:var(--surface-2); color:var(--ink); box-shadow:none; }
+.acceso-card form button[type=submit] { min-height:2.9rem; font-size:1rem; }
+.accion-flecha { min-height:0; }
+
+/* ---------- Campos ---------- */
+input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=tel], select, textarea {
+  min-height:2.6rem; border-radius:var(--r); transition:border-color var(--salto) ease, box-shadow var(--salto) ease;
+}
+input:hover, select:hover, textarea:hover { border-color:var(--muted); }
+input:focus, select:focus, textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-soft); }
+::placeholder { color:var(--muted); opacity:.8; }
+label { font-size:.88rem; color:var(--ink); }
+.errorlist { margin:.3rem 0 .1rem; }
+.errorlist li { display:flex; align-items:flex-start; gap:.4rem; font-weight:500; }
+.errorlist li::before { content:"!"; flex:none; display:inline-grid; place-items:center; width:1.05rem; height:1.05rem; margin-top:.12rem; border-radius:50%; background:var(--err-ink); color:var(--err-bg); font-size:.7rem; font-weight:800; line-height:1; }
+input[aria-invalid="true"], .errorlist + input, .errorlist ~ select { border-color:var(--err-ink); }
+
+/* ---------- Tarjetas, iconos e insignias ---------- */
+.card { border-radius:var(--r-lg); box-shadow:var(--sombra-sm); padding:1.25rem; }
+.titulo-icono { display:flex; align-items:center; flex-wrap:wrap; gap:.6rem; }
+.titulo-icono .insignia { margin-left:auto; flex:none; }
+.titulo-texto { flex:1 1 9rem; min-width:0; }
+#vinculacion { margin-top:0; padding-top:0; border-top:0; }
+.chip-icono { flex:none; display:inline-grid; place-items:center; width:2.25rem; height:2.25rem; border-radius:.7rem; background:var(--brand-soft); color:var(--link); }
+h3.titulo-icono .chip-icono { width:2rem; height:2rem; border-radius:.6rem; }
+.chip-accent { background:var(--accent-soft); color:var(--accent-ink); }
+.chip-amber { background:var(--amber-soft); color:var(--amber-ink); }
+.chip-ok { background:var(--ok-bg); color:var(--ok-ink); }
+.chip-rose { background:var(--rose-soft); color:var(--rose-ink); }
+.insignia { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .6rem; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.01em; background:var(--off-bg); color:var(--off-ink); border:1px solid transparent; }
+.insignia-ok { background:var(--ok-bg); color:var(--ok-ink); border-color:currentColor; }
+.nota { display:flex; align-items:flex-start; gap:.55rem; margin:.5rem 0 .75rem; padding:.65rem .8rem; border-radius:var(--r); font-size:.9rem; line-height:1.4; }
+.nota .ico { flex:none; margin-top:.1rem; }
+.nota-ok { background:var(--ok-bg); color:var(--ok-ink); }
+.nota-aviso { background:var(--info-bg); color:var(--info-ink); }
+.nota-aviso a { color:inherit; font-weight:600; }
+.enlace-icono { display:inline-flex; align-items:center; gap:.4rem; font-weight:600; text-decoration:none; }
+.enlace-icono:hover { text-decoration:underline; }
+
+/* ---------- Pestanas del panel ---------- */
+.panel-cab { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; margin-bottom:.5rem; }
+.panel-cab .saludo { margin:0; }
+.pestanas { display:flex; gap:.25rem; margin:.5rem 0 1.25rem; border-bottom:1px solid var(--line); overflow-x:auto; }
+.pestana { position:relative; min-height:2.7rem; padding:.6rem 1rem; border-radius:var(--r) var(--r) 0 0; background:none; color:var(--muted); box-shadow:none; border:0; font-weight:600; white-space:nowrap; }
+.pestana:hover { background:var(--surface-2); color:var(--ink); box-shadow:none; }
+.pestana:active { background:var(--surface-2); transform:none; }
+.pestana[aria-selected="true"] { color:var(--link); background:none; }
+.pestana[aria-selected="true"]::after { content:""; position:absolute; left:.5rem; right:.5rem; bottom:-1px; height:3px; border-radius:3px 3px 0 0; background:var(--brand); }
+[role="tabpanel"][hidden] { display:none !important; }
+
+/* ---------- Configuracion del panel ---------- */
+.config-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap:1rem; align-items:start; }
+.config-grid .card { margin:0; }
+.config-grid h2 { margin:0 0 .6rem; font-size:1.05rem; }
+.config-grid .card > p:last-child, .config-grid .card > form:last-child { margin-bottom:0; }
+.lista-ejecutivos { display:flex; flex-direction:column; gap:.4rem; }
+.ejecutivo-fila { display:flex; align-items:center; gap:.7rem; padding:.55rem .65rem; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2); }
+.ejecutivo-fila .avatar { width:2.3rem; height:2.3rem; }
+.ejecutivo-fila form { margin:0; flex:none; }
+.pildoras { display:flex; flex-wrap:wrap; gap:.4rem; }
+.pildoras .pill { margin:0; display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .35rem .2rem .8rem; background:var(--surface-2); }
+.pildoras .pill button.link { padding:.1rem .45rem; }
+.code { font-weight:700; }
+
+/* ---------- Indicadores y solicitudes ---------- */
+.resumen { gap:.75rem; }
+.resumen li { flex-direction:row; align-items:center; gap:.85rem; padding:.9rem 1rem; border-radius:var(--r-lg); border:1px solid var(--line); border-top-width:1px; box-shadow:var(--sombra-sm); position:relative; overflow:hidden; }
+.resumen li::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--kpi, var(--line)); }
+.resumen-por-coordinar { --kpi:var(--amber-ink); --kpi-bg:var(--amber-soft); --kpi-ink:var(--amber-ink); }
+.resumen-propuestas { --kpi:var(--info-ink); --kpi-bg:var(--info-bg); --kpi-ink:var(--info-ink); }
+.resumen-confirmadas { --kpi:var(--ok-ink); --kpi-bg:var(--ok-bg); --kpi-ink:var(--ok-ink); }
+.resumen .resumen-por-coordinar, .resumen .resumen-propuestas, .resumen .resumen-confirmadas { border-top-color:var(--line) !important; }
+.kpi-icono { flex:none; display:grid; place-items:center; width:2.6rem; height:2.6rem; border-radius:.8rem; background:var(--kpi-bg); color:var(--kpi-ink); }
+.resumen li > div:last-child { display:flex; flex-direction:column; min-width:0; }
+.resumen strong { font-size:1.7rem; }
+.resumen span { color:var(--muted); font-size:.85rem; }
+
+.card-solicitud { padding:1.1rem 1.25rem; }
+.dato-fila { display:flex; align-items:flex-start; gap:.5rem; margin:.3rem 0; }
+.dato-fila .ico { flex:none; margin-top:.15rem; color:var(--muted); }
+.dato-fila.muted { font-size:.88rem; }
+.card-solicitud .titulo-solicitud { display:block; margin-bottom:.25rem; padding-right:.5rem; }
+.card-solicitud .acciones { margin-top:.65rem; }
+.accion-flecha { padding:.4rem .95rem; border:1px solid var(--field-line); border-radius:999px; background:var(--surface); color:var(--ink); font-weight:600; font-size:.9rem; transition:background var(--salto) ease, border-color var(--salto) ease; }
+.card-solicitud:hover .accion-flecha { background:var(--brand); border-color:var(--brand); color:var(--brand-ink); }
+.confirmada-horario { display:flex; align-items:center; gap:.5rem; font-weight:500; }
+.status { font-weight:700; }
+.vacio { padding:2.5rem 1rem; border-style:dashed; box-shadow:none; background:var(--surface-2); }
+
+/* ---------- Mi perfil ---------- */
+.perfil-grid { gap:1rem; }
+.perfil-col { gap:1rem; }
+.perfil-datos > div:last-child { border-bottom:0; }
+.subseccion { margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line); }
+.subseccion h3 { margin:0 0 .25rem; font-size:1rem; }
+fieldset { border:0; padding:0; margin:.5rem 0 0; min-width:0; }
+fieldset > legend { font-weight:600; font-size:.9rem; padding:0; margin-bottom:.5rem; }
+.opciones-avisos label.opcion { min-height:2.9rem; }
+
+/* ---------- Opciones seleccionables (onboarding, avisos) ---------- */
+label.opcion { border-radius:var(--r); transition:background var(--salto) ease, border-color var(--salto) ease, box-shadow var(--salto) ease; }
+label.opcion:hover { border-color:var(--brand); }
+label.opcion:has(input:checked) { box-shadow:0 0 0 1px var(--brand); }
+
+/* ---------- Avisos emergentes (toast) con titulo ---------- */
+.aviso { align-items:flex-start; padding:.85rem .95rem; border-radius:var(--r-lg); box-shadow:var(--sombra-md); }
+.aviso-cuerpo { flex:1; min-width:0; }
+.aviso-titulo { display:block; font-size:.95rem; margin-bottom:.1rem; }
+.aviso-texto { font-size:.9rem; }
+
+/* ---------- Barra lateral ---------- */
+.barra { box-shadow:var(--sombra-sm); }
+.barra nav a { position:relative; min-height:2.6rem; border-radius:var(--r); transition:background var(--salto) ease, color var(--salto) ease; }
+.barra nav a:hover { background:var(--surface-2); }
+.barra nav a:hover svg { color:var(--ink); }
+.barra nav a[aria-current="page"]::before { content:""; position:absolute; left:-.75rem; top:.5rem; bottom:.5rem; width:4px; border-radius:0 4px 4px 0; background:var(--brand); }
+.barra nav a:focus-visible { outline:3px solid var(--focus); outline-offset:-2px; }
+.usuario summary:focus-visible { outline:3px solid var(--focus); outline-offset:-2px; }
+.usuario-menu { box-shadow:var(--sombra-md); border-radius:var(--r-lg); }
+.usuario-perfil { padding:.45rem .3rem; border-radius:.4rem; text-decoration:none; }
+.usuario-perfil:hover { background:var(--surface-2); }
+
+/* ---------- Tablas y detalle ---------- */
+table.metricas th { font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); background:var(--surface-2); }
+table.metricas tbody tr:hover { background:var(--surface-2); }
+.pasos .paso { border-radius:var(--r); }
+.confirmacion { border-radius:var(--r-lg); }
+.msg { border-radius:var(--r); }
+.importar { box-shadow:none; background:var(--surface-2); }
+
+/* ---------- Celular ---------- */
+@media (max-width:560px) {
+  h1 { font-size:1.45rem; }
+  .card { padding:1rem; }
+  .resumen li { flex-direction:column; align-items:flex-start; gap:.4rem; padding:.7rem .75rem; }
+  .kpi-icono { width:2.1rem; height:2.1rem; border-radius:.6rem; }
+  .kpi-icono .ico { width:18px; height:18px; }
+  .titulo-icono .insignia { margin-left:0; }
+  .pestana { padding:.6rem .5rem; flex:1 1 auto; justify-content:center; font-size:.92rem; }
+}
+@media (max-width:420px) { .pestana .ico { display:none; } }
+@media (max-width:760px) {
+  .barra nav a[aria-current="page"]::before { left:0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, .btn, .accion-flecha, label.opcion, input, select, textarea { transition:none; }
+  button:active, .btn:active { transform:none; }
+}

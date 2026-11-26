@@ -13,6 +13,6 @@
   <p class="muted" id="requisitos-clave">Mínimo 8 caracteres, que no sea común ni solo números.</p>
   <label for="{{ form.new_password2.id_for_label }}">Repite la contraseña nueva</label>
   {{ form.new_password2 }}{{ form.new_password2.errors }}
-  <p><button type="submit">Guardar contraseña</button> <a href="{% url 'perfil' %}">Cancelar</a></p>
+  <p><button type="submit">{% include "partials/_icono.html" with n="guardar" s=18 %}Guardar contraseña</button> <a class="btn secundario" href="{% url 'perfil' %}">Cancelar</a></p>
 </form>
 {% endblock %}

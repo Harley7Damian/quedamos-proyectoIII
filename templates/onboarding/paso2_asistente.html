@@ -14,7 +14,7 @@
     <a href="{% url 'onboarding_step' 1 %}">← Atrás</a>
     <span class="ob-nav-acciones">
       <a href="{% url 'onboarding_step' 3 %}">{% if executives %}Continuar{% else %}Continuar sin código{% endif %}</a>
-      <button type="submit">Vincular</button>
+      <button type="submit">{% include "partials/_icono.html" with n="enlace" s=18 %}Vincular</button>
     </span>
   </div>
 </form>

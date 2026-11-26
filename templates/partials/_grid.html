@@ -10,7 +10,7 @@
   <table class="avail">
     <thead>
       <tr>
-        <th></th>
+        <th><span class="oculto">Hora</span></th>
         {% for d in days %}<th>{{ d.short }}<br><span class="muted">{{ d.date|date:"d/m" }}</span></th>{% endfor %}
       </tr>
     </thead>

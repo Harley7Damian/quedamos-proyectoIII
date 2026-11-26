@@ -13,6 +13,6 @@
     <div class="hora-minuto">{{ form.start_hour.label_tag }}<div class="hm">{{ form.start_hour }}<span aria-hidden="true">:</span>{{ form.start_minute }}</div>{{ form.start_hour.errors }}{{ form.start_minute.errors }}</div>
     <div class="hora-minuto">{{ form.end_hour.label_tag }}<div class="hm">{{ form.end_hour }}<span aria-hidden="true">:</span>{{ form.end_minute }}</div>{{ form.end_hour.errors }}{{ form.end_minute.errors }}</div>
   </div>
-  <p><button type="submit">Guardar cambios</button></p>
+  <p><button type="submit">{% include "partials/_icono.html" with n="guardar" s=18 %}Guardar cambios</button></p>
 </form>
 {% endblock %}

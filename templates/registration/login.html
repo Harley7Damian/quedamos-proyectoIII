@@ -22,7 +22,7 @@
           <svg class="icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           {% include "partials/_clave.html" with campo=form.password %}
         </div>
-        <p><button type="submit">Ingresar</button></p>
+        <p><button type="submit">Ingresar{% include "partials/_icono.html" with n="flecha" s=18 %}</button></p>
       </form>
       <p class="acceso-pie">¿No tienes cuenta? <a href="{% url 'signup' %}">Crear una cuenta <span aria-hidden="true">→</span></a></p>
     </div>

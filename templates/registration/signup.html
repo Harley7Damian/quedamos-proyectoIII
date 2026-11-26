@@ -42,7 +42,7 @@
           {% include "partials/_clave.html" with campo=form.password2 %}
         </div>
         {{ form.password2.errors }}
-        <p><button type="submit">Crear cuenta</button></p>
+        <p><button type="submit">Crear cuenta{% include "partials/_icono.html" with n="flecha" s=18 %}</button></p>
       </form>
       <p class="acceso-pie">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresar <span aria-hidden="true">→</span></a></p>
     </div>
