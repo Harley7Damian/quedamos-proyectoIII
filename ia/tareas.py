@@ -76,6 +76,8 @@ def tablero(request):
         "reuniones": reuniones,
         "total": visibles.count(),
         "pendientes": visibles.filter(hecha=False).count(),
+        "hechas": visibles.filter(hecha=True).count(),
+        "vencidas": visibles.filter(hecha=False, fecha_limite__lt=hoy).count(),
         "url_csv": _con_filtros("ia_tareas_csv", filtros),
         "puede_enviar_a_jira": user.is_assistant and jira.configurado(),
     }
