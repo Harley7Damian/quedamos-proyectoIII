@@ -1,0 +1,29 @@
+{# Iconos de trazo (24x24, heredan el color del texto). Uso: {% include "partials/_icono.html" with n="usuario" %} (tamaño opcional con s=18). #}
+<svg class="ico" viewBox="0 0 24 24" width="{{ s|default:20 }}" height="{{ s|default:20 }}" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+{% if n == "calendario" %}<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>
+{% elif n == "usuario" %}<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/>
+{% elif n == "usuarios" %}<circle cx="9" cy="8.5" r="3"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M16 5.8a3 3 0 0 1 0 5.4M18 14.3c1.8.7 3 2.3 3 4.7"/>
+{% elif n == "enlace" %}<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>
+{% elif n == "campana" %}<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/>
+{% elif n == "telefono" %}<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/>
+{% elif n == "escudo" %}<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>
+{% elif n == "reloj" %}<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+{% elif n == "check" %}<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.8 2.8L16.3 9.5"/>
+{% elif n == "alerta" %}<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/>
+{% elif n == "flecha" %}<path d="M5 12h14M13 6l6 6-6 6"/>
+{% elif n == "mas" %}<path d="M12 5v14M5 12h14"/>
+{% elif n == "correo" %}<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>
+{% elif n == "llave" %}<circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5L20 3M16 7l3 3M14 9l2 2"/>
+{% elif n == "copiar" %}<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/>
+{% elif n == "enviar" %}<path d="M21 4L10 14M21 4l-6.5 17-3.5-7-7-3.5z"/>
+{% elif n == "editar" %}<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>
+{% elif n == "guardar" %}<path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/>
+{% elif n == "ojo" %}<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>
+{% elif n == "cuenta" %}<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.4-1.6 1.7-2.4 3.2-2.4s2.8.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/>
+{% elif n == "tarea" %}<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>
+{% elif n == "grafico" %}<path d="M5 20V10M12 20V4M19 20v-7"/>
+{% elif n == "info" %}<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.1"/>
+{% elif n == "porcoordinar" %}<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+{% elif n == "aprobacion" %}<path d="M7 3h10v18l-5-3.5L7 21z"/><path d="M10 9.5l1.5 1.5L14.5 8"/>
+{% endif %}
+</svg>

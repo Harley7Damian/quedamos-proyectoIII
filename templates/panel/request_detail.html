@@ -33,14 +33,14 @@
       {% if executive_av %}Guardada el {{ executive_av.updated_at|date:"d/m/Y H:i" }}. Puedes ajustarla y guardar de nuevo.{% else %}Marca cuándo puede reunirse {{ r.executive.full_name }} esta semana.{% endif %}
     </p>
     {% include "partials/_grid.html" %}
-    <p><button type="submit">Guardar disponibilidad del ejecutivo</button></p>
+    <p><button type="submit">{% include "partials/_icono.html" with n="guardar" s=18 %}Guardar disponibilidad del ejecutivo</button></p>
   </form>
   <form method="post" action="{% url 'import_executive_calendar' r.pk %}" enctype="multipart/form-data" class="card importar">
     {% csrf_token %}
     <h3>Importar desde un calendario (.ics)</h3>
     <p class="muted">Exporta el calendario del ejecutivo desde Google Calendar, Outlook o Apple Calendar. Marcamos como disponibles las horas de lunes a viernes, de 08:00 a 22:00, en que no tenga eventos. Reemplaza lo marcado ahora y puedes ajustarlo después. El archivo no se guarda y no se conservan los títulos ni los detalles de sus eventos.</p>
     <p><input type="file" name="archivo" accept=".ics,text/calendar" required aria-label="Archivo de calendario .ics"></p>
-    <p><button type="submit">Calcular disponibilidad desde el archivo</button></p>
+    <p><button type="submit" class="small">{% include "partials/_icono.html" with n="calendario" s=16 %}Calcular disponibilidad desde el archivo</button></p>
   </form>
 {% else %}
   <p class="card muted">Esta solicitud ya no recibe disponibilidad.</p>
@@ -56,7 +56,7 @@
   {% if r.accepts_availability and not me.is_executive %}
     <form method="post" action="{% url 'create_counterpart_link' r.pk %}">
       {% csrf_token %}
-      <button type="submit">Generar enlace para la contraparte</button>
+      <button type="submit">{% include "partials/_icono.html" with n="enlace" s=18 %}Generar enlace para la contraparte</button>
     </form>
     {% if link %}
       <p class="muted">Compártelo con la asistente de la otra parte. Vence el {{ link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
@@ -80,13 +80,13 @@
       <div class="card">
         <form method="post" action="{% url 'create_approval_link' r.pk %}">
           {% csrf_token %}
-          <button type="submit">Generar enlace de aprobación para el ejecutivo</button>
+          <button type="submit">{% include "partials/_icono.html" with n="enlace" s=18 %}Generar enlace de aprobación para el ejecutivo</button>
         </form>
         {% if approval_link %}
           <p class="muted">Envíaselo a {{ r.executive.full_name }}. Aprueba con un toque, sin iniciar sesión. Vence el {{ approval_link.expires|date:"d/m/Y" }} y solo da acceso a esta solicitud.</p>
           <input type="text" readonly value="{{ approval_link.url }}" onclick="this.select()" id="enlace-aprobacion">
           <p>
-            <button type="button" onclick="copiarEnlaceAprobacion()">Copiar enlace</button>
+            <button type="button" class="small" onclick="copiarEnlaceAprobacion()">{% include "partials/_icono.html" with n="copiar" s=16 %}Copiar enlace</button>
             <a href="mailto:{{ r.executive.email }}?subject={{ approval_link.mailto_subject|urlencode }}&body={{ approval_link.mailto_body|urlencode }}">Abrir en mi correo</a>
           </p>
           <p id="aviso-copiado" class="muted" style="display:none;">Enlace copiado.</p>
@@ -105,7 +105,7 @@
   {% if can_generate %}
     <form method="post" action="{% url 'generate_proposal' r.pk %}">
       {% csrf_token %}
-      <button type="submit">{% if proposal %}Volver a generar la propuesta{% else %}Generar propuesta de tres horarios{% endif %}</button>
+      <button type="submit">{% include "partials/_icono.html" with n="calendario" s=18 %}{% if proposal %}Volver a generar la propuesta{% else %}Generar propuesta de tres horarios{% endif %}</button>
     </form>
   {% elif r.accepts_availability %}
     <p class="muted">

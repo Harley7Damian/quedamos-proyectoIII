@@ -12,7 +12,7 @@
   <p class="muted">Las horas se muestran en hora de Lima.</p>
   <div class="ob-nav">
     <a href="{% url 'onboarding_step' 1 %}">← Atrás</a>
-    <button type="submit">Siguiente</button>
+    <button type="submit">Siguiente{% include "partials/_icono.html" with n="flecha" s=18 %}</button>
   </div>
 </form>
 {% endblock %}
