@@ -27,7 +27,10 @@ class SignupForm(UserCreationForm):
 
     def clean_email(self):
         email = validar_correo(self.cleaned_data["email"])
-        if User.objects.filter(username=email).exists():
+        existente = User.objects.filter(username=email).first()
+        if existente and not existente.is_active:
+            raise forms.ValidationError("Esa cuenta está desactivada. Comunícate con el administrador de Quedamos.")
+        if existente:
             raise forms.ValidationError("Ya existe una cuenta con ese correo. Prueba ingresar.")
         return email
 
