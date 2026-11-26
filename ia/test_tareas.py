@@ -289,3 +289,42 @@ class DetalleTests(TareasBase):
         self.entrar(self.asistente)
         respuesta = self.client.get(reverse("request_detail", args=[self.contrato.pk]))
         self.assertContains(respuesta, f"{self.url}?reunion={self.contrato.pk}")
+
+
+class TableroVisualTests(TareasBase):
+    """Indicadores, insignias y estados vacíos del rediseño del tablero."""
+
+    def test_los_indicadores_cuentan_pendientes_vencidas_y_hechas(self):
+        self.entrar(self.asistente)
+        with mock.patch("ia.tareas.timezone.localdate", return_value=date(2026, 12, 15)):
+            respuesta = self.client.get(self.url)
+        self.assertEqual((respuesta.context["pendientes"], respuesta.context["vencidas"], respuesta.context["hechas"]), (2, 1, 1))
+        self.assertContains(respuesta, 'aria-label="Resumen de tareas"')
+        self.assertContains(respuesta, "Vencidas")
+
+    def test_una_vencida_lleva_insignia_con_texto_y_una_hecha_no_cuenta_como_vencida(self):
+        self.entrar(self.asistente)
+        with mock.patch("ia.tareas.timezone.localdate", return_value=date(2026, 12, 15)):
+            html = self.client.get(self.url).content.decode()
+        self.assertEqual(html.count("insignia-err"), 1)
+        self.assertIn("tarea-vencida", html)
+        self.assertIn(">Hecha</span>", html)
+
+    def test_sin_vencimientos_no_hay_insignia_de_vencida(self):
+        self.entrar(self.asistente)
+        with mock.patch("ia.tareas.timezone.localdate", return_value=date(2026, 11, 1)):
+            respuesta = self.client.get(self.url)
+        self.assertEqual(respuesta.context["vencidas"], 0)
+        self.assertNotContains(respuesta, 'class="insignia insignia-err"')
+
+    def test_sin_tareas_no_hay_indicadores_y_se_ofrece_ir_a_las_solicitudes(self):
+        self.entrar(self.sin_vinculo)
+        respuesta = self.client.get(self.url)
+        self.assertNotContains(respuesta, 'aria-label="Resumen de tareas"')
+        self.assertContains(respuesta, "Ir a las solicitudes")
+
+    def test_el_filtro_sin_resultados_ofrece_quitar_los_filtros(self):
+        self.entrar(self.asistente)
+        respuesta = self.client.get(self.url, {"estado": "pendiente", "reunion": self.presupuesto.pk})
+        self.assertContains(respuesta, "Quitar filtros")
+        self.assertContains(respuesta, 'href="%s"' % self.url)

@@ -11,8 +11,16 @@
     </div>
   </div>
 
-  <form method="get" class="card en-linea tareas-filtros" aria-label="Filtrar tareas">
-    <div>
+  {% if total %}
+  <ul class="resumen" aria-label="Resumen de tareas">
+    <li class="resumen-por-coordinar"><div class="kpi-icono">{% include "partials/_icono.html" with n="reloj" %}</div><div><strong>{{ pendientes }}</strong><span>Pendientes</span></div></li>
+    <li class="resumen-vencidas"><div class="kpi-icono">{% include "partials/_icono.html" with n="alerta" %}</div><div><strong>{{ vencidas }}</strong><span>Vencidas</span></div></li>
+    <li class="resumen-confirmadas"><div class="kpi-icono">{% include "partials/_icono.html" with n="check" %}</div><div><strong>{{ hechas }}</strong><span>Hechas</span></div></li>
+  </ul>
+  {% endif %}
+
+  <form method="get" class="card tareas-filtros" aria-label="Filtrar tareas">
+    <div class="filtro-campo">
       <label for="filtro-estado">Estado</label>
       <select id="filtro-estado" name="estado">
         <option value="">Todas</option>
@@ -20,26 +28,31 @@
         <option value="hecha"{% if filtros.estado == 'hecha' %} selected{% endif %}>Hechas</option>
       </select>
     </div>
-    <div>
+    <div class="filtro-campo filtro-reunion">
       <label for="filtro-reunion">Reunión</label>
       <select id="filtro-reunion" name="reunion">
         <option value="">Todas</option>
         {% for reunion in reuniones %}<option value="{{ reunion.pk }}"{% if filtros.reunion == reunion.pk|stringformat:"s" %} selected{% endif %}>{{ reunion.title }}</option>{% endfor %}
       </select>
     </div>
-    <button type="submit">Filtrar</button>
-    <a class="btn" href="{{ url_csv }}">Exportar CSV para Jira</a>
+    <div class="filtro-acciones">
+      <button type="submit">{% include "partials/_icono.html" with n="filtro" s=18 %}Filtrar</button>
+      <a class="btn secundario" href="{{ url_csv }}">{% include "partials/_icono.html" with n="descargar" s=18 %}Exportar CSV para Jira</a>
+    </div>
   </form>
 
   {% if tareas %}
     <ul class="tareas-lista">
       {% for t in tareas %}
-        <li class="card tarea{% if t.hecha %} tarea-hecha{% endif %}">
+        <li class="card tarea{% if t.hecha %} tarea-hecha{% elif t.vencida %} tarea-vencida{% endif %}">
+          <span class="tarea-marca" aria-hidden="true">{% if t.hecha %}{% include "partials/_icono.html" with n="check" s=24 %}{% else %}{% include "partials/_icono.html" with n="circulo" s=24 %}{% endif %}</span>
           <div class="tarea-texto">
             <strong>{{ t.descripcion }}</strong>
-            <div class="muted">
-              {% if t.responsable %}{{ t.responsable }} · {% endif %}{% if t.fecha_limite %}hasta el {{ t.fecha_limite|date:"d/m/Y" }}{% else %}sin fecha límite{% endif %}{% if t.vencida %} · <strong>vencida</strong>{% endif %}
-              · <a href="{% url 'request_detail' t.acuerdos.request_id %}">{{ t.acuerdos.request.title }}</a>
+            {% if t.hecha %}<span class="insignia insignia-ok">Hecha</span>{% elif t.vencida %}<span class="insignia insignia-err">{% include "partials/_icono.html" with n="alerta" s=14 %}Vencida</span>{% endif %}
+            <div class="tarea-datos muted">
+              {% if t.responsable %}<span class="dato-fila">{% include "partials/_icono.html" with n="usuario" s=16 %}<span>{{ t.responsable }}</span></span>{% endif %}
+              <span class="dato-fila">{% include "partials/_icono.html" with n="calendario" s=16 %}<span>{% if t.fecha_limite %}hasta el {{ t.fecha_limite|date:"d/m/Y" }}{% else %}sin fecha límite{% endif %}</span></span>
+              <span class="dato-fila">{% include "partials/_icono.html" with n="enlace" s=16 %}<a href="{% url 'request_detail' t.acuerdos.request_id %}">{{ t.acuerdos.request.title }}</a></span>
             </div>
           </div>
           <div class="tarea-acciones">
@@ -47,16 +60,20 @@
               {% csrf_token %}
               <input type="hidden" name="estado" value="{{ filtros.estado }}">
               <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
-              <button type="submit" class="small">{% if t.hecha %}Reabrir{% else %}Marcar como hecha{% endif %}</button>
+              {% if t.hecha %}
+                <button type="submit" class="small">{% include "partials/_icono.html" with n="reabrir" s=16 %}Reabrir</button>
+              {% else %}
+                <button type="submit" class="small tarea-hacer">{% include "partials/_icono.html" with n="check" s=16 %}Marcar como hecha</button>
+              {% endif %}
             </form>
             {% if t.jira_key %}
-              <span class="muted tarea-jira">En Jira: {% if t.url_jira %}<a href="{{ t.url_jira }}" target="_blank" rel="noopener noreferrer">{{ t.jira_key }}</a>{% else %}{{ t.jira_key }}{% endif %}</span>
+              <span class="muted tarea-jira">{% include "partials/_icono.html" with n="enviar" s=16 %}En Jira: {% if t.url_jira %}<a href="{{ t.url_jira }}" target="_blank" rel="noopener noreferrer">{{ t.jira_key }}</a>{% else %}{{ t.jira_key }}{% endif %}</span>
             {% elif puede_enviar_a_jira %}
               <form method="post" action="{% url 'ia_tarea_jira' t.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="estado" value="{{ filtros.estado }}">
                 <input type="hidden" name="reunion" value="{{ filtros.reunion }}">
-                <button type="submit" class="small">Enviar a Jira</button>
+                <button type="submit" class="small">{% include "partials/_icono.html" with n="enviar" s=16 %}Enviar a Jira</button>
               </form>
             {% endif %}
           </div>
@@ -64,9 +81,19 @@
       {% endfor %}
     </ul>
   {% elif total %}
-    <p class="card muted">Ninguna tarea coincide con el filtro.</p>
+    <div class="card vacio">
+      <div class="vacio-icono">{% include "partials/_icono.html" with n="filtro" s=28 %}</div>
+      <p><strong>Ninguna tarea coincide con el filtro.</strong></p>
+      <p class="muted">Prueba con otro estado o reunión.</p>
+      <p><a class="btn secundario" href="{% url 'ia_tareas' %}">Quitar filtros</a></p>
+    </div>
   {% else %}
-    <p class="card muted">Todavía no hay tareas. Aparecen cuando confirmas los acuerdos de una reunión aprobada.</p>
+    <div class="card vacio">
+      <div class="vacio-icono">{% include "partials/_icono.html" with n="tarea" s=28 %}</div>
+      <p><strong>Todavía no hay tareas.</strong></p>
+      <p class="muted">Aparecen cuando confirmas los acuerdos de una reunión aprobada.</p>
+      <p><a class="btn" href="{% url 'panel' %}">{% include "partials/_icono.html" with n="calendario" s=18 %}Ir a las solicitudes</a></p>
+    </div>
   {% endif %}
 </section>
 {% endblock %}

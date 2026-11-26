@@ -209,3 +209,39 @@ table.metricas tbody tr:hover { background:var(--surface-2); }
   button, .btn, .accion-flecha, label.opcion, input, select, textarea { transition:none; }
   button:active, .btn:active { transform:none; }
 }
+
+/* ---------- Tablero de tareas ---------- */
+.resumen-vencidas { --kpi:var(--err-ink); --kpi-bg:var(--err-bg); --kpi-ink:var(--err-ink); }
+.resumen .resumen-vencidas { border-top-color:var(--line) !important; }
+.tareas-filtros { display:flex; flex-wrap:wrap; align-items:flex-end; gap:.75rem 1rem; }
+.filtro-campo { min-width:10rem; }
+.filtro-campo label { margin-top:0; }
+.filtro-reunion { flex:1 1 14rem; max-width:24rem; }
+.filtro-acciones { display:flex; flex-wrap:wrap; gap:.5rem; margin-left:auto; }
+.tareas-lista { margin:.75rem 0; }
+.tarea { padding:1rem 1.25rem; gap:1rem; justify-content:flex-start; align-items:flex-start; border-left:4px solid var(--line); }
+.tarea-texto { flex:1; min-width:0; }
+.tarea-texto > strong { margin-right:.5rem; }
+.tarea-marca { flex:none; margin-top:.1rem; color:var(--muted); }
+.tareas-lista .tarea-hecha { opacity:1; border-left-color:var(--ok-ink); background:var(--surface); }
+.tarea-hecha .tarea-marca { color:var(--ok-ink); }
+.tarea-hecha .tarea-texto > strong { text-decoration:line-through; color:var(--muted); }
+.tarea-vencida { border-left-color:var(--err-ink); }
+.tarea-vencida .tarea-marca { color:var(--err-ink); }
+.tarea-datos { display:flex; flex-wrap:wrap; gap:.15rem 1rem; margin-top:.35rem; font-size:.88rem; }
+.tarea-datos .dato-fila { margin:.1rem 0; align-items:center; }
+.tarea-datos .dato-fila .ico { margin-top:0; }
+.tarea-acciones { flex:none; align-items:center; justify-content:flex-end; }
+.tarea-hacer:hover { border-color:var(--ok-ink); color:var(--ok-ink); }
+.tarea-jira { display:inline-flex; align-items:center; gap:.35rem; }
+.insignia-err { background:var(--err-bg); color:var(--err-ink); border-color:currentColor; }
+.vacio-icono { display:inline-grid; place-items:center; width:3.5rem; height:3.5rem; margin-bottom:.5rem; border-radius:50%; background:var(--brand-soft); color:var(--link); }
+@media (max-width:640px) {
+  .tareas-lista .tarea { flex-direction:row; flex-wrap:wrap; align-items:flex-start; }
+  .tarea-texto { flex:1 1 calc(100% - 3rem); }
+  .filtro-campo { flex:1 1 100%; }
+  .tarea-acciones { flex:1 1 100%; justify-content:flex-start; padding-left:2.2rem; }
+  .filtro-acciones { margin-left:0; width:100%; }
+  .filtro-acciones > * { flex:1 1 auto; }
+  .filtro-reunion { max-width:none; }
+}
