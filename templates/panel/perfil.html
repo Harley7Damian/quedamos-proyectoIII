@@ -1,0 +1,62 @@
+{% extends "panel/base_panel.html" %}
+{% block title %}Mi perfil · Quedamos{% endblock %}
+{% block content %}
+<h1>Mi perfil</h1>
+<p class="muted">Tus datos, cuánto antes quieres que te avisemos de cada reunión y el acceso a tu cuenta.</p>
+
+<div class="perfil-grid">
+  <div class="perfil-col">
+  <section class="card" aria-labelledby="perfil-cuenta">
+    <h2 id="perfil-cuenta">Mi cuenta</h2>
+    <dl class="perfil-datos">
+      <div><dt>Correo</dt><dd>{{ me.username }}</dd></div>
+      <div><dt>Rol</dt><dd><span class="rol rol-{{ me.role }}">{{ me.get_role_display }}</span></dd></div>
+      {% if me.is_executive and me.link_code %}<div><dt>Código de vinculación</dt><dd><code>{{ me.link_code }}</code></dd></div>{% endif %}
+    </dl>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="datos">
+      {{ datos_form.non_field_errors }}
+      <label for="{{ datos_form.full_name.id_for_label }}">{{ datos_form.full_name.label }}</label>
+      {{ datos_form.full_name }}{{ datos_form.full_name.errors }}
+      <label for="{{ datos_form.area.id_for_label }}">{{ datos_form.area.label }}</label>
+      {{ datos_form.area }}{{ datos_form.area.errors }}
+      <p><button type="submit">Guardar datos</button></p>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="perfil-seguridad">
+    <h2 id="perfil-seguridad">Seguridad</h2>
+    <p class="muted">Cambia tu contraseña cuando lo necesites. Tu sesión actual sigue abierta.</p>
+    <p><a class="btn" href="{% url 'cambiar_clave' %}">Cambiar contraseña</a></p>
+  </section>
+  </div>
+
+  <section class="card" id="avisos" aria-labelledby="perfil-avisos">
+    <h2 id="perfil-avisos">Avisos de reunión</h2>
+    <p class="muted">Elige cuándo quieres recibir el aviso por Telegram, desde 2 días hasta 5 minutos antes de cada reunión.</p>
+    <p class="muted">
+      {% if profile.telegram_chat_id %}Telegram vinculado desde el {{ profile.telegram_vinculado_en|date:"d/m/Y" }}.
+      {% else %}Aún no vinculas Telegram. <a href="{% url 'panel' %}#vinculacion">Vincúlalo desde el panel</a> para recibir los avisos.{% endif %}
+    </p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="avisos">
+      <fieldset>
+        <legend>Avisarme</legend>
+        <div class="opciones opciones-avisos">
+          {% for opcion in avisos_form.avisos %}
+            <label class="opcion" for="{{ opcion.id_for_label }}">{{ opcion.tag }}<span><strong>{{ opcion.choice_label }}</strong></span></label>
+          {% endfor %}
+        </div>
+        {{ avisos_form.avisos.errors }}
+      </fieldset>
+      <label for="{{ telefono_form.telefono.id_for_label }}">{{ telefono_form.telefono.label }}</label>
+      {{ telefono_form.telefono }}{{ telefono_form.telefono.errors }}
+      <p class="muted">Si no respondes <code>/visto</code> al último aviso y este es de 15 minutos o menos, te llamamos a este número. Déjalo vacío si no quieres llamadas.</p>
+      <p><button type="submit">Guardar avisos</button></p>
+    </form>
+  </section>
+
+</div>
+{% endblock %}

@@ -3,9 +3,10 @@ from datetime import date
 from django import forms
 from django.utils import timezone
 
+from accounts.correo import validar_correo
 from accounts.models import User, normalize_code
 
-from scheduling.matching import hour_choices
+from scheduling.matching import MINUTE_CHOICES, hour_choices
 from scheduling.rules import validate_rule
 
 from .models import MeetingRequest, SchedulingRule
@@ -56,6 +57,10 @@ class MeetingRequestForm(forms.ModelForm):
             raise forms.ValidationError("Escribe el nombre de la contraparte.")
         return value
 
+    def clean_counterpart_email(self):
+        # Opcional, pero si se escribe debe ser un correo utilizable (con aviso de errores de tipeo).
+        return validar_correo(self.cleaned_data.get("counterpart_email", ""))
+
     def clean_week(self):
         value = self.cleaned_data.get("week")
         if not value:
@@ -82,10 +87,13 @@ class SchedulingRuleForm(forms.ModelForm):
     )
     start_hour = forms.TypedChoiceField(label="Desde", coerce=int, choices=hour_choices(0, 23))
     end_hour = forms.TypedChoiceField(label="Hasta", coerce=int, choices=hour_choices(1, 24))
+    # Minutos opcionales: sin ellos la franja es por horas completas, como siempre.
+    start_minute = forms.TypedChoiceField(label="Minutos de inicio", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES)
+    end_minute = forms.TypedChoiceField(label="Minutos de fin", required=False, coerce=int, empty_value=0, choices=MINUTE_CHOICES)
 
     class Meta:
         model = SchedulingRule
-        fields = ["executive", "weekday", "start_hour", "end_hour"]
+        fields = ["executive", "weekday", "start_hour", "end_hour", "start_minute", "end_minute"]
 
     def __init__(self, *args, user: User, executives, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,7 +109,8 @@ class SchedulingRuleForm(forms.ModelForm):
     def clean(self):
         data = super().clean()
         if {"start_hour", "end_hour"} <= data.keys():
-            error = validate_rule(data.get("weekday"), data["start_hour"], data["end_hour"])
+            error = validate_rule(data.get("weekday"), data["start_hour"], data["end_hour"],
+                                  data.get("start_minute") or 0, data.get("end_minute") or 0)
             if error:
                 raise forms.ValidationError(error)
         return data

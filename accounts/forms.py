@@ -2,15 +2,14 @@ import re
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.core.exceptions import ValidationError
 
 from meetings.models import SchedulingRule
 from scheduling.matching import format_span, hour_choices
 from scheduling.rules import validate_rule
 
+from .correo import validar_correo
 from .models import Profile, User
-
-TELEFONO_RE = re.compile(r"^\+\d{8,15}$")
+from .recordatorios import ANTELACIONES, normalizar_antelaciones
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(label="Correo", max_length=150)
@@ -27,8 +26,11 @@ class SignupForm(UserCreationForm):
         self.fields["password1"].widget.attrs["aria-describedby"] = "requisitos-clave"
 
     def clean_email(self):
-        email = self.cleaned_data["email"].strip().lower()
-        if User.objects.filter(username=email).exists():
+        email = validar_correo(self.cleaned_data["email"])
+        existente = User.objects.filter(username=email).first()
+        if existente and not existente.is_active:
+            raise forms.ValidationError("Esa cuenta está desactivada. Comunícate con el administrador de Quedamos.")
+        if existente:
             raise forms.ValidationError("Ya existe una cuenta con ese correo. Prueba ingresar.")
         return email
 
@@ -79,18 +81,64 @@ class WorkHoursForm(forms.ModelForm):
             raise forms.ValidationError("La jornada debe terminar después de empezar.")
         return data
 
+def normalizar_telefono(crudo: str) -> str:
+    """Devuelve el número en formato internacional (+51999999999) o lanza ValueError.
+
+    Acepta espacios, guiones, puntos y paréntesis, pero exige el código del país (+51...)."""
+    texto = (crudo or "").strip()
+    if not texto:
+        return ""
+    compacto = re.sub(r"[ \-().]", "", texto)
+    if not re.fullmatch(r"\+?\d+", compacto):
+        raise ValueError("Escribe solo números, espacios o guiones.")
+    digitos = compacto.lstrip("+")
+    if not compacto.startswith("+"):
+        raise ValueError("Escribe el número con el código del país, por ejemplo +51 999 999 999.")
+    if not (8 <= len(digitos) <= 15) or digitos.startswith("0"):
+        raise ValueError("El número no parece válido. Usa el formato +51 999 999 999.")
+    return "+" + digitos
+
+
 class PhoneForm(forms.ModelForm):
     """Teléfono para la llamada de escalamiento de recordatorios (TR-85)."""
     class Meta:
         model = Profile
         fields = ["telefono"]
-        widgets = {"telefono": forms.TextInput(attrs={"placeholder": "+51999999999"})}
+        labels = {"telefono": "Teléfono para llamadas"}
+        widgets = {"telefono": forms.TextInput(attrs={"placeholder": "+51 999 999 999", "autocomplete": "tel", "inputmode": "tel"})}
 
     def clean_telefono(self):
-        telefono = self.cleaned_data["telefono"].strip().replace(" ", "")
-        if telefono and not TELEFONO_RE.match(telefono):
-            raise ValidationError("Escribe el número con el código de país, sin espacios, ej: +51999999999.")
-        return telefono
+        try:
+            return normalizar_telefono(self.cleaned_data.get("telefono", ""))
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc))
+
+
+class PerfilDatosForm(forms.Form):
+    """Datos que la persona puede cambiar de su cuenta. El correo y el rol no se editan aquí."""
+
+    full_name = forms.CharField(label="Nombre completo", min_length=2, max_length=80)
+    area = forms.ChoiceField(label="Área", choices=[("", "Sin indicar")] + list(Profile.Area.choices), required=False)
+
+    def clean_full_name(self):
+        return " ".join(self.cleaned_data["full_name"].split())
+
+
+class AvisosForm(forms.Form):
+    """Cuánto antes de cada reunión quiere recibir los avisos (de 2 días a 5 minutos)."""
+
+    MAXIMO = 4
+
+    avisos = forms.MultipleChoiceField(
+        label="Avisos de reunión", choices=[(str(m), texto) for m, texto in ANTELACIONES],
+        widget=forms.CheckboxSelectMultiple, error_messages={"required": "Elige al menos un aviso."},
+    )
+
+    def clean_avisos(self):
+        elegidos = normalizar_antelaciones(self.cleaned_data["avisos"])
+        if len(elegidos) > self.MAXIMO:
+            raise forms.ValidationError(f"Elige como máximo {self.MAXIMO} avisos para no recibir demasiados mensajes.")
+        return elegidos
 
 
 # Horarios a proteger que se ofrecen en el paso 3: (clave, titulo, detalle, reglas como (dia, desde, hasta)).
@@ -155,7 +203,8 @@ class ProtectHoursForm(forms.Form):
         for weekday, start, end in wanted:
             if validate_rule(weekday, start, end):
                 continue
-            same = SchedulingRule.objects.filter(executive=executive, weekday=weekday, start_hour=start, end_hour=end)
+            same = SchedulingRule.objects.filter(executive=executive, weekday=weekday, start_hour=start, end_hour=end,
+                                                 start_minute=0, end_minute=0)
             if same.exists():
                 continue  # ya existe (activa o desactivada): no se duplica ni se reactiva
             SchedulingRule.objects.create(executive=executive, created_by=self.user,

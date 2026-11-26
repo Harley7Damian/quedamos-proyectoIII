@@ -57,7 +57,7 @@ class RecorridoCompletoTests(StaticLiveServerTestCase):
         # 1. El ejecutivo crea su cuenta
         ejecutivo.goto(f"{self.live_server_url}/registro/")
         ejecutivo.fill('input[name="full_name"]', "Rocio Damian Gavino")
-        ejecutivo.fill('input[name="email"]', "rocio.ejecutiva@example.com")
+        ejecutivo.fill('input[name="email"]', "rocio.ejecutiva@empresa.com")
         ejecutivo.get_by_label("Ejecutivo").check()
         ejecutivo.fill('input[name="password1"]', "ClaveSegura123")
         ejecutivo.fill('input[name="password2"]', "ClaveSegura123")
@@ -71,7 +71,7 @@ class RecorridoCompletoTests(StaticLiveServerTestCase):
         # 2. La asistente crea su cuenta
         asistente.goto(f"{self.live_server_url}/registro/")
         asistente.fill('input[name="full_name"]', "Ana Torres")
-        asistente.fill('input[name="email"]', "ana.asistente@example.com")
+        asistente.fill('input[name="email"]', "ana.asistente@empresa.com")
         asistente.get_by_label("Asistente").check()
         asistente.fill('input[name="password1"]', "ClaveSegura123")
         asistente.fill('input[name="password2"]', "ClaveSegura123")

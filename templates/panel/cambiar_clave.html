@@ -1,0 +1,18 @@
+{% extends "panel/base_panel.html" %}
+{% block title %}Cambiar contraseña · Quedamos{% endblock %}
+{% block content %}
+<p><a class="boton-volver" href="{% url 'perfil' %}">← Mi perfil</a></p>
+<h1>Cambiar contraseña</h1>
+<form method="post" class="card perfil-clave" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <label for="{{ form.old_password.id_for_label }}">Contraseña actual</label>
+  {{ form.old_password }}{{ form.old_password.errors }}
+  <label for="{{ form.new_password1.id_for_label }}">Contraseña nueva</label>
+  {{ form.new_password1 }}{{ form.new_password1.errors }}
+  <p class="muted" id="requisitos-clave">Mínimo 8 caracteres, que no sea común ni solo números.</p>
+  <label for="{{ form.new_password2.id_for_label }}">Repite la contraseña nueva</label>
+  {{ form.new_password2 }}{{ form.new_password2.errors }}
+  <p><button type="submit">Guardar contraseña</button> <a href="{% url 'perfil' %}">Cancelar</a></p>
+</form>
+{% endblock %}

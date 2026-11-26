@@ -14,8 +14,8 @@
       {{ fila.form.non_field_errors }}
       <div class="captura-regla-campos">
         <div>{{ fila.form.weekday.label_tag }}{{ fila.form.weekday }}{{ fila.form.weekday.errors }}</div>
-        <div>{{ fila.form.start_hour.label_tag }}{{ fila.form.start_hour }}{{ fila.form.start_hour.errors }}</div>
-        <div>{{ fila.form.end_hour.label_tag }}{{ fila.form.end_hour }}{{ fila.form.end_hour.errors }}</div>
+        <div class="hora-minuto">{{ fila.form.start_hour.label_tag }}<div class="hm">{{ fila.form.start_hour }}<span aria-hidden="true">:</span>{{ fila.form.start_minute }}</div>{{ fila.form.start_hour.errors }}{{ fila.form.start_minute.errors }}</div>
+        <div class="hora-minuto">{{ fila.form.end_hour.label_tag }}<div class="hm">{{ fila.form.end_hour }}<span aria-hidden="true">:</span>{{ fila.form.end_minute }}</div>{{ fila.form.end_hour.errors }}{{ fila.form.end_minute.errors }}</div>
       </div>
       {{ fila.form.executive.errors }}
     </fieldset>

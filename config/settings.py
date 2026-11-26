@@ -95,6 +95,8 @@ TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 # Clave secreta para verificar que las peticiones al webhook vienen de Telegram (TR-77).
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 TAREAS_SECRET = os.environ.get("TAREAS_SECRET", "")
+# Si vale 1, el correo de un dominio desconocido solo se acepta cuando el dominio existe en internet (consulta DNS).
+CORREO_VERIFICAR_DNS = os.environ.get("CORREO_VERIFICAR_DNS", "0") == "1"
 # Credenciales de Twilio para la llamada de escalamiento (TR-85).
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")

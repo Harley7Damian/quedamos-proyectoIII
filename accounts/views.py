@@ -5,7 +5,8 @@ from datetime import timedelta
 import logging
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 from django.db.models import Q
@@ -23,7 +24,7 @@ from scheduling.mock import MOCK_PROPOSAL
 from twilio.request_validator import RequestValidator
 from xml.sax.saxutils import escape as _escape_xml
 
-from .forms import AreaForm, ProtectHoursForm, SignupForm, WorkHoursForm, PhoneForm
+from .forms import AreaForm, AvisosForm, PerfilDatosForm, PhoneForm, ProtectHoursForm, SignupForm, WorkHoursForm
 from .models import Profile, User, generate_link_code
 from .telegram import enviar_mensaje_telegram
 
@@ -180,6 +181,59 @@ def telegram_desvincular(request):
     messages.info(request, "Desvinculaste tu cuenta de Telegram.")
     return redirect("panel")
 
+def _contexto_perfil(request, profile, **formularios):
+    user = request.user
+    base = {
+        "datos_form": PerfilDatosForm(initial={"full_name": user.full_name, "area": profile.area}),
+        "avisos_form": AvisosForm(initial={"avisos": [str(m) for m in profile.avisos_efectivos]}),
+        "telefono_form": PhoneForm(instance=profile),
+    }
+    base.update(formularios)
+    return {"me": user, "profile": profile, **base}
+
+
+@login_required
+def perfil(request):
+    """Mi perfil: nombre, área, teléfono y antelación de los avisos. El cambio de contraseña tiene su propia pantalla."""
+    profile = _profile(request.user)
+    if request.method != "POST":
+        return render(request, "panel/perfil.html", _contexto_perfil(request, profile))
+    accion = request.POST.get("accion", "")
+    if accion == "datos":
+        form = PerfilDatosForm(request.POST)
+        if form.is_valid():
+            request.user.full_name = form.cleaned_data["full_name"]
+            request.user.save(update_fields=["full_name"])
+            profile.area = form.cleaned_data["area"]
+            profile.save(update_fields=["area", "updated_at"])
+            messages.success(request, "Guardamos tus datos.")
+            return redirect("perfil")
+        return render(request, "panel/perfil.html", _contexto_perfil(request, profile, datos_form=form), status=400)
+    if accion == "avisos":
+        form = AvisosForm(request.POST)
+        telefono = PhoneForm(request.POST, instance=profile)
+        if form.is_valid() and telefono.is_valid():
+            telefono.save()
+            profile.avisos_minutos = form.cleaned_data["avisos"]
+            profile.save(update_fields=["avisos_minutos", "updated_at"])
+            messages.success(request, "Guardamos tus avisos.")
+            return redirect("perfil")
+        return render(request, "panel/perfil.html", _contexto_perfil(request, profile, avisos_form=form, telefono_form=telefono), status=400)
+    messages.error(request, "No entendimos esa acción.")
+    return redirect("perfil")
+
+
+@login_required
+def cambiar_clave(request):
+    form = PasswordChangeForm(request.user, request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)  # no cierra la sesión actual
+        messages.success(request, "Cambiaste tu contraseña.")
+        return redirect("perfil")
+    return render(request, "panel/cambiar_clave.html", {"me": request.user, "form": form}, status=400 if request.method == "POST" else 200)
+
+
 @login_required
 @require_POST
 def guardar_telefono(request):
@@ -189,7 +243,7 @@ def guardar_telefono(request):
         form.save()
         messages.success(request, "Guardamos tu teléfono para las llamadas de recordatorio.")
     else:
-        messages.error(request, "Revisa el número que escribiste.")
+        messages.error(request, " ".join(form.errors.get("telefono", ["Revisa el número que escribiste."])))
     return redirect("panel")
 
 VINCULAR_RE = re.compile(r"^/(?:vincular|start)\s+([A-Za-z0-9]+)")
@@ -276,7 +330,7 @@ def llamada_twiml(request):
     """Twilio llama a esta URL (TR-85) para obtener qué decir en la llamada."""
     if not _validar_firma_twilio(request):
         logger.warning("Firma de Twilio invalida en llamada_twiml (pendiente de depurar, no se bloquea por ahora).")
-    texto = request.GET.get("texto") or request.POST.get("texto") or "Tienes un recordatorio pendiente en Quedamos."
+    texto = (request.GET.get("texto") or request.POST.get("texto") or "Tienes un recordatorio pendiente en Quedamos.")[:400]
     twiml = f'<Response><Say language="es-MX">{_escape_xml(texto)}</Say></Response>'
     return HttpResponse(twiml, content_type="text/xml")
 
