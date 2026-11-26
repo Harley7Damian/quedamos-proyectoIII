@@ -13,7 +13,7 @@ DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Doming
 DAYS_SHORT = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
 START_HOUR = 8
-END_HOUR = 22
+END_HOUR = 24
 HOURS = list(range(START_HOUR, END_HOUR))  # bloques: 8:00-9:00 ... 21:00-22:00
 
 # Estados de disponibilidad de una celda.

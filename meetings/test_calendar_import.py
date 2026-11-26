@@ -221,7 +221,7 @@ class HorariosLibresTests(SimpleTestCase):
 
     def test_sin_eventos_en_la_semana_todo_lunes_a_viernes_queda_libre(self):
         bloques = self.libres(evento("UID:a", "DTSTART:20261201T090000", "DTEND:20261201T100000"))
-        self.assertEqual(len(bloques), 5 * 14)
+        self.assertEqual(len(bloques), 5 * 16)
         self.assertTrue(all(valor == 1 for valor in bloques.values()))
 
     def test_el_fin_de_semana_no_se_marca(self):
@@ -248,11 +248,22 @@ class HorariosLibresTests(SimpleTestCase):
     def test_un_dia_completo_ocupado_no_deja_bloques_ese_dia(self):
         bloques = self.libres(evento("UID:a", "DTSTART;VALUE=DATE:20261028", "DTEND;VALUE=DATE:20261029"))
         self.assertFalse(any(clave.startswith("2-") for clave in bloques))
-        self.assertEqual(len(bloques), 4 * 14)
+        self.assertEqual(len(bloques), 4 * 16)
 
     def test_calendario_totalmente_ocupado_no_deja_nada(self):
-        eventos = [evento(f"UID:{d}", f"DTSTART:2026102{6 + d}T080000", f"DTEND:2026102{6 + d}T220000") for d in range(4)]
-        eventos.append(evento("UID:v", "DTSTART:20261030T080000", "DTEND:20261030T220000"))
+        eventos = [
+            evento(
+                f"UID:{d}",
+                f"DTSTART:{(LUNES + timedelta(days=d)).strftime('%Y%m%d')}T080000",
+                f"DTEND:{(LUNES + timedelta(days=d + 1)).strftime('%Y%m%d')}T000000",
+            )
+            for d in range(4)
+        ]
+        eventos.append(evento(
+            "UID:v",
+            f"DTSTART:{(LUNES + timedelta(days=4)).strftime('%Y%m%d')}T080000",
+            f"DTEND:{(LUNES + timedelta(days=5)).strftime('%Y%m%d')}T000000",
+        ))
         self.assertEqual(self.libres(*eventos), {})
 
 
@@ -279,7 +290,7 @@ class VistaDeImportacionTests(ProposalViewBase):
         bloques = self.disponibilidad().blocks
         self.assertNotIn("1-10", bloques)
         self.assertIn("1-9", bloques)
-        self.assertEqual(len(bloques), 5 * 14 - 1)
+        self.assertEqual(len(bloques), 5 * 16 - 1)
         self.assertIn("Importamos el calendario", self.mensajes(r)[0])
 
     def test_reemplaza_la_disponibilidad_anterior(self):
@@ -324,8 +335,19 @@ class VistaDeImportacionTests(ProposalViewBase):
         self.assertIn("Elige un archivo", self.mensajes(r)[0])
 
     def test_calendario_totalmente_ocupado_no_guarda(self):
-        eventos = [evento(f"UID:{d}", f"DTSTART:2026102{6 + d}T080000", f"DTEND:2026102{6 + d}T220000") for d in range(4)]
-        eventos.append(evento("UID:v", "DTSTART:20261030T080000", "DTEND:20261030T220000"))
+        eventos = [
+            evento(
+                f"UID:{d}",
+                f"DTSTART:{(LUNES + timedelta(days=d)).strftime('%Y%m%d')}T080000",
+                f"DTEND:{(LUNES + timedelta(days=d + 1)).strftime('%Y%m%d')}T000000",
+            )
+            for d in range(4)
+        ]
+        eventos.append(evento(
+            "UID:v",
+            f"DTSTART:{(LUNES + timedelta(days=4)).strftime('%Y%m%d')}T080000",
+            f"DTEND:{(LUNES + timedelta(days=5)).strftime('%Y%m%d')}T000000",
+        ))
         r = self.importar(calendario(*eventos))
         self.assertIn("no queda ningún horario libre", self.mensajes(r)[0])
         self.assertIsNone(self.disponibilidad())
