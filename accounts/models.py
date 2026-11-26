@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Q
 
+from .recordatorios import avisos_por_defecto, normalizar_antelaciones
+
 # Sin caracteres ambiguos (0/O, 1/I) para que el codigo se pueda dictar por telefono.
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 CODE_LENGTH = 6
@@ -70,6 +72,9 @@ class Profile(models.Model):
     work_start = models.PositiveSmallIntegerField("inicio de la jornada", default=9)
     work_end = models.PositiveSmallIntegerField("fin de la jornada", default=18)
     telefono = models.CharField("teléfono", max_length=20, blank=True, default="")
+    avisos_minutos = models.JSONField(
+        "antelación de los avisos (minutos antes de la reunión)", default=avisos_por_defecto, blank=True,
+    )
     onboarding_completed_at = models.DateTimeField("onboarding completado", null=True, blank=True)
     onboarding_skipped_at = models.DateTimeField("onboarding omitido", null=True, blank=True)
     telegram_chat_id = models.CharField(
@@ -93,6 +98,11 @@ class Profile(models.Model):
                 name="profile_work_hours_valid",
             ),
         ]
+
+    @property
+    def avisos_efectivos(self) -> list[int]:
+        """Antelaciones activas, de la más lejana a la más cercana. Si no hay ninguna válida, las de siempre."""
+        return normalizar_antelaciones(self.avisos_minutos) or avisos_por_defecto()
 
     @property
     def onboarding_done(self) -> bool:

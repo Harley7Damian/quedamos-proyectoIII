@@ -102,7 +102,7 @@
         <button type="submit" class="small">Desvincular Telegram</button>
       </form>
     {% else %}
-      <p class="muted">Recibe un aviso por Telegram 30 y 5 minutos antes de cada reunión.</p>
+      <p class="muted">Recibe avisos por Telegram antes de cada reunión. Elige cuánto antes en <a href="{% url 'perfil' %}">Mi perfil</a>.</p>
       {% if me.profile.telegram_link_code_vigente %}
         <div class="code-fila">
           <span class="code" id="telegram-code">{{ me.profile.telegram_link_code }}</span>
@@ -125,12 +125,7 @@
 
   <h3>Teléfono para llamadas de recordatorio</h3>
   <div class="card">
-    <p class="muted">Si no confirmas el recordatorio de 5 minutos, te llamamos a este número.</p>
-    <form method="post" action="{% url 'guardar_telefono' %}">
-      {% csrf_token %}
-      <input type="text" name="telefono" value="{{ me.profile.telefono }}" placeholder="+51 999 999 999">
-      <button type="submit">Guardar</button>
-    </form>
+    <p class="muted">Si no confirmas el último aviso, te llamamos al número que guardes en <a href="{% url 'perfil' %}#avisos">Mi perfil</a>.{% if me.profile.telefono %} Número guardado: <strong>{{ me.profile.telefono }}</strong>.{% endif %}</p>
   </div>
 </section>
 {% endblock %}

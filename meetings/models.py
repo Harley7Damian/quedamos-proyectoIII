@@ -165,3 +165,21 @@ class SchedulingRule(models.Model):
 
     def __str__(self) -> str:
         return f"{self.executive}: {self.label}"
+
+
+class AvisoEnviado(models.Model):
+    """Un aviso de reunión ya atendido para una persona. Evita repetirlo y guarda cuáles se omitieron."""
+
+    solicitud = models.ForeignKey(MeetingRequest, on_delete=models.CASCADE, related_name="avisos")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="avisos_recibidos")
+    minutos = models.PositiveIntegerField("minutos de antelación")
+    enviado_en = models.DateTimeField(default=timezone.now)
+    omitido = models.BooleanField("omitido por llegar tarde", default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["solicitud", "usuario", "minutos"], name="aviso_unico_por_persona"),
+        ]
+
+    def __str__(self) -> str:
+        return f"Aviso de {self.minutos} min a {self.usuario_id} para {self.solicitud_id}"

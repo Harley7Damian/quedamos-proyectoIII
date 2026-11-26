@@ -17,4 +17,6 @@ urlpatterns = [
     path("tareas/enviar-recordatorios/", views.ejecutar_recordatorios, name="ejecutar_recordatorios"),
     path("telegram/llamada-twiml/", views.llamada_twiml, name="llamada_twiml"),
     path("telefono/", views.guardar_telefono, name="guardar_telefono"),
+    path("perfil/", views.perfil, name="perfil"),
+    path("perfil/clave/", views.cambiar_clave, name="cambiar_clave"),
 ]

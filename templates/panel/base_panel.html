@@ -52,6 +52,7 @@
             <label><input type="radio" name="tema" value="oscuro"> Oscuro</label>
             <label><input type="radio" name="tema" value="sistema" checked> Sistema</label>
           </fieldset>
+          <a class="usuario-perfil" href="{% url 'perfil' %}"{% if seccion == 'perfil' or seccion == 'cambiar_clave' %} aria-current="page"{% endif %}>Mi perfil</a>
           <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link" type="submit">Salir</button></form>
         </div>
       </details>

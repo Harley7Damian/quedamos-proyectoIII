@@ -382,3 +382,21 @@ details.plegable#nueva-solicitud > summary > span[aria-hidden] { display:inline-
 details.plegable#nueva-solicitud[open] { border-style:solid; background:var(--surface); }
 @media (max-width:560px) { .resumen { gap:.5rem; } .resumen li { padding:.6rem .7rem; } .resumen strong { font-size:1.4rem; } .resumen span { font-size:.75rem; } }
 @media (prefers-reduced-motion: reduce) { .en-vivo { animation:none; } .card-solicitud, .accion-flecha::after, .boton-volver { transition:none; } .card-solicitud:hover, .boton-volver:hover { transform:none; } }
+
+/* Mi perfil: tarjetas, datos y opciones de aviso */
+.perfil-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap:.75rem; align-items:start; }
+.perfil-grid .card { margin:0; }
+.perfil-grid h2 { margin-top:0; font-size:1.1rem; }
+.perfil-datos { margin:0 0 .5rem; }
+.perfil-datos > div { display:flex; justify-content:space-between; gap:1rem; padding:.45rem 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.perfil-datos dt { color:var(--muted); font-size:.9rem; }
+.perfil-datos dd { margin:0; font-weight:600; overflow-wrap:anywhere; }
+.opciones-avisos { grid-template-columns:1fr 1fr; }
+.opciones-avisos label.opcion { padding:.6rem .75rem; align-items:center; }
+.opciones-avisos label.opcion input { margin:0; }
+.perfil-clave { max-width:28rem; }
+.usuario-perfil { display:block; padding:.3rem 0; font-weight:600; }
+@media (max-width:420px) { .opciones-avisos { grid-template-columns:1fr; } }
+
+.perfil-col { display:flex; flex-direction:column; gap:.75rem; }
+
