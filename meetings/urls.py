@@ -24,4 +24,5 @@ urlpatterns = [
     path("c/<str:token>/", views.public_availability, name="public_availability"),
     path("a/<str:token>/", views.public_approval, name="public_approval"),
     path("a/<str:token>/invitacion.ics", views.approval_ics, name="approval_ics"),
+    path("panel/solicitudes/<int:pk>/verificar-llamada/", views.verificar_llamada, name="verificar_llamada"),
 ]

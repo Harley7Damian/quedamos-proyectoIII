@@ -496,6 +496,23 @@ def request_ics(request, pk):
         raise Http404("La reunion aun no esta aprobada.")
     return _ics_response(meeting_request)
 
+@login_required
+@require_POST
+def verificar_llamada(request, pk):
+    """Demo (TR-85): dispara una llamada de prueba al telefono del ejecutivo, para mostrar en clase que la llamada funciona de verdad."""
+    meeting_request = _visible_request_or_404(request.user, pk)
+    from accounts.llamadas import hacer_llamada_recordatorio
+    from accounts.models import Profile
+    perfil = Profile.objects.filter(user_id=meeting_request.executive_id).first()
+    if not perfil or not perfil.telefono:
+        messages.error(request, "El ejecutivo todavía no guardó un teléfono para las llamadas.")
+    else:
+        texto = f"Hola, esta es una llamada de verificación de Quedamos para la reunión con {meeting_request.counterpart_name}."
+        if hacer_llamada_recordatorio(perfil.telefono, texto):
+            messages.success(request, "Llamando ahora al teléfono del ejecutivo.")
+        else:
+            messages.error(request, "No se pudo iniciar la llamada. Revisa la configuración de Twilio.")
+    return redirect("request_detail", pk=pk)
 
 @require_safe
 def approval_ics(request, token):
